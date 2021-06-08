@@ -34,6 +34,31 @@
 
       <a-layout-content class="pd">
         <slot />
+        <a-layout-footer class="oms-footer" :class="{widthChange:collapsed}">
+          <a-row>
+            <a-col :span="1">
+              <div style="position: relative;">
+                <!-- 移出文档流，防止显示/隐藏时造成抖动 -->
+                <ExportExcelManager style="position: absolute;top:0;left:0;" />
+              </div>
+            </a-col>
+            <a-col :span="14">
+              <span>（样板项目）</span>
+            </a-col>
+            <a-col :span="9">
+              <span>
+                <a-tooltip :trigger="'click'">
+                  <template slot="title">
+                    <div>
+                      <p>联系我们</p>
+                    </div>
+                  </template>
+                  <span>@Copyright</span>
+                </a-tooltip>
+              </span>
+            </a-col>
+          </a-row>
+        </a-layout-footer>
         <!-- <o-sidebar :user-name="user.employeeNumber" app-no="1047" :name="user.name" /> -->
       </a-layout-content>
     </a-layout>
@@ -44,13 +69,13 @@ import OmsMenu from './OmsMenu'
 import moment from 'moment'
 import utils from '@/utils'
 import api from '@/api'
-// import OSidebar from 'jimo-ui/packages/sidebar'
+import ExportExcelManager from '@/components/ExportExcelManager.vue'
 let collapsed = false
 export default {
   name: 'OmsLayout',
   components: {
-    OmsMenu
-    // OSidebar
+    OmsMenu,
+    ExportExcelManager
   },
   data () {
     return {

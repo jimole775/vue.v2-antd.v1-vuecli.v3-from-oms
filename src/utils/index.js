@@ -834,5 +834,42 @@ export default {
     if (!no) return ''
     const year = (no + '').substring(6, 10)
     return new Date().getFullYear() - (year * 1)
+  },
+  /**
+   * 新窗口打开一个页面
+   * @param {Object|Map} targetDetail
+   * @return {Undefined}
+   * @template newWindow()
+   * @template newWindow({
+   *  id: '',【可选】
+   *  businessId: 1004,【必填】
+   *  businessCategory: 'RECRUITION'【必填】
+   * })
+   */
+  newWindow (targetDetail) {
+    if (targetDetail && targetDetail.businessCategory) {
+      // 另开一个页面展示
+      window.open(`?omsjump=${base64.encode(JSON.stringify(targetDetail))}`)
+    } else {
+      window.open()
+    }
+  },
+  readBlobAsText (blob) {
+    return new Promise((resolve, reject) => {
+      if (this.isBlob(blob)) {
+        const r = new FileReader()
+        let res = ''
+        r.onload = function (event) {
+          const { currentTarget: { result } } = event
+          res += result || ''
+        }
+        r.onloadend = function (e) {
+          resolve(res)
+        }
+        r.readAsText(blob)
+      } else {
+        reject(new Error('utils.readBlobAsText不支持非Blob对象'))
+      }
+    })
   }
 }

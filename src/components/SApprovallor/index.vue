@@ -116,23 +116,23 @@ export default {
   computed: {
     applyComponents () {
       const panes = this.tabProxy.panes.filter((pane) => {
-        pane.applyModulesMap = this.activeApplyModulesMap
+        pane.applyModulesMap = utils.clone(this.activeApplyModulesMap)
         return /\d_1_.+/.test(pane.tabId)
       })
       return panes
     },
     approvalComponents () {
       const panes = this.tabProxy.panes.filter((pane) => {
-        pane.approvalModulesMap = this.activeApprovalModulesMap
+        pane.approvalModulesMap = utils.clone(this.activeApprovalModulesMap)
         return /\d_2_.+/.test(pane.tabId)
       })
       return panes
     },
     activeApplyModulesMap () {
-      return utils.clone(this.applyModulesMap[this.tabProxy.lastListId])
+      return this.applyModulesMap[this.tabProxy.lastListId]
     },
     activeApprovalModulesMap () {
-      return utils.clone(this.approvalModulesMap[this.tabProxy.lastListId])
+      return this.approvalModulesMap[this.tabProxy.lastListId]
     },
     activeApimap () {
       return this.apimap[this.tabProxy.lastListId]
