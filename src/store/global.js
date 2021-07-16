@@ -1,17 +1,7 @@
 import api from '@/api'
 import { Message } from 'ant-design-vue'
 import mockMenu from './mockMenu'
-import utils from '@/utils'
-
-function deleteChildrenNode (arr) {
-  arr.forEach(element => {
-    if (utils.isNone(element.children)) {
-      delete element.children
-    } else {
-      deleteChildrenNode(element.children)
-    }
-  })
-}
+const exportingListStoreKey = '$$EXPORTINGLIST'
 export default {
   state: {
     token: '',
@@ -21,11 +11,27 @@ export default {
     menuButtons: [],
     user: '',
     userRole: {},
+    currentRole: {},
+    exportingList: [],
     dictionaryList: [],
     supplierList: [],
     supportSeries: []
   },
   getters: {
+    getExportingList: (state) => {
+      let list = []
+      if (!state.exportingList || !state.exportingList.length) {
+        const cache = sessionStorage.getItem(exportingListStoreKey)
+        if (cache) {
+          list = JSON.parse(cache)
+        } else {
+          list = []
+        }
+      } else {
+        list = state.exportingList
+      }
+      return list
+    },
     getTodoParams: (state) => {
       return state.todoParams
     },
@@ -56,11 +62,15 @@ export default {
       }
       return state.dictionaryList.filter(item => item.groupName === groupName)[0].itemList
     },
+    // 根据数据字典的groupCode获取item
+    // eslint-disable-next-line no-dupe-keys
     getDictByGroupCode: (state) => (groupCode) => {
       if (utils.isNone(state.dictionaryList)) {
         return []
       }
-      return state.dictionaryList.filter(item => item.groupCode === groupCode)[0].itemList
+      const dictList = state.dictionaryList.filter(item => item.groupCode === groupCode)[0]
+      // const arr = dictList.filter(item => item.itemCode === itemCode)
+      return utils.isNone(dictList) ? [] : dictList.itemList
     },
     /**
      * 根据数据字典中的itemCode，查找对应的Name
@@ -83,19 +93,9 @@ export default {
       const arr = dictList.itemList.filter(item => item.itemCode === itemCode)
       return utils.isNone(arr) ? '' : arr[0]
     },
-    // 根据数据字典的groupCode获取item
-    // eslint-disable-next-line no-dupe-keys
-    getDictByGroupCode: (state) => (groupCode) => {
-      if (utils.isNone(state.dictionaryList)) {
-        return []
-      }
-      const dictList = state.dictionaryList.filter(item => item.groupCode === groupCode)[0]
-      // const arr = dictList.filter(item => item.itemCode === itemCode)
-      return utils.isNone(dictList) ? [] : dictList.itemList
-    },
     getFileTypePermisson: (state) => () => {
       if (utils.isNone(state.dictionaryList)) {
-        return []
+        return ''
       }
       const dictList = state.dictionaryList.filter(item => item.groupCode === 'upload_file_suffix_while_list')[0]
       const dicts = utils.isNone(dictList) ? [] : dictList.itemList
@@ -106,6 +106,10 @@ export default {
     }
   },
   mutations: {
+    setExportList (state, params) {
+      state.exportingList = params
+      sessionStorage.setItem(exportingListStoreKey, JSON.stringify(state.exportingList || []))
+    },
     setTodoParams (state, params) {
       state.todoParams = params
     },
@@ -138,6 +142,16 @@ export default {
     }
   },
   actions: {
+    pushExportingList ({ commit, state }, item) {
+      if (!state.exportingList) state.exportingList = []
+      state.exportingList.push(item)
+      commit('setExportList', state.exportingList)
+    },
+    spliceExportingList ({ commit, state }, index) {
+      if (!state.exportingList) state.exportingList = []
+      state.exportingList.splice(index, 1)
+      commit('setExportList', state.exportingList)
+    },
     loadTodoParams ({ commit, state }, params) {
       commit('setTodoParams', params)
     },
@@ -148,7 +162,6 @@ export default {
           deleteChildrenNode(res.data)
           const listTemp = res.data.filter(item => {
             // 去掉没有path和子菜单的数据
-
             if (item.path || item.children) {
               return true
             }
@@ -157,6 +170,15 @@ export default {
           commit('setMenus', listTemp)
         }
       } catch (e) {}
+      function deleteChildrenNode (arr) {
+        arr.forEach(element => {
+          if (_.isEmpty(element.children)) {
+            delete element.children
+          } else {
+            deleteChildrenNode(element.children)
+          }
+        })
+      }
     },
     async loadMenuButtons ({ commit, state }) {
       try {

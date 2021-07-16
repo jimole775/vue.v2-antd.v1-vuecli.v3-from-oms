@@ -4,6 +4,7 @@ import { setToken, setOMSJump } from '@/utils/auth'
 import qs from 'qs'
 import Store from '@/store/index'
 import base64 from '@/utils/base64'
+import examplesRoutes from '@/helper/examples/router/index.js'
 Vue.use(Router)
 const context = require.context('./modules', true, /(\.js)$/)
 const routerProxy = {
@@ -20,6 +21,10 @@ const routerProxy = {
 context.keys().forEach((item) => {
   routerProxy.routes = routerProxy.routes.concat(context(item).default || context(item))
 })
+
+if (process.env.NODE_ENV === 'development') {
+  routerProxy.routes = routerProxy.routes.concat(examplesRoutes)
+}
 const router = new Router(routerProxy)
 router.beforeEach((to, from, next) => {
   if (to.query.omsjump) {
