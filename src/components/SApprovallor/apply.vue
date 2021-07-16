@@ -16,8 +16,7 @@
             :operation-item="componentItem.operationItem"
             :before-render="beforeRender"
             :before-submit="beforeSubmit"
-            :columns="componentItem.columns"
-            :active-form-items="componentItem.formItems"
+            :form-items="componentItem.formItems"
             :active-components="activeComponents"
             :mode="componentItem.mode"
             :tab-proxy="tabProxy"
@@ -28,7 +27,7 @@
               applyModulesMap: applyModulesMap,
               columns: componentItem.columns,
               activeComponents: activeComponents,
-              activeFormItems: componentItem.formItems,
+              formItems: componentItem.formItems,
               operationItem: componentItem.operationItem,
             }"
           />

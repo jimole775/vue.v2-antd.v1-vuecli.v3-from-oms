@@ -20,7 +20,7 @@
             :is="componentItem.component"
             :mode="componentItem.mode"
             :active-components="activeComponents"
-            :active-form-items="componentItem.formItems"
+            :form-items="componentItem.formItems"
             :component-item="componentItem"
             :operation-item="componentItem.operationItem"
             :data-source="basicData"
@@ -39,7 +39,7 @@
               componentItem: componentItem,
               columns: componentItem.columns,
               activeComponents: activeComponents,
-              activeFormItems: componentItem.formItems,
+              formItems: componentItem.formItems,
               operationItem: componentItem.operationItem,
             }"
             @submit="submitHandler"

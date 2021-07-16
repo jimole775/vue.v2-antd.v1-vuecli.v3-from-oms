@@ -1,7 +1,7 @@
 <template>
   <form>
     <a-row v-for="(workPlaceItem, index) in workPlaceList" :key="index">
-      <a-col :span="8">
+      <a-col :span="layout.s">
         <a-button
           v-if="index > 0"
           @click="workPlaceList.splice(index, 1)"
@@ -11,8 +11,8 @@
         </a-button>
         <a-form-item
           required
-          :label-col="{ span: 6 }"
-          :wrapper-col="{ span: 18 }"
+          :label-col="layout.l"
+          :wrapper-col="layout.w"
         >
           <span slot="label">
             城市
@@ -29,12 +29,12 @@
           <span v-if="!workPlaceItem.region && workPlaceListWarning" class="waring-tip">请选择城市</span>
         </a-form-item>
       </a-col>
-      <a-col :span="8">
+      <a-col :span="layout.s">
         <a-form-item
           required
           :label="'工作地点'"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
+          :label-col="layout.l"
+          :wrapper-col="layout.w"
         >
           <a-select
             placeholder="请选择工作地点"
@@ -51,11 +51,11 @@
           <span v-if="!workPlaceItem.workPlace && workPlaceListWarning" class="waring-tip">请选择工作地点</span>
         </a-form-item>
       </a-col>
-      <a-col :span="8">
+      <a-col :span="layout.s">
         <a-form-item
           required
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
+          :label-col="layout.l"
+          :wrapper-col="layout.w"
         >
           <span slot="label">
             交付形式&nbsp;
@@ -94,6 +94,11 @@ export default {
       default: ''
     }
   },
+  computed: {
+    layout () {
+      return this.layoutDirection === 'h' ? this.horizontal : this.vertical
+    }
+  },
   watch: {
     defaultList (val) {
       if (val) {
@@ -116,6 +121,16 @@ export default {
   },
   data () {
     return {
+      vertical: {
+        s: 24,
+        l: { span: 2 },
+        w: { span: 6 }
+      },
+      horizontal: {
+        s: 8,
+        l: { span: 8 },
+        w: { span: 16 }
+      },
       workPlaceList: [{
         region: '',
         workPlace: '',

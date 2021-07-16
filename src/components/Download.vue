@@ -1,7 +1,7 @@
 <template>
   <div class="default-style">
     <a-tooltip v-if="textlength" :title="fileName">
-      <a class="href-style" :href="href">{{ fileName | ellipsisWords(textlength) }}</a>
+      <a class="href-style" :href="href">{{ fileName | ellipsisSentence(textlength) }}</a>
     </a-tooltip>
     <a v-else class="href-style" :href="href">{{ fileName }}</a>
     &nbsp;
@@ -61,7 +61,7 @@ export default {
     }
   },
   filters: {
-    ellipsisWords: utils.ellipsisWords.bind(utils)
+    ellipsisSentence: utils.ellipsisSentence.bind(utils)
   },
   data () {
     return {
@@ -98,6 +98,7 @@ export default {
   word-break: break-word;
   a.href-style {
     color: #2DC84D;
+    text-decoration: underline;
   }
   a.preview-style {
     color: #868C97;

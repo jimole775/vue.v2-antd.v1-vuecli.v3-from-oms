@@ -3,20 +3,38 @@ export default {
   functional: true,
   name: 'HandlerTableCell',
   render (h, data) {
-    const { record, len = 20 } = data.props || {}
+    const { len = 20, name = '', account = '' } = data.props || {}
     return (
-      <EllipsisTableCell len={len} text={spillCurrentHandler(record)} />
+      <EllipsisTableCell len={len} text={spillCurrentHandler(name, account)} />
     )
   }
 }
-function spillCurrentHandler (record) {
-  const accs = record['currentAccount'] || ''
-  const nams = record['currentName'] || ''
-  if (!accs || !nams) return ''
+function spillCurrentHandler (nameString, accountString) {
+  if (!nameString || !accountString) return ''
+  const names = nameString.split(',')
+  const accounts = accountString.split(',')
   const res = []
-  accs.split(',').forEach((_acc, index) => {
-    res.push(`${nams.split(',')[index]}(${_acc})`)
+  spackling(names, accounts)
+  accounts.forEach((acct, index) => {
+    const currentAcct = acct || ''
+    const currentName = names[index] || ''
+    res.push(`${currentName}(${currentAcct})`)
   })
   return res.join('，')
 }
+// 填充缺失的数据
+function spackling (names, accounts) {
+  const diff = names.length - accounts.length
+  if (diff > 0) {
+    for (let i = 0; i < diff; i++) {
+      accounts.push('N/A')
+    }
+  }
+  if (diff < 0) {
+    for (let j = diff; j < 0; j++) {
+      names.push('N/A')
+    }
+  }
+}
+
 </script>

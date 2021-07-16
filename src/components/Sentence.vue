@@ -1,40 +1,41 @@
-<template>
-  <div>
-    <p v-for="(sentence, index) in sentences" :key="index">{{ sentence }}</p>
-  </div>
-</template>
 <script>
+import utils from '@/utils'
 export default {
+  functional: true,
   name: 'Sentence',
-  props: {
-    content: {
-      type: String,
-      default: ''
-    },
-    splitType: {
-      type: String,
-      default: '\n'
-    }
-  },
-  computed: {
-    sentences (val) {
-      let res = []
-      if (this.content) {
-        res = this.content.split(this.splitType)
-      }
-      return res
-    }
-  },
-  data () {
-    return {
-    }
-  },
-  methods: {
+  render (h, data) {
+    const { len = 20, content = '', lineEnd = 'ellipsis' } = data.props || {}
+    const sentences = getSentences(content)
+    return (
+      sentences.map((sentence) => {
+        if (lineEnd === 'ellipsis') {
+          // xxxxx..
+          // xxxxx..
+          return <EllipsisTableCell len={len} text={sentence} />
+        } else if (lineEnd === 'break') {
+          // xxxxxxx
+          // xxx
+          // xxxxxxx
+          // xxxxx
+          const lines = utils.breakSentence(sentence, len)
+          return lines.map(line => {
+            return <div>{ line }</div>
+          })
+        } else {
+          return ''
+        }
+      })
+    )
   }
 }
-</script>
-<style lang="less" scoped>
-/deep/.ant-row {
-  padding: 0.3rem 0;
+
+function getSentences (content) {
+  // 把所有换行符换成 _||_
+  const splitSign = '_||_'
+  content = content.replace(/(\r\n)/ig, splitSign)
+  content = content.replace(/(\r)/ig, splitSign)
+  content = content.replace(/(\n)/ig, splitSign)
+  return content.split(splitSign)
 }
-</style>
+
+</script>

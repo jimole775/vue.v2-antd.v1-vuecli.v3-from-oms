@@ -68,7 +68,7 @@ export default {
   },
   model: {
     prop: 'value',
-    event: 'change'
+    event: 'update'
   },
   computed: {
     uploadTxt () {
@@ -90,7 +90,6 @@ export default {
   watch: {
     defaultValue: {
       handler (val) {
-        console.log(val)
         if (val) {
           let fileVal = new File(
             ['sdf'],
@@ -100,6 +99,7 @@ export default {
           fileVal.uid = val
           this.resumeFileList = [fileVal]
           this.currentFile = utils.splitUrl(`${this.currentDomain}${val}`)
+          this.$emit('update', this.currentFile)
         }
       },
       immediate: true
@@ -112,6 +112,7 @@ export default {
       this.resumeFileList = []
       this.isRemove = true
       this.$emit('change', [])
+      this.$emit('update', [])
     },
     handleChange (info) {
       console.log('handleChange')
@@ -127,7 +128,6 @@ export default {
       form.append('auth_token', `oms:${getToken()}`)
       form.append('scene', `oms`)
       form.append('output', 'json')
-
       api[this.action](form, this.currentDomain, this.injectParams).then(
         res => {
           if (res.data === null || res.data === undefined) {
@@ -147,19 +147,23 @@ export default {
             this.resumeFileList = []
             Vue.bus.emit('uploadDisabled', false)
             this.$emit('change', [])
+            this.$emit('update', [])
           }
           if (typeof res.data === 'object') {
+            // 处理res.data  文件地址 http://dfs.test-o2.adc.com/group1/default/20191111/14/25/6/rBAoMF26VQGAABbqAA3VOd-tjko271.jpg
             let obj = utils.splitUrl(res.data.url || res.data.filePath)
             this.currentFile = obj
             Vue.bus.emit('uploadDisabled', false)
             this.$message.success('文件上传成功')
             this.$emit('change', [{ fileName: obj.fileName, filePath: obj.path }], res.data)
+            this.$emit('update', [{ fileName: obj.fileName, filePath: obj.path }])
           }
         },
         () => {
           this.resumeFileList = []
           Vue.bus.emit('uploadDisabled', false)
           this.$emit('change', [])
+          this.$emit('update', [])
           this.$message.error('登录已过期,请重新登录!')
         }
       )

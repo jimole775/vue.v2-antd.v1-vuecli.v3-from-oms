@@ -3,6 +3,7 @@ import { Modal } from 'ant-design-vue'
 import axios from 'axios'
 import { getToken } from './auth'
 import store from '@/store'
+import base64 from './base64'
 export default {
   dateFormat: 'YYYY-MM-DD',
   monthFormat: 'YYYY-MM',
@@ -345,21 +346,6 @@ export default {
 
     return true
   },
-  getBlobTextSync (blob) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsText(blob)
-      reader.onload = (e) => {
-        return resolve(e.target.result || '')
-      }
-      reader.onerror = (e) => {
-        return reject(e)
-      }
-      reader.onabort = (e) => {
-        return reject(e)
-      }
-    })
-  },
   /** 直接访问CDN服务器，以link的方式来下载文件
    * @param {String} url url为文件的全路径
    * @param {Object} param 额外参数
@@ -429,71 +415,114 @@ export default {
   /** 通过后端接口的方式，来下载文件
    * @param {String} url url一般带有api路段
    * @param {Object} params
-   * @return {Undefined}
-   * @template = exportGetFile('/api/xxx/xxx') => Undefined
-   * @template = exportGetFile('/api/xxx/xxx', {xx: x}) => Undefined
-   * @template = exportGetFile('/api/xxx/xxx.xx?xxx=xxx', {xx: x}) => Undefined
+   * @return {Promise[*]}
+   * @template = exportGetFile('/api/xxx/xxx') => Promise
+   * @template = exportGetFile('/api/xxx/xxx', {xx: x}) => Promise
+   * @template = exportGetFile('/api/xxx/xxx.xx?xxx=xxx', {xx: x}) => Promise
    */
   exportGetFile (url, obj) {
-    axios({
-      method: 'get',
-      url: url,
-      params: obj,
-      responseType: 'blob',
-      headers: {
-        'x-token': getToken()
-      }
-    }).then(res => {
-      if (res.code) {
-        return
-      }
-      const link = document.createElement('a')
-      const blob = new Blob([res.data], { type: 'application/octet-stream' })
-      const fileName = decodeURI(res.headers['content-disposition'].split(';')[1].split('=')[1])
-      link.style.display = 'none'
-      link.href = URL.createObjectURL(blob)
-      link.setAttribute('download', fileName)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    })
-      .catch(() => {
+    return new Promise(async (resolve, reject) => {
+      const res = await axios({
+        method: 'get',
+        url: url,
+        params: obj,
+        responseType: 'blob',
+        headers: {
+          'x-token': getToken()
+        }
+      }).catch((error) => {
+        console.log(error)
+        return reject(error)
       })
+      // 如果是后台数据，需要直接返回res
+      if (this.isBackendResponse(res)) return resolve(res)
+      // 如果是axios数据，需要判断内部结构
+      if (this.isAxiosResponse(res)) {
+        let backendData = res.data
+        if (this.isBlob(backendData)) {
+          backendData = await this.readBlobAsText(backendData)
+        }
+        if (this.isJSONString(backendData)) {
+          backendData = JSON.parse(backendData)
+        }
+        if (this.isBackendResponse(backendData)) {
+          return resolve(backendData)
+        } else {
+          this.blobToURI(res)
+          return resolve(true)
+        }
+      }
+    })
   },
   /** 通过后端接口的方式，来下载文件
    * @param {String} url url一般带有api路段
    * @param {Object} params
-   * @return {Undefined}
-   * @template = exportPostFile('/api/xxx/xxx') => Undefined
-   * @template = exportPostFile('/api/xxx/xxx', {xx: x}) => Undefined
-   * @template = exportPostFile('/api/xxx/xxx.xx?xxx=xxx', {xx: x}) => Undefined
+   * @return {Promise[*]}
+   * @template = exportPostFile('/api/xxx/xxx') => Promise
+   * @template = exportPostFile('/api/xxx/xxx', {xx: x}) => Promise
+   * @template = exportPostFile('/api/xxx/xxx.xx?xxx=xxx', {xx: x}) => Promise
    */
   exportPostFile (url, params) {
-    axios({
-      method: 'post',
-      url: url,
-      data: params,
-      responseType: 'blob',
-      headers: {
-        'x-token': getToken()
-      }
-    }).then(res => {
-      if (res.code) {
-        return
-      }
-      const link = document.createElement('a')
-      const blob = new Blob([res.data], { type: 'application/octet-stream' })
-      const fileName = decodeURI(res.headers['content-disposition'].split(';')[1].split('=')[1])
-      link.style.display = 'none'
-      link.href = URL.createObjectURL(blob)
-      link.setAttribute('download', fileName)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    })
-      .catch(() => {
-        console.log('失败')
+    return new Promise(async (resolve, reject) => {
+      const res = await axios({
+        method: 'post',
+        url: url,
+        data: params,
+        responseType: 'blob',
+        headers: {
+          'x-token': getToken()
+        }
+      }).catch((error) => {
+        console.log(error)
+        return reject(error)
       })
+      // 如果是后台数据，需要直接返回res
+      if (this.isBackendResponse(res)) return resolve(res)
+      // 如果是axios数据，需要判断内部结构
+      if (this.isAxiosResponse(res)) {
+        let backendData = res.data
+        if (this.isBlob(backendData)) {
+          backendData = await this.readBlobAsText(backendData)
+        }
+        if (this.isJSONString(backendData)) {
+          backendData = JSON.parse(backendData)
+        }
+        if (this.isBackendResponse(backendData)) {
+          return resolve(backendData)
+        } else {
+          this.blobToURI(res)
+          return resolve(true)
+        }
+      }
+    })
+  },
+  blobToURI (res) {
+    const link = document.createElement('a')
+    const blob = new Blob([res.data], { type: 'application/octet-stream' })
+    const disposition = res.headers['content-disposition'] || ''
+    const fileField = disposition.split(';')[1] || ''
+    const fileName = decodeURI(fileField.split('=')[1] || 'unname')
+    link.style.display = 'none'
+    link.href = URL.createObjectURL(blob)
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  },
+  // 判断返回的会话类型是否是后台的数据类型
+  isBackendResponse (res) {
+    return this.isObject(res) &&
+      res.hasOwnProperty('code') &&
+      res.hasOwnProperty('data') &&
+      res.hasOwnProperty('message')
+  },
+  // 判断返回的会话类型是否是axios的数据类型
+  // await axios({}) 类型的请求会返回这个数据类型
+  isAxiosResponse (res) {
+    return this.isObject(res) &&
+      res.hasOwnProperty('data') &&
+      res.hasOwnProperty('status') &&
+      res.hasOwnProperty('headers')
   },
   /**
    * 省略多余字符
@@ -501,7 +530,7 @@ export default {
    * @param {Number} len
    * @return {String} '省略字符x...'
    */
-  ellipsisWords (words = '', len = 7) {
+  ellipsisSentence (words = '', len = 7) {
     let sum = 0
     let res = ''
     // 获取当前文档中，一个默认中文字的宽度
@@ -516,12 +545,39 @@ export default {
     return res === words ? words : res + '...'
   },
   /**
-   * 获取单个字符的尺寸
-   * @param {String|Number} word
+   * 强制把语句换行
+   * @param {String|Number} sentence
+   * @param {Number} len
+   * @return {Array} ['line1', 'line2'...]
+   */
+  breakSentence (sentence = '', len = 7) {
+    const res = []
+    const defaultWidth = this.countStringSize('中').width
+    const lineWidthLimit = defaultWidth * len
+    let loopLineWidth = 0
+    let loopLineIndex = 0
+    res[loopLineIndex] = ''
+    for (let i = 0; i < sentence.length; i++) {
+      const word = sentence[i]
+      const wordWidth = this.countStringSize(word).width
+      loopLineWidth += wordWidth
+      if (loopLineWidth >= lineWidthLimit) {
+        loopLineWidth = 0
+        loopLineIndex += 1
+        res[loopLineIndex] = ''
+      } else {
+        res[loopLineIndex] += word
+      }
+    }
+    return res
+  },
+  /**
+   * 获取字符的尺寸, 支持多个字符
+   * @param {String|Number} words
    * @return {Object} {width: x, height: y}
   */
-  countStringSize (word) {
-    if (!this.isString(word) && !this.isNumber(word)) return { width: 0, height: 0 }
+  countStringSize (words) {
+    if (!this.isString(words) && !this.isNumber(words)) return { width: 0, height: 0 }
     let sizeBox = document.getElementById('__CountStringSizeBox__')
     if (!sizeBox) {
       sizeBox = document.createElement('button')
@@ -534,7 +590,7 @@ export default {
       sizeBox.id = '__CountStringSizeBox__'
       document.body.appendChild(sizeBox)
     }
-    sizeBox.innerText = word
+    sizeBox.innerText = words
     return { width: sizeBox.offsetWidth, height: sizeBox.offsetHeight }
   },
   isJSONString (src) {
@@ -829,11 +885,31 @@ export default {
     const erObj = error[field].errors ? error[field].errors[0] : {}
     return erObj.message || '请先完成必填项！'
   },
+  /**
+   * 从证件号码获取年龄
+   * @param {Number|String} no
+   * @returns {Number}
+   */
   countAgeFromIDNumber (no) {
-    // 身份证号从第7位开始的8位数字代表出生日期
+    const birth = this.getBirthFromIDNumber(no)
+    if (!birth) return ''
+    return new Date().getFullYear() - new Date(birth).getFullYear()
+  },
+  /**
+   * 从证件号码获取生日
+   * @param {Number|String} no
+   * @returns {String}
+   */
+  getBirthFromIDNumber (no) {
     if (!no) return ''
+    // 15位 1代，18位 2代
+    const t1 = /^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$/
+    const t2 = /^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/
+    if (!t1.test(no) && !t2.test(no)) return ''
     const year = (no + '').substring(6, 10)
-    return new Date().getFullYear() - (year * 1)
+    const month = (no + '').substring(10, 12)
+    const date = (no + '').substring(12, 14)
+    return `${year}-${month}-${date}`
   },
   /**
    * 新窗口打开一个页面
@@ -849,7 +925,8 @@ export default {
   newWindow (targetDetail) {
     if (targetDetail && targetDetail.businessCategory) {
       // 另开一个页面展示
-      window.open(`?omsjump=${base64.encode(JSON.stringify(targetDetail))}`)
+      const params = base64.encode(JSON.stringify(targetDetail))
+      window.open(`?omsjump=${params}`)
     } else {
       window.open()
     }
@@ -868,7 +945,36 @@ export default {
         }
         r.readAsText(blob)
       } else {
-        reject(new Error('utils.readBlobAsText不支持非Blob对象'))
+        resolve(blob)
+      }
+    })
+  },
+  /**
+   * 异步查询html元素，10秒钟内查找不到会抛出错误
+   * @param {String} mark 主要是querySelector的参数
+   * @param {Number} loopTime 查询次数，1次500ms，默认20次
+   * @returns {Promise[Element]}
+   * @template await getElementAsync('body') => Element
+   * @template await getElementAsync('.class') => Element
+   * @template await getElementAsync('#id') => Element
+   */
+  getElementAsync (mark, loopTime = 20) {
+    return new Promise((resolve, reject) => {
+      loop(mark, loopTime)
+      function loop (_m, _t) {
+        const el = document.querySelector(_m)
+        if (el) {
+          resolve(el)
+        } else {
+          setTimeout(() => {
+            _t = _t - 1
+            if (_t > 0) {
+              return loop(_m, _t)
+            } else {
+              return reject(new Error('utils.getElementAsync找不到指定的元素：' + _m))
+            }
+          }, 500)
+        }
       }
     })
   }

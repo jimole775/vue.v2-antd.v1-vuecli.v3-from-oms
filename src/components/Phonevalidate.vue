@@ -59,21 +59,6 @@ export default {
         this.$message.warning(res.message || '请求失败，请联系管理员')
       }
     },
-    getBlobText (blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsText(blob)
-        reader.onload = (e) => {
-          return resolve(e.target.result || '')
-        }
-        reader.onerror = (e) => {
-          return reject(e)
-        }
-        reader.onabort = (e) => {
-          return reject(e)
-        }
-      })
-    },
     /**
      * @param {Object} res 这里有可能是axios对象，也有可能是业务对象
      *                     axios对象会有headers信息
@@ -82,16 +67,16 @@ export default {
       try {
         this.cearFailMessage()
         let result = null
-        // 如果返回的是axios对象，必须转成我们自己的业务对象
+        // 如果返回的是有可能是axios对象，也有可能是业务对象
         let responsedata = response
         let businessdata = {}
-        if (response.headers && response.status) {
+        if (utils.isAxiosResponse(response)) {
           responsedata = response.data
         }
         if (utils.isBlob(responsedata)) {
           // 转成文件流，主要为了兼容下载接口
           const blob = new Blob([responsedata], { type: 'application/octet-stream' })
-          const restext = await this.getBlobText(blob)
+          const restext = await utils.readBlobAsText(blob)
           businessdata = JSON.parse(restext)
         }
         if (utils.isObject(responsedata)) {

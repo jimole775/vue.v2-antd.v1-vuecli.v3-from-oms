@@ -6,7 +6,7 @@
           <span>{{ tipmodal.message }}</span>
         </template>
         <a-button @click="managermodal.show = true">
-          <a-icon type="download" />
+          <span><a-icon type="download" />&nbsp;<span class="desc">导出列表</span></span>
         </a-button>
       </a-tooltip>
     </div>
@@ -76,11 +76,11 @@ export default {
     'exportingList': {
       handler (data = []) {
         const backup = this.exportingListBackup || []
-        const duplicateItem = this.hasDuplicate(data)
-        if (duplicateItem) {
-          this.showDuplicateTips(duplicateItem)
-          return this.delExportListItem(duplicateItem)
-        }
+        // const duplicateItem = this.hasDuplicate(data)
+        // if (duplicateItem) {
+        // this.showDuplicateTips(duplicateItem)
+        // return this.delExportListItem(duplicateItem)
+        // }
         if (data.length !== backup.length) {
           this.showNormalTips()
           this.heartbeat()
@@ -294,7 +294,7 @@ button.fake-loading-icon {
   border: 0;
   // width: 52px;
   // height: 52px;
-  overflow: hidden;
+  // overflow: hidden;
   // -webkit-box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
   // box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
   // border-radius: 26px;
@@ -311,6 +311,11 @@ button.fake-loading-icon {
     color: #2dc84d;
     /deep/i.anticon {
       font-size: 1.3rem;
+    }
+    span.desc {
+      font-size: 0.8rem;
+      position: relative;
+      top: -1px;
     }
   }
 }

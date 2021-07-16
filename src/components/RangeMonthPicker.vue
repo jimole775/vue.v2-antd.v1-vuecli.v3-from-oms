@@ -38,6 +38,10 @@ export default {
       type: Array,
       default: () => []
     },
+    defaultValue: {
+      type: Array,
+      default: () => []
+    },
     placeholder: {
       type: Array,
       default: () => ['开始月份', '结束月份']

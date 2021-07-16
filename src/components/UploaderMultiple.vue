@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div class="uploader-base">
     <a-upload
       name="file"
       :multiple="true"
       :accept="supportSeries"
-      :before-upload="beforeUploadResume"
+      :before-upload="beforeUploadEvent"
       :file-list="fileList"
       :remove="removeFile"
       :show-upload-list="false"
@@ -20,7 +20,8 @@
     </a-upload>
     <template v-for="(urlItem, index) in urlStore">
       <div class="download-bar" :key="index">
-        <Download :value="urlItem.path" />
+        <a-icon class="file-icon" type="paper-clip" />
+        <Download class="file-content" :value="urlItem.path" />
         <a class="file-close" @click="() => removeUrl(urlItem)">x</a>
       </div>
     </template>
@@ -74,10 +75,10 @@ export default {
       urlStore: []
     }
   },
-  // model: {
-  //   prop: 'value',
-  //   event: 'change'
-  // },
+  model: {
+    prop: 'value',
+    event: 'update'
+  },
   computed: {
     currentDomain () {
       return this.$store.getters.getCurrentDomain()
@@ -115,6 +116,7 @@ export default {
             this.fileList.push(fileVal)
             this.urlStore.push(utils.splitUrl(`${this.currentDomain}${item}`))
           })
+          this.$emit('update', this.urlStore)
         }
       },
       immediate: true
@@ -140,6 +142,7 @@ export default {
         }
       }
       this.$emit('change', this.urlStore)
+      this.$emit('update', this.urlStore)
     },
     // 通过file, 移除文件
     removeFile (file) {
@@ -152,11 +155,13 @@ export default {
         }
       }
       this.$emit('change', this.urlStore)
+      this.$emit('update', this.urlStore)
     },
     // 上传文件，并存储返回的url
-    async beforeUploadResume (file, files) {
+    async beforeUploadEvent (file, files) {
       const pass = utils.verifyUploadType(file.name, this.supportSeries)
       if (!pass) return false
+      Vue.bus.emit('loading', true) // 显示正在上传
       Vue.bus.emit('uploadDisabled', true) // 提交按钮禁用
       this.fileList = [...this.fileList, file]
       let form = new FormData()
@@ -180,19 +185,25 @@ export default {
               }`
             )
             Vue.bus.emit('uploadDisabled', false)
+            Vue.bus.emit('loading', false)
             this.$emit('change', this.urlStore)
+            this.$emit('update', this.urlStore)
           }
           if (typeof res.data === 'object') {
             let obj = utils.splitUrl(res.data.url || res.data.filePath)
             this.urlStore = [...this.urlStore, obj]
             this.$message.success('文件上传成功')
             Vue.bus.emit('uploadDisabled', false)
+            Vue.bus.emit('loading', false)
             this.$emit('change', this.urlStore, res.data)
+            this.$emit('update', this.urlStore)
           }
         },
         () => {
           Vue.bus.emit('uploadDisabled', false)
+          Vue.bus.emit('loading', false)
           this.$emit('change', this.urlStore)
+          this.$emit('update', this.urlStore)
           this.$message.error('登录已过期,请重新登录!')
         }
       )
@@ -202,8 +213,24 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+.file-icon {
+  font-size: 14px;
+  left: 0.4rem;
+  top: 0.4rem;
+  position: absolute;
+  color: rgba(0, 0, 0, 0.45);
+}
+.file-content {
+  font-size: 14px;
+  text-indent: 1.5rem;
+}
 .file-close {
-  position: absolute; right: 1rem; top: 0; color: #ff4545; padding: 0 0.3rem;
+  position: absolute;
+  right: 1rem;
+  top: -1px;
+  color: #ff4545;
+  padding: 0 0.3rem;
+  font-size: 13px;
   &:hover {
     background-color: #efefef;
   }
@@ -219,5 +246,9 @@ export default {
       background-color: #efefef;
     }
   }
+}
+
+.uploader-base {
+  transition: height 0.3s;
 }
 </style>

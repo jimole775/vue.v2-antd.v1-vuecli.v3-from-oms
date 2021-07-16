@@ -2,6 +2,9 @@
 import utils from '@/utils'
 import moment from 'moment'
 import api from '@/api'
+const indexKey = '_index_'
+// 如果文本长度超过20，就省略掉
+const cellMaxCharLen = 20
 export default {
   props: {
     columns: {
@@ -106,7 +109,6 @@ export default {
       queryObj: {},
       dataList: [],
       fileList: [],
-      hasIndexColumn: false,
       isLoading: false,
       isSearchorExpand: true,
       searchorGroups: [], // 显示搜索栏
@@ -115,6 +117,7 @@ export default {
       expandedRowKeys: [],
       columnSlots: [],
       columnScopedSlots: [],
+      vmScope: this,
       modal: {
         show: false,
         info: {},
@@ -264,23 +267,45 @@ export default {
     }
   },
   mounted () {
-    this.init()
+    this.fixFields()
+    this.initialize()
     this.fetchImmediate && this.fetchData()
   },
   methods: {
     moment,
-    insertIndexCol (val) {
-      if (this.showRank && !this.hasIndexColumn) {
-        this.hasIndexColumn = true
-        val.unshift({
+    fixFields () {
+      // 保持key和dataIndex同时存在
+      this.searchor && this.searchor.forEach((item) => {
+        item.key = item.key || item.dataIndex
+        item.dataIndex = item.key || item.dataIndex
+      })
+      this.columns && this.columns.forEach((item) => {
+        item.key = item.key || item.dataIndex
+        item.dataIndex = item.key || item.dataIndex
+      })
+    },
+    insertIndexCol (columns) {
+      if (this.showRank && !hasIndexColumn(columns)) {
+        columns.unshift({
           title: '序号',
-          width: '50',
-          dataIndex: 'index',
+          width: 60,
+          dataIndex: indexKey,
           align: 'center',
           customRender: (text, record, index) => {
             return (index + 1) + (this.pagination.current - 1) * this.pagination.pageSize
           }
         })
+      }
+      function hasIndexColumn (columns) {
+        let res = false
+        for (let i = 0; i < columns.length; i++) {
+          const col = columns[i]
+          if (col.key === indexKey || col.dataIndex === indexKey) {
+            res = true
+            break
+          }
+        }
+        return res
       }
     },
     countColumnsSize (columns, scrollObj) {
@@ -302,26 +327,17 @@ export default {
           columnScopedSlots.push(col)
         }
         if (!col.children && !col.customRender && !col.scopedSlots && !col.slotsRender && !col.scopedSlotsRender) {
-          col.customRender = this.fixTextWrapper()
+          col.customRender = this.fixTextWrapper(this.$createElement)
         }
         if (col.children && col.children.length) {
           this.flattenColumns(col.children, columnSlots, columnScopedSlots)
         }
       })
     },
-    fixTextWrapper () {
-      // 如果文本长度超过20，就省略掉
-      const h = this.$createElement
-      const maxLen = 20
+    fixTextWrapper (h) {
       return (text, record, index) => {
-        if (utils.isString(text) && text.length > maxLen) {
-          return h('a-tooltip', {
-            props: {
-              title: text
-            }
-          }, [
-            h('span', text.substring(0, maxLen) + '...')
-          ])
+        if (utils.isString(text)) {
+          return (<EllipsisTableCell len={cellMaxCharLen} text={text} />)
         } else {
           return text
         }
@@ -395,12 +411,13 @@ export default {
         this.modal.show = false
       })
     },
-    init () {
+    initialize () {
+      this.vmScope = utils.bindVMScopeParent(this)
       this.searchorGroups = []
       this.searchor.forEach((searchItem) => {
         this.searchorGroups.push(searchItem)
         if (searchItem.beforeRender) {
-          searchItem.beforeRender(this.queryObj, searchItem, utils.bindVMScopeParent(this))
+          searchItem.beforeRender(this.queryObj, searchItem, this.vmScope)
         }
         if (searchItem.key) {
           this.$set(this.queryObj, searchItem.key, searchItem.default)
@@ -666,9 +683,10 @@ export default {
 
     // 最后交给定制的回调参数进行调整
     handleParamsByCustom (finalParams) {
+      // const vm = utils.bindVMScopeParent(this)
       this.searchor.forEach((searchItem) => {
         if (searchItem.beforeSubmit) {
-          searchItem.beforeSubmit(finalParams, utils.bindVMScopeParent(this))
+          searchItem.beforeSubmit(finalParams, this.vmScope)
         }
       })
       return finalParams
@@ -782,16 +800,22 @@ export default {
       <div>
         { searchorGroup }
         <div class={'panel-content'}>
-          <div class={'btn-wrap clearfix'}>
-            { ...summarySlots }
-            { ...batchHandleButtons }
-            { ...summaryButtons }
-          </div>
+          {
+            hasSummary(summarySlots, batchHandleButtons, summaryButtons) &&
+            <div class={'btn-wrap clearfix'}>
+              { ...summarySlots }
+              { ...batchHandleButtons }
+              { ...summaryButtons }
+            </div>
+          }
         </div>
         <div>{ mainTable }</div>
         <div>{ batchHandleModal }</div>
       </div>
     )
+    function hasSummary (summarySlots, batchHandleButtons, summaryButtons) {
+      return !!(summarySlots.length || batchHandleButtons.length || summaryButtons.length)
+    }
   }
 }
 
@@ -844,7 +868,7 @@ function buildsummaryBaseButtons (h) {
         <template slot={'title'}>导出</template>
         <a-button
           onClick={() => this.exportOut()}
-          class={'cir-button'}
+          class={'cir-button button-export'}
         />
       </a-tooltip>
     )
@@ -855,7 +879,7 @@ function buildsummaryBaseButtons (h) {
         <template slot={'title'}>导入模板下载</template>
         <a-button
           onClick={() => this.downLoadTemplate()}
-          class={'cir-button'}
+          class={'cir-button button-import-template-down'}
         />
       </a-tooltip>
     )
@@ -913,11 +937,13 @@ function buildModal (h) {
 function buildMainTable (h) {
   const slots = []
   const scopedSlots = {}
+  const vmScope = this.vmScope
+  // const vm = utils.bindVMScopeParent(this)
   /* 表头渲染 */
   this.columnSlots.map((columnSlot, index) => {
     const slotName = (columnSlot.slots && columnSlot.slots.title) || ''
     if (columnSlot.slotsRender) {
-      slots.push(<span slot={slotName}>{columnSlot.slotsRender(h, utils.bindVMScopeParent(this))}</span>)
+      slots.push(<span slot={slotName}>{columnSlot.slotsRender(h, vmScope)}</span>)
     } else {
       slots.push(<span slot={slotName}>...</span>)
     }
@@ -925,10 +951,11 @@ function buildMainTable (h) {
   /* 表身渲染 */
   this.columnScopedSlots.map(columnSlot => {
     const slotName = (columnSlot.scopedSlots && columnSlot.scopedSlots.customRender) || columnSlot.dataIndex || columnSlot.key
-    scopedSlots[slotName] = (text, record, index) => {
+    scopedSlots[slotName] = function (text, record, index) {
       if (columnSlot.scopedSlotsRender) {
-        const $vm = utils.bindVMScopeParent(this)
-        return columnSlot.scopedSlotsRender(h, record, $vm)
+        return columnSlot.scopedSlotsRender(h, record, vmScope)
+      } else {
+        return text
       }
     }
   })

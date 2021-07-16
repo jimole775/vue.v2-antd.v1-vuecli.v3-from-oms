@@ -21,11 +21,10 @@
       <span>{{ moment(text).format('YYYY-MM-DD LTS') }}</span>
     </template>
     <template slot="content" slot-scope="text">
-      <div v-if="text">
-        <div v-for="(p,index) in text.split('，')" :key="index">
-          {{ p }}
-        </div>
-      </div>
+      <Sentence :content="text" :len="20" />
+    </template>
+    <template slot="operatorName" slot-scope="text, record">
+      <HandlerTableCell :name="record.operatorName" :account="record.operatorAccount" />
     </template>
   </a-table>
 </template>
@@ -71,7 +70,8 @@ export default {
         },
         {
           title: '操作人',
-          dataIndex: 'operatorName'
+          dataIndex: 'operatorName',
+          scopedSlots: { customRender: 'operatorName' }
         },
         // {
         //   title: '操作结果',
