@@ -7,5 +7,11 @@ const base = '/mock'
 export default {
   getuser () {
     return http.get(`${base}/user`)
+  },
+  getPermissionMenu () {
+    return http.get(`${base}/menu`)
+  },
+  getuserpool () {
+    return http.get(`${base}/user-pool`)
   }
 }

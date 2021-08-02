@@ -1,6 +1,25 @@
+// const marked = require("marked");
+// const renderer = new marked.Renderer();
 module.exports = {
   configureWebpack: {
     devtool: 'source-map'
+  },
+  chainWebpack: config => {
+    config.module
+      .rule('md')
+      .test(/\.md$/)
+      .use('html-loader')
+      .loader('html-loader')
+      .end()
+      .use('markdown-loader')
+      // .tap(options => {
+      //   // 修改它的选项...
+      //   console.log(options)
+      //   options.renderer = renderer
+      //   return options
+      // })
+      .loader('markdown-loader')
+      .end()
   },
   css: {
     loaderOptions: {

@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import VueBus from 'vue-bus'
+
 import {
   Card, Button, Layout, Menu,
   Pagination, DatePicker, Upload,
@@ -17,6 +18,22 @@ import {
   Progress, Calendar
 } from 'ant-design-vue'
 
+import ExportExcel from '@/components/ExportExcel'
+import YearPicker from '@/components/YearPicker'
+import RangePicker from '@/components/RangePicker'
+import OmsLayout from '@/components/OmsLayout.vue'
+import OmsBreadcrumb from '@/components/OmsBreadcrumb'
+import DictSelect from '@/components/DictSelect'
+import DictGroupRadio from '@/components/DictGroupRadio'
+import Uploader from '@/components/Uploader'
+import DownLoadFile from '@/components/DownLoadFile'
+import CitySelect from '@/components/CitySelect'
+import InputMoney from '@/components/InputMoney'
+import WorkplaceSelect from '@/components/WorkplaceSelect'
+import HandlerTableCell from '@/components/HandlerTableCell'
+import RangeMonthPicker from '@/components/RangeMonthPicker'
+import SLine from '@/components/SLine'
+import SLines from '@/components/SLines'
 import 'ant-design-vue/dist/antd.less'
 import '@/styles/antd_reset.less'
 import '@/styles/common.less'
@@ -34,6 +51,7 @@ Vue.use(Layout)
 Vue.use(Menu)
 Vue.use(Pagination)
 Vue.use(DatePicker)
+Vue.use(RangePicker)
 Vue.use(TimePicker)
 Vue.use(Upload)
 Vue.use(Icon)
@@ -65,6 +83,31 @@ Vue.use(Checkbox)
 Vue.use(Empty)
 Vue.use(Carousel).use(Progress)
 Vue.use(Calendar)
+Vue.use(InputMoney)
+Vue.use(HandlerTableCell)
+Vue.use(RangeMonthPicker)
+Vue.use(SLine)
+Vue.use(SLines)
+Vue.use(ExportExcel)
+
+Vue.component(InputMoney.name, InputMoney)
+Vue.component(ExportExcel.name, ExportExcel)
+Vue.component(SLine.name, SLine)
+Vue.component(SLines.name, SLines)
+Vue.component(HandlerTableCell.name, HandlerTableCell)
+Vue.component(RangeMonthPicker.name, RangeMonthPicker)
+Vue.component(OmsLayout.name, OmsLayout)
+Vue.component(RangePicker.name, RangePicker)
+Vue.component(YearPicker.name, YearPicker)
+Vue.component(OmsBreadcrumb.name, OmsBreadcrumb)
+// Vue.component(PageTitle.name, PageTitle)
+Vue.component(DictSelect.name, DictSelect)
+Vue.component(DictGroupRadio.name, DictGroupRadio)
+Vue.component(DownLoadFile.name, DownLoadFile)
+Vue.component(Uploader.name, Uploader)
+// Vue.component(areaSelect.name, areaSelect)
+Vue.component(CitySelect.name, CitySelect)
+Vue.component(WorkplaceSelect.name, WorkplaceSelect)
 
 Vue.config.productionTip = false
 Vue.prototype.$message = Message
@@ -73,7 +116,10 @@ Vue.prototype.$confirm = Modal.confirm
 Vue.prototype.$initDate = date => moment(date).format('YYYY-MM-DD HH:mm')
 
 // mock data开关
-process.env.NODE_ENV === 'development' && require('@/mock')
+if (process.env.NODE_ENV === 'development') {
+  require('@/mock')
+  require('@/plugins/highlight')
+}
 
 new Vue({
   router,

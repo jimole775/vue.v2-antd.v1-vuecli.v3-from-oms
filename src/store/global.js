@@ -1,4 +1,5 @@
 import api from '@/api'
+import utils from '@/utils'
 import { Message } from 'ant-design-vue'
 import mockMenu from './mockMenu'
 const exportingListStoreKey = '$$EXPORTINGLIST'
@@ -157,7 +158,7 @@ export default {
     },
     async loadMenus ({ commit, state }) {
       try {
-        let res = await api.catalog()
+        let res = await api.getPermissionMenu()
         if (utils.isArray(res.data)) {
           deleteChildrenNode(res.data)
           const listTemp = res.data.filter(item => {
@@ -172,7 +173,7 @@ export default {
       } catch (e) {}
       function deleteChildrenNode (arr) {
         arr.forEach(element => {
-          if (_.isEmpty(element.children)) {
+          if (utils.isEmpty(element.children)) {
             delete element.children
           } else {
             deleteChildrenNode(element.children)

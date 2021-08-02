@@ -16,12 +16,6 @@
         >
           <span slot="label">
             城市
-            <a-tooltip
-              v-if="index === 0"
-              title="当前需求下在“流程中/已入项”的简历，需求编辑不会更改推荐信息中的“城市/工作地点/交付形式”"
-            >
-              <a-icon type="question-circle-o" />
-            </a-tooltip>
           </span>
           <a-select
             placeholder="请选择城市"
@@ -38,12 +32,12 @@
       <a-col :span="layout.s">
         <a-form-item
           required
-          :label="'工作地点'"
+          :label="'地点'"
           :label-col="layout.l"
           :wrapper-col="layout.w"
         >
           <a-select
-            placeholder="请选择工作地点"
+            placeholder="请选择地点"
             v-model="workPlaceItem.workPlace"
             @change="(val) => workingPlaceChanged(val, workPlaceOption[index], workPlaceItem)"
           >
@@ -54,7 +48,7 @@
               {{ item.workingPlace }}
             </a-select-option>
           </a-select>
-          <span v-if="!workPlaceItem.workPlace && workPlaceListWarning" class="waring-tip">请选择工作地点</span>
+          <span v-if="!workPlaceItem.workPlace && workPlaceListWarning" class="waring-tip">请选择地点</span>
         </a-form-item>
       </a-col>
       <a-col :span="layout.s">
@@ -64,21 +58,16 @@
           :wrapper-col="layout.w"
         >
           <span slot="label">
-            交付形式&nbsp;
-            <a-tooltip>
-              <!-- <span slot="title"><span>在岸：与内部人员在我方场地服务</span><br><span>近岸：在我方黄区服务</span><br><span>离岸：在供应商黄区服务</span></span> -->
-              <span slot="title"><span>在岸：与内部人员在我方场地服务</span><br><span>离岸：在供应商黄区服务</span></span>
-              <a-icon type="question-circle-o" />
-            </a-tooltip>
+            形式&nbsp;
           </span>
           <DictSelect
             required
             :disabled="true"
             :group-code="'dg_delivery'"
-            placeholder="请选择交付形式"
+            placeholder="请选择形式"
             v-model="workPlaceItem.deliveryType"
           />
-          <span v-if="!workPlaceItem.deliveryType && workPlaceListWarning" class="waring-tip">请选择交付形式</span>
+          <span v-if="!workPlaceItem.deliveryType && workPlaceListWarning" class="waring-tip">请选择形式</span>
         </a-form-item>
       </a-col>
     </a-row>
@@ -184,10 +173,10 @@ export default {
           workPlaceErr = '请先选择城市'
         }
         if (!workPlaceItem.workPlace) {
-          workPlaceErr = '请先选择工作地点'
+          workPlaceErr = '请先选择地点'
         }
         if (!workPlaceItem.deliveryType) {
-          workPlaceErr = '请先选择交付形式'
+          workPlaceErr = '请先选择形式'
         }
       })
       if (workPlaceErr) {

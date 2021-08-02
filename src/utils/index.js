@@ -4,32 +4,7 @@ import axios from 'axios'
 import { getToken } from './auth'
 import store from '@/store'
 import base64 from './base64'
-export default {
-  dateFormat: 'YYYY-MM-DD',
-  monthFormat: 'YYYY-MM',
-  timeFormat: 'YYYY-MM-DD HH:mm',
-  yearFormat: 'YYYY',
-  strToDate (str) {
-    return str ? moment(str).format(this.dateFormat) : ''
-  },
-  strToTime (str) {
-    return str ? moment(str).format(this.timeFormat) : ''
-  },
-  strTime (str) {
-    return str ? moment(str).format('HH:mm') : ''
-  },
-  strToMonth (str) {
-    return str ? moment(str).format(this.monthFormat) : ''
-  },
-  strToYear (str) {
-    return str ? moment(str).format(this.yearFormat) : ''
-  },
-  toTS (dateObj) {
-    return moment(dateObj).format('x')
-  },
-  toDateStr (dateObj) {
-    return moment(dateObj).format('YYYY-MM-DD HH:mm:ss')
-  },
+const utils = {
   /**
    * @param {string} input value
    * @returns {number} output value
@@ -82,7 +57,7 @@ export default {
    * @param {} res
    */
   getPaginationConfig (res) {
-    if (this.isNone(res)) {
+    if (this.isEmpty(res)) {
       return {
         defaultCurrent: 1,
         defaultPageSize: 20,
@@ -99,7 +74,7 @@ export default {
     }
   },
   getPaginationConfig2 (res) {
-    if (this.isNone(res)) {
+    if (this.isEmpty(res)) {
       return {
         defaultCurrent: 1,
         defaultPageSize: 10,
@@ -116,7 +91,7 @@ export default {
     }
   },
   getPaginationConfig3 (res) {
-    if (this.isNone(res)) {
+    if (this.isEmpty(res)) {
       return {
         defaultCurrent: 1,
         defaultPageSize: 10,
@@ -178,7 +153,7 @@ export default {
    * @return ['num1, num2', 'name1, name2']
    */
   splitUser (list) {
-    if (this.isNone(list)) {
+    if (this.isEmpty(list)) {
       return ['', '']
     }
     const listTemp = list.map(item => {
@@ -193,7 +168,7 @@ export default {
   },
   // 切割解析URL地址，主要用于Uploader组件的
   splitUrl (url) {
-    if (this.isNone(url)) {
+    if (this.isEmpty(url)) {
       return {
         domain: '', // 域名
         fileName: '', // 文件名
@@ -282,7 +257,6 @@ export default {
     })
     return res.length ? `?${res.join('&')}` : ``
   },
-
   /** 把urlquery转换成的Object对象
    * @param {String} url
    * @return {Object}
@@ -526,32 +500,44 @@ export default {
   },
   /**
    * 省略多余字符
-   * @param {String|Number} words
+   * @param {String|Number} text
    * @param {Number} len
    * @return {String} '省略字符x...'
+   * @template ellipsisSentence('顶顶顶顶', 3) => '顶顶顶...'
    */
-  ellipsisSentence (words = '', len = 7) {
+  ellipsisSentence (text = '', len = 10) {
+    if (!text) return ''
     let sum = 0
     let res = ''
     // 获取当前文档中，一个默认中文字的宽度
     const defaultWidth = this.countStringSize('中').width
-    words.split('').forEach((word) => {
+    const limitWidth = defaultWidth * len
+    text.split('').forEach((word) => {
       const awidth = this.countStringSize(word).width
-      if (len * defaultWidth - sum >= awidth || len * defaultWidth - sum >= defaultWidth / 3) {
+      if (sum + awidth <= limitWidth + (defaultWidth / 3)) {
         res += word
+        sum += awidth
       }
-      sum += awidth
     })
-    return res === words ? words : res + '...'
+
+    if (res === text) {
+      return res
+    } else {
+      return this.appandEllipsis(res)
+    }
   },
   /**
    * 强制把语句换行
    * @param {String|Number} sentence
    * @param {Number} len
-   * @return {Array} ['line1', 'line2'...]
+   * @param {Number} line 如果设置line，超过line的会被省略
+   * @return {Array}
+   * @template breakSentence('顶顶顶顶顶', 2) => ['顶顶', '顶顶', '顶']
+   * @template breakSentence('顶顶顶顶顶', 2, 2) => ['顶顶', '顶...']
    */
-  breakSentence (sentence = '', len = 7) {
-    const res = []
+  breakSentence (sentence = '', len = 10, line) {
+    if (!sentence) return []
+    let res = []
     const defaultWidth = this.countStringSize('中').width
     const lineWidthLimit = defaultWidth * len
     let loopLineWidth = 0
@@ -561,15 +547,59 @@ export default {
       const word = sentence[i]
       const wordWidth = this.countStringSize(word).width
       loopLineWidth += wordWidth
-      if (loopLineWidth >= lineWidthLimit) {
-        loopLineWidth = 0
+      if (isNeedBreak(loopLineWidth)) {
+        loopLineWidth = wordWidth
         loopLineIndex += 1
-        res[loopLineIndex] = ''
+        res[loopLineIndex] = word
       } else {
         res[loopLineIndex] += word
       }
     }
+
+    if (line) {
+      const limits = cutLimitLine(res, line)
+      if (res.length > limits.length) {
+        res = limits
+        res[line - 1] = this.appandEllipsis(res[line - 1])
+      }
+    }
+
     return res
+
+    function cutLimitLine (src, line) {
+      const limit = new Array(line)
+      src.forEach((item, index) => limit.fill(item, index, index + 1))
+      return limit
+    }
+
+    function isNeedBreak (loopLineWidth) {
+      const aWordFiff = defaultWidth * (2 / 3)
+      return loopLineWidth >= lineWidthLimit + aWordFiff
+    }
+  },
+
+  appandEllipsis (text) {
+    let cutIndex = 1
+
+    // '...' 一般占用（1个中文字符） 或 （2个英文字符）
+    const limitCutSize = this.countStringSize('中').width
+
+    countLength.call(this, limitCutSize)
+
+    cutIndex = cutIndex >= text.length ? text.length - 1 : (text.length - cutIndex)
+
+    return text.substring(0, cutIndex || 1) + '...'
+
+    function countLength (limitCutSize) {
+      let willCutWord = text.substring(text.length - cutIndex, text.length)
+      let willCutSize = this.countStringSize(willCutWord).width
+      if (willCutSize < limitCutSize) {
+        if (cutIndex < text.length) {
+          cutIndex = cutIndex + 1
+          return countLength.call(this, limitCutSize)
+        }
+      }
+    }
   },
   /**
    * 获取字符的尺寸, 支持多个字符
@@ -590,7 +620,7 @@ export default {
       sizeBox.id = '__CountStringSizeBox__'
       document.body.appendChild(sizeBox)
     }
-    sizeBox.innerText = words
+    sizeBox.innerHTML = words.replace(/ /g, '&nbsp;')
     return { width: sizeBox.offsetWidth, height: sizeBox.offsetHeight }
   },
   isJSONString (src) {
@@ -619,13 +649,37 @@ export default {
     return Object.prototype.toString.call(src) === '[object Blob]'
   },
   isEmptyObject (src) {
-    return Object.prototype.toString.call(src) === '[object Object]' && Object.keys(src).length === 0
+    return Object.prototype.toString.call(src) === '[object Object]' && isEmpty.call(this, src)
+    function isEmpty (src) {
+      const res = { empty: true }
+      objPropsIteration.apply(this, [src, res])
+      return res.empty
+    }
+    function objPropsIteration (src, res) {
+      if (this.isObject(src)) {
+        return Object.keys(src).forEach((key) => {
+          return objPropsIteration.apply(this, [src[key], res])
+        })
+      }
+      if (this.isArray(src)) {
+        return src.forEach((item) => {
+          return objPropsIteration.apply(this, [item, res])
+        })
+      }
+      // 只要有一个属性有值，就判断不为空
+      if (this.isValuable(src)) {
+        res.empty = false
+      }
+    }
   },
   isArray (src) {
     return Object.prototype.toString.call(src) === '[object Array]'
   },
   isEmptyArray (src) {
     return Object.prototype.toString.call(src) === '[object Array]' && src.length === 0
+  },
+  isEmpty (src) {
+    return this.isNone(src) || this.isEmptyArray(src) || this.isEmptyObject(src)
   },
   isNull (src) {
     return Object.prototype.toString.call(src) === '[object Null]'
@@ -643,7 +697,7 @@ export default {
     let newobject = null
     if (this.isArray(srcobject)) {
       newobject = []
-      objPropsTteration.apply(this, [srcobject, newobject])
+      objPropsIteration.apply(this, [srcobject, newobject])
       // 数组类型，第二个参数必须是数字
       if (this.isNumber(attrName)) {
         const index = attrName
@@ -652,32 +706,109 @@ export default {
     }
     if (this.isObject(srcobject)) {
       newobject = {}
-      objPropsTteration.apply(this, [srcobject, newobject])
+      objPropsIteration.apply(this, [srcobject, newobject])
       // 对象类型，第二个参数必须是有效的字符串
       if (this.isValuable(attrName) && this.isString(attrName)) {
         newobject[attrName] = value
       }
     }
 
-    function objPropsTteration () {
+    function objPropsIteration () {
       const isTop = arguments.length === 2
       const [src, res, pkey] = arguments
       if (this.isObject(src)) {
         if (!isTop) res[pkey] = {}
         return Object.keys(src).forEach((ckey) => {
-          return objPropsTteration.apply(this, [src[ckey], isTop ? res : res[pkey], ckey])
+          return objPropsIteration.apply(this, [src[ckey], isTop ? res : res[pkey], ckey])
         })
       }
       if (this.isArray(src)) {
         if (!isTop) res[pkey] = []
         return src.forEach((item, index) => {
-          return objPropsTteration.apply(this, [item, isTop ? res : res[pkey], index])
+          return objPropsIteration.apply(this, [item, isTop ? res : res[pkey], index])
         })
       }
       res[pkey] = src
     }
 
     return newobject || srcobject
+  },
+  /**
+   * 合并(对象|数组)
+   * @param {Object|Array} a
+   * @param {Object|Array} b
+   * @returns {Object|Array}
+   * @template merge({ a: 1 }, { b: 1 }) => { a: 1, b: 1 }
+   * @template merge({ a: 1 }, { a: 2 }) => { a: 2 }
+   * @template merge([{ a: 1 }], [{ a: 2 }]) => [{ a: 1 }, { a: 2 }]
+   */
+  merge (a, b) {
+    let res = null
+    if (this.isArray(a) && this.isArray(b)) {
+      res = []
+      arrItemsIteration.call(this, a, b, res)
+      return res
+    }
+    if (this.isObject(a) && this.isObject(b)) {
+      res = {}
+      objPropsIteration.call(this, a, b, res)
+      return res
+    }
+    return new Error(`utils.merge => 出现不支持的合并类型!`)
+
+    function objPropsIteration (aObj, bObj, res) {
+      if (this.isObject(aObj) && this.isObject(bObj)) {
+        const allKeys = Object.keys(aObj).concat(Object.keys(bObj))
+        if (allKeys.length) {
+          allKeys.forEach((key) => {
+            const av = aObj[key]
+            const bv = bObj[key]
+            if (av && bv) {
+              if (this.isArray(av) && this.isArray(bv)) {
+                res[key] = []
+                return arrItemsIteration.call(this, av, bv, res[key])
+              }
+              if (this.isObject(av) && this.isObject(bv)) {
+                res[key] = {}
+                return objPropsIteration.call(this, av, bv, res[key])
+              }
+              // 如果相同属性，相同层级，那么只取 b 对象的值
+              res[key] = bv
+            } else {
+              res[key] = av || bv
+            }
+          })
+        }
+      }
+      if (this.isArray(aObj) && this.isArray(bObj)) {
+        arrItemsIteration.call(this, aObj, bObj, res)
+      }
+    }
+    function arrItemsIteration (aObj, bObj, res) {
+      const all = aObj.concat(bObj)
+      all.forEach((item) => {
+        res.push(item)
+      })
+    }
+    // 数组内部元素合并逻辑，暂时不需要这种合并模式
+    // function arrItemsIteration_abandon (aObj, bObj, res) {
+    //   const len = aObj.length > bObj.length ? aObj.length : bObj.length
+    //   for (let i = 0; i < len; i++) {
+    //     const aItem = aObj[i]
+    //     const bItem = bObj[i]
+    //     if (this.isArray(aItem) && this.isArray(bItem)) {
+    //       res[i] = []
+    //       arrItemsIteration.call(this, aItem, bItem, res[i])
+    //     }
+    //     if (this.isObject(aItem) && this.isObject(bItem)) {
+    //       res[i] = {}
+    //       objPropsIteration.call(this, aItem, bItem, res[i])
+    //     }
+    //     if (Object.prototype.toString.call(aItem) !== Object.prototype.toString.call(bItem)) {
+    //       res[i] = bItem || aItem
+    //     }
+    //   }
+    // }
   },
   /** 拼装 DepartmentSelectPlus 的输入项
    * @params keys => 'xxx,xxx'
@@ -702,7 +833,7 @@ export default {
    * @return ['num1, num2', 'name1, name2']
    */
   splitOptionItems (list) {
-    if (this.isNone(list)) {
+    if (this.isEmpty(list)) {
       return ['', '']
     }
     const listTemp = list.map(item => {
@@ -777,6 +908,7 @@ export default {
           break
         case 'DepartmentSelectPlus':
           if (item.paramKeys) {
+            console.log(this.splitOptionItems(valueItem))
             res[item.paramKeys[0]] = this.splitOptionItems(valueItem)[0]
             res[item.paramKeys[1]] = this.splitOptionItems(valueItem)[1]
           } else {
@@ -979,3 +1111,4 @@ export default {
     })
   }
 }
+export default utils

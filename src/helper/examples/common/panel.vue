@@ -5,11 +5,13 @@
     </div>
     <div class="desc">
       <span class="desc-title">
-        <slot name="desc-title">
-          <span>样例说明</span>
+        <slot name="title">
+          <span>{{ title }}</span>
         </slot>
       </span>
-      <slot name="desc" />
+      <slot name="description">
+        <div v-hljs="description" />
+      </slot>
     </div>
     <div :class="['fold', show && 'fold-open']">
       <a @click="show = !show">
@@ -17,7 +19,9 @@
       </a>
     </div>
     <div v-if="show" class="code">
-      <slot name="code" />
+      <slot name="code">
+        <div v-hljs="code" />
+      </slot>
     </div>
   </div>
 </template>
@@ -25,6 +29,20 @@
 <script>
 export default {
   name: 'Panel',
+  props: {
+    title: {
+      type: String,
+      default: '样例说明'
+    },
+    description: {
+      type: String,
+      default: ''
+    },
+    code: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       show: false
@@ -68,7 +86,9 @@ export default {
   border-bottom: 1px dashed #ebedf0;
 }
 .code {
-  padding: 0.5rem 0;
+  /deep/ pre {
+    padding: 1rem 1.5rem;
+  }
 }
 .fold-icon {
   font-size: 12px;
