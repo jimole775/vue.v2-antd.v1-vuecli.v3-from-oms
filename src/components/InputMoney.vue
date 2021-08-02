@@ -47,6 +47,7 @@ export default {
   },
   data () {
     return {
+      view: this.value
     }
   },
   watch: {
@@ -54,32 +55,39 @@ export default {
       handler (val) {
         // 根据value的值，刷新默认视图
         if (utils.isValuable(val)) {
-          const purval = isOnlySign(val) ? 0 : utils.parseMoney(val)
-          this.updateView(purval)
+          this.updateView(val)
+          this.updateValue(val)
         }
       },
       immediate: true
     }
   },
-  computed: {
-    view: {
-      set (val) {
-        this.updateValue(val)
-      },
-      get () {
-        return this.queryMoneyView(this.value)
-      }
-    }
-  },
   methods: {
     inputting (e) {
       let result = utils.isNone(e.target.value) ? '' : e.target.value
-      result = this.querySpecialValue(result) // 过滤 '0-' 这个特殊字符
-      result = this.computeInputValue(result) // 获取自然数
-      result = this.restrictInPositiveOrNegative(result) // 限定正负结果
-      result = this.adjustLimit(result) // 修正预期阈值
       this.updateView(result)
       this.updateValue(result)
+    },
+    updateView (val) {
+      if (!isOnlySign(val)) {
+        val = this.querySpecialValue(val) // 过滤 '0-' 这个特殊字符
+        val = this.computeInputValue(val) // 获取自然数
+        val = this.restrictInPositiveOrNegative(val) // 限定正负结果
+        val = this.adjustLimit(val) // 修正预期阈值
+        val = this.number2money(val) // 修正预期阈值
+      }
+      this.view = val
+    },
+    updateValue (val) {
+      if (!isOnlySign(val)) {
+        val = this.querySpecialValue(val) // 过滤 '0-' 这个特殊字符
+        val = this.computeInputValue(val) // 获取自然数
+        val = this.restrictInPositiveOrNegative(val) // 限定正负结果
+        val = this.adjustLimit(val) // 修正预期阈值
+      } else {
+        val = null
+      }
+      this.$emit('change', val) // 更新v-model
     },
     // 限定“正”或“负”结果
     restrictInPositiveOrNegative (val) {
@@ -87,24 +95,16 @@ export default {
       let result = val
       // 只返回正数
       if (this.restrict === 'positive') {
-        if (isOnlySign(val)) {
-          result = ''
-        } else {
-          result = Math.abs(val)
-        }
+        result = Math.abs(val)
       }
       // 只返回负数
       if (this.restrict === 'negative') {
-        if (isOnlySign(val)) {
-          result = '-'
-        } else {
-          result = -1 * Math.abs(val)
-        }
+        result = -1 * Math.abs(val)
       }
       return result // 返回字符串
     },
     computeInputValue (val) {
-      if (isOnlySign(val)) return val
+      // if (isOnlySign(val)) return val
       let purval = utils.parseMoney(val)
       let result = ''
       // 处理数型数据
@@ -113,20 +113,8 @@ export default {
       }
       return result
     },
-    updateView (val) {
-      if (this.$refs.moneyinput) {
-        this.$refs.moneyinput.value = this.queryMoneyView(val)
-      }
-    },
-    updateValue (val) {
-      let result = null
-      if (isNum(val)) {
-        result = Number.parseFloat(val)
-      }
-      this.$emit('change', result) // 更新v-model
-    },
-    queryMoneyView (val) {
-      if (isOnlySign(val)) return val
+    // number 转 money
+    number2money (val) {
       if (isNum(val)) {
         return utils.formatMoney(val)
       } else {
@@ -153,10 +141,12 @@ export default {
   }
 }
 
+// 判断是否是自然数
 function isNum (val) {
   return /^([\+\-]?(\d*\.?\d+|\d+\.?\d*))$/.test(val)
 }
 
+// 判断是否只是 正负号
 function isOnlySign (val) {
   return /^([\+\-])$/.test(val)
 }

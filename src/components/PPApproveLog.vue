@@ -21,7 +21,7 @@
       <span>{{ moment(text).format('YYYY-MM-DD LTS') }}</span>
     </template>
     <template slot="content" slot-scope="text">
-      <Sentence :content="text" :len="20" />
+      <SLines :content="text" :len="20" />
     </template>
     <template slot="operatorName" slot-scope="text, record">
       <HandlerTableCell :name="record.operatorName" :account="record.operatorAccount" />
@@ -35,7 +35,7 @@ import api from '@/api/'
 import moment from 'moment'
 // import utils from '@/utils/'
 export default {
-  name: 'ApproveLog',
+  name: 'PPApproveLog',
   props: {
     businessId: {
       type: [String, Number],
@@ -102,6 +102,13 @@ export default {
       this.loadList()
     },
     async loadList () {
+      await api.currentRole().then(res => {
+        if (res.code === 200) {
+          if (res.data.type === 'SUPPLIER') {
+            this.isSupplierFlag = true
+          }
+        }
+      })
       if (!this.businessId) {
         return
       }

@@ -5,7 +5,7 @@ export default {
   render (h, data) {
     const { len = 20, name = '', account = '' } = data.props || {}
     return (
-      <EllipsisTableCell len={len} text={spillCurrentHandler(name, account)} />
+      <SLine len={len} content={spillCurrentHandler(name, account)} />
     )
   }
 }

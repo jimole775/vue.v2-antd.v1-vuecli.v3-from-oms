@@ -65,7 +65,7 @@ export default {
       type: Object,
       required: true
     },
-    approvalModulesMap: {
+    approvalConfig: {
       type: Object,
       required: true
     },
@@ -139,7 +139,7 @@ export default {
           this.currentNode.approvalAccountList.includes(this.currentAccount)
     },
     activeModule () {
-      return this.approvalModulesMap && this.approvalModulesMap[this.currentNode.nodeCode]
+      return this.approvalConfig && this.approvalConfig[this.currentNode.nodeCode]
     }
   },
   methods: {

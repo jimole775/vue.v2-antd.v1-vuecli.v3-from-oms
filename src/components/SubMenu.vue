@@ -31,6 +31,16 @@ export default {
       type: Object,
       required: true
     }
+  },
+  methods: {
+    handleClick (e) {
+      // console.log(1, e.domEvent.target.pathname, 2, localStorage.lastURL)
+      // if (e.domEvent.target.pathname === localStorage.lastURL) {
+      //   this.$router.go(0)
+      //   return
+      // }
+      // localStorage.lastURL = e.domEvent.target.pathname
+    }
   }
 }
 

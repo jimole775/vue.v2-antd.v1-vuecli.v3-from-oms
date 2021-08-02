@@ -101,21 +101,21 @@ export default {
     ...mapActions(['loadMenuButtons']),
     async init () {
       // 默认一定要加载按钮权限列表
-      await this.getPermission()
+      await this.getMenuButtons()
       // 根据权限列表裁剪有效的panes
-      this.getValuablePanes()
+      this.queryPermissionPanes()
       // 直接show activeId
       this.activePane(this.tabProxy.activeId)
       return Promise.resolve()
     },
-    async getPermission () {
+    async getMenuButtons () {
       const menuButtons = this.$store.state.global.menuButtons || []
       if (menuButtons.length === 0) {
         await this.loadMenuButtons()
       }
       return Promise.resolve()
     },
-    getValuablePanes () {
+    queryPermissionPanes () {
       const panes = this.tabProxy.panes || []
       const menuButtons = this.$store.state.global.menuButtons || []
       this.tabProxy.panes = panes.filter(pane => {
@@ -127,6 +127,10 @@ export default {
       this.tabProxy.panes.forEach(pane => {
         pane.show = true
       })
+      if (this.tabProxy.showList) {
+        // 默认展示第一个 show 为 true 的 pane
+        this.tabProxy.lastListId = this.tabProxy.activeId = this.tabProxy.panes[0].tabId
+      }
     },
     activePane (tabId) {
       // 根据提供的id去获取指定的Panel面板

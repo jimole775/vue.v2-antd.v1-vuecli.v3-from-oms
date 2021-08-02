@@ -21,12 +21,12 @@
             :mode="componentItem.mode"
             :tab-proxy="tabProxy"
             :vmprops="{
-              apimap: apimap,
-              tabProxy: tabProxy,
-              componentItem: componentItem,
-              applyModulesMap: applyModulesMap,
+              apimap,
+              tabProxy,
+              applyConfig,
+              componentItem,
+              activeComponents,
               columns: componentItem.columns,
-              activeComponents: activeComponents,
               formItems: componentItem.formItems,
               operationItem: componentItem.operationItem,
             }"
@@ -45,7 +45,7 @@ import moment from 'moment'
 import utils from '@/utils'
 export default {
   props: {
-    applyModulesMap: {
+    applyConfig: {
       type: Object,
       required: true
     },
@@ -72,7 +72,7 @@ export default {
     }
   },
   watch: {
-    applyModulesMap: {
+    applyConfig: {
       handler (aModulesMap) {
         const components = aModulesMap.components || []
         this.activeComponents = components.map((item) => {

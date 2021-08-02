@@ -71,11 +71,24 @@ export default {
         this.getRegionList()
       }
     },
+    // 获取所有地域
     getRegionList () {
       if (this.orgCode) {
         api.postregionfindRegionList({ orgCode: this.orgCode }).then((res) => {
           if (res.code === 200) {
             this.regionList = res.data.map((item) => {
+              // area: "一类区域"
+              // cityCode: "10002"
+              // deliveryType: "在岸"
+              // deliveryTypeCode: "di_delivery_on"
+              // hrAccount: null
+              // hrName: null
+              // orgCode: "oppo"
+              // region: "深圳"
+              // sscAccount: null
+              // sscName: null
+              // workPlaceCode: "di_office_chunsun"
+              // workingPlace: "春笋"
               return {
                 key: `${item.cityCode},${item.workPlaceCode},${item.deliveryTypeCode}`,
                 label: `${item.region}，${item.workingPlace}，${item.deliveryType}`

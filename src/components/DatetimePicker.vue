@@ -32,6 +32,10 @@ export default {
       defaultTime: null
     }
   },
+  model: {
+    prop: 'value',
+    event: 'change'
+  },
   props: {
     initialValue: {
       type: Object,
@@ -42,7 +46,7 @@ export default {
   methods: {
     calcTime () {
       if (!this.dateVal || !this.timeVal) {
-        return
+        return this.$emit('change', null)
       }
       const res = moment(this.dateVal.format('YYYY/MM/DD') + ' ' + this.timeVal.format('HH:mm'))
       this.$emit('change', res, res.format('YYYY-MM-DD HH:mm'))

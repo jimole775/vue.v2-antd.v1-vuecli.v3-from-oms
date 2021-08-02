@@ -16,6 +16,12 @@
         >
           <span slot="label">
             城市
+            <a-tooltip
+              v-if="index === 0"
+              title="当前需求下在“流程中/已入项”的简历，需求编辑不会更改推荐信息中的“城市/工作地点/交付形式”"
+            >
+              <a-icon type="question-circle-o" />
+            </a-tooltip>
           </span>
           <a-select
             placeholder="请选择城市"
@@ -59,6 +65,11 @@
         >
           <span slot="label">
             交付形式&nbsp;
+            <a-tooltip>
+              <!-- <span slot="title"><span>在岸：与内部人员在我方场地服务</span><br><span>近岸：在我方黄区服务</span><br><span>离岸：在供应商黄区服务</span></span> -->
+              <span slot="title"><span>在岸：与内部人员在我方场地服务</span><br><span>离岸：在供应商黄区服务</span></span>
+              <a-icon type="question-circle-o" />
+            </a-tooltip>
           </span>
           <DictSelect
             required
@@ -142,12 +153,14 @@ export default {
     }
   },
   methods: {
+    // 获取所有地域
     async getAllArea () {
       const res = await api.getAllArea()
       if (res.code === 200) {
         this.areaOption = res.data
       }
     },
+    // 动态获取工作地点
     changeRegin (item, index) {
       api.getWorkingPlaceByRegion(item.region, this.orgCode).then(res => {
         if (res.code === 200) {
@@ -195,6 +208,9 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+.ant-row .ant-form-item{
+// height: 54px;
+}
 /deep/ .ant-form-item-control {
   line-height: 32px;
 }

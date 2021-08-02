@@ -21,7 +21,7 @@
     <template v-for="(urlItem, index) in urlStore">
       <div class="download-bar" :key="index">
         <a-icon class="file-icon" type="paper-clip" />
-        <Download class="file-content" :value="urlItem.path" />
+        <DownLoadFile class="file-content" :value="urlItem.path" />
         <a class="file-close" @click="() => removeUrl(urlItem)">x</a>
       </div>
     </template>
@@ -190,6 +190,7 @@ export default {
             this.$emit('update', this.urlStore)
           }
           if (typeof res.data === 'object') {
+            // 处理res.data  文件地址 http://dfs.test-o2.adc.com/group1/default/20191111/14/25/6/rBAoMF26VQGAABbqAA3VOd-tjko271.jpg
             let obj = utils.splitUrl(res.data.url || res.data.filePath)
             this.urlStore = [...this.urlStore, obj]
             this.$message.success('文件上传成功')

@@ -141,6 +141,7 @@ export default {
           this.fetchData()
         }
       },
+      deep: true,
       immediate: true
     },
     columns: {
@@ -337,7 +338,7 @@ export default {
     fixTextWrapper (h) {
       return (text, record, index) => {
         if (utils.isString(text)) {
-          return (<EllipsisTableCell len={cellMaxCharLen} text={text} />)
+          return (<SLine len={cellMaxCharLen} content={text} />)
         } else {
           return text
         }
@@ -436,7 +437,7 @@ export default {
       this.setComponentView(searchItem, value)
 
       // 重置操作
-      if (value === '' || value === undefined || value === null || utils.isEmptyArray(value) || utils.isEmptyObject(value)) {
+      if (utils.isNone(value) || utils.isEmptyArray(value) || utils.isEmptyObject(value)) {
         return searchItem.keys.forEach((key, index) => {
           this.queryObj[key] = null
         })
@@ -993,23 +994,34 @@ function buildSearchorGroup (h) {
                     label-col={{ span: searchItem.layout ? searchItem.layout.label : 8 }}
                     wrapper-col={{ span: searchItem.layout ? searchItem.layout.wrapper : 16 }}
                   >
-                    <searchItem.component
-                      props={searchItem.props}
-                      attrs={searchItem.attrs}
-                      dom-attrs={searchItem.domAttrs}
-                      allow-clear={!searchItem.required}
-                      default-value={searchItem.default}
-                      v-model={this.queryObj[searchItem.key]}
-                      ref={searchItem.key ? `${searchItem.component}${searchItem.key}` : `${searchItem.component}${searchItem.keys[0]}`}
-                      depend={this.queryObj[searchItem.dependKey]}
-                      onChange={
-                        (value, optionItem) => {
-                          searchItem.key
-                            ? this.simpleSelectEvent(value, optionItem, searchItem)
-                            : this.multiSelectEvent(value, optionItem, searchItem)
-                        }
-                      }
-                    />
+                    {
+                      searchItem.key
+                        ? <searchItem.component
+                          props={searchItem.props}
+                          attrs={searchItem.attrs}
+                          dom-attrs={searchItem.domAttrs}
+                          allow-clear={!searchItem.required}
+                          default-value={searchItem.default}
+                          v-model={this.queryObj[searchItem.key]}
+                          ref={`${searchItem.component}${searchItem.key}`}
+                          depend={this.queryObj[searchItem.dependKey]}
+                          onChange={
+                            (value, optionItem) => { this.simpleSelectEvent(value, optionItem, searchItem) }
+                          }
+                        />
+                        : <searchItem.component
+                          props={searchItem.props}
+                          attrs={searchItem.attrs}
+                          dom-attrs={searchItem.domAttrs}
+                          allow-clear={!searchItem.required}
+                          default-value={searchItem.default}
+                          ref={`${searchItem.component}${searchItem.keys[0]}`}
+                          depend={this.queryObj[searchItem.dependKey]}
+                          onChange={
+                            (value, optionItem) => { this.multiSelectEvent(value, optionItem, searchItem) }
+                          }
+                        />
+                    }
                   </a-form-item>
                 </a-col>
               )

@@ -43,6 +43,8 @@ export default {
           year = val.split('/')[0]
         }
         this.year = moment(`${year}-${month}-${day}`)
+        console.log('got year value:', this.value)
+        console.log('got year view:', this.year)
       },
       immediate: true
     }
@@ -55,6 +57,7 @@ export default {
     },
     openChange (val) {
       this.yearPickShow = val
+      console.log('openChange:', val)
     }
   }
 }

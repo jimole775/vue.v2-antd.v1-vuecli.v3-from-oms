@@ -33,7 +33,7 @@ export default {
     formItems: {
       handler (formItems) {
         if (formItems && formItems.length) {
-          this.initialize(this.dataSource, formItems)
+          this.initialize()
         }
       },
       immediate: true
@@ -41,7 +41,7 @@ export default {
     dataSource: {
       handler (data) {
         if (data && Object.keys(data).length) {
-          this.initialize(data, this.formItems)
+          this.initialize()
         }
       },
       immediate: true
@@ -49,17 +49,27 @@ export default {
   },
   computed: {
     ...mapState({
-      user: state => state.global.user
+      user: state => state.global.user,
+      roleType: state => state.global.userRole.type
     }),
     edit () {
       return this.mode === 'edit'
+    },
+    isOutsideStuff () {
+      return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
     },
     readonly () {
       return this.mode === 'readonly'
     }
   },
+  created () {
+    this.initialize()
+  },
   methods: {
-    initialize (dataSource, formItems) {
+    initialize () {
+      const dataSource = this.dataSource
+      const formItems = this.formItems
+
       this.formatFormItems(formItems)
 
       // 全局统一的默认值
@@ -130,31 +140,56 @@ export default {
     validateRequiredField () {
       const tips = []
       // 操作模块的必填字段验证
-      const params = this.form.getFieldsValue() || {}
+      const fieldsValue = this.form.getFieldsValue()
       for (let i = 0; i < this.formItems.length; i++) {
         const formItem = this.formItems[i]
-        if (formItem.keys) {
-          if (isNoneForKeys(formItem.keys) && utils.isNone(formItem.value) && formItem.required) {
-            tips.push(`请确认"${formItem.label}"！`)
-            break
-          }
-        } else {
-          if (utils.isNone(params[formItem.key]) && utils.isNone(formItem.value) && formItem.required) {
-            tips.push(`请确认"${formItem.label}"！`)
-            break
+        // 只有在 required 和 show 同时为 true 时，才进行必填校验
+        if (formItem.required && formItem.show) {
+          if (formItem.keys) {
+            if (
+              isNoneFromKeys(formItem.keys) &&
+              isNoneFromValue(formItem.value) &&
+              isNoneFromParams(formItem.params)
+            ) {
+              tips.push(`请确认"${formItem.label}"！`)
+              break
+            }
+          } else {
+            if (
+              isNoneForKey(formItem.key) &&
+              isNoneFromValue(formItem.value) &&
+              isNoneFromParams(formItem.params)
+            ) {
+              tips.push(`请确认"${formItem.label}"！`)
+              break
+            }
           }
         }
       }
-      function isNoneForKeys (keys) {
+
+      return tips
+
+      function isNoneFromValue (value) {
+        return utils.isNone(value)
+      }
+
+      function isNoneForKey (key) {
+        return utils.isNone(fieldsValue[key])
+      }
+
+      function isNoneFromKeys (keys) {
         let res = false
         keys.forEach((key) => {
-          if (utils.isNone(params[key])) {
+          if (utils.isNone(fieldsValue[key])) {
             res = true
           }
         })
         return res
       }
-      return tips
+
+      function isNoneFromParams (params) {
+        return utils.isEmpty(params)
+      }
     },
     // 填充每个formItem的默认字段
     formatFormItems (formItems) {
@@ -163,15 +198,15 @@ export default {
         label: 9,
         wrapper: 12
       }
-      return formItems.map((item) => {
-        if (item.show === undefined) item.show = true
-        if (item.required === undefined) item.required = false
-        if (item.layout === undefined) item.layout = layout8
-        if (item.mode === undefined) item.mode = 'edit'
-        if (item.value === undefined) item.value = null
-        if (item.userPermissions === undefined) item.userPermissions = [1, 2] // 1是内，2是外
-        if (item.radioPermissions === undefined) item.radioPermissions = [1] // 1通过
-        return item
+      formItems.forEach((item) => {
+        if (item.show === undefined) this.$set(item, 'show', true)
+        if (item.required === undefined) this.$set(item, 'required', false)
+        if (item.layout === undefined) this.$set(item, 'layout', layout8)
+        if (item.mode === undefined) this.$set(item, 'mode', 'edit')
+        if (item.value === undefined) this.$set(item, 'value', null)
+        if (item.params === undefined) this.$set(item, 'params', {})
+        if (item.userPermissions === undefined) this.$set(item, 'userPermissions', [1, 2]) // 1是内部员工，2是外部员工
+        if (item.radioPermissions === undefined) this.$set(item, 'radioPermissions', [1]) // 1通过
       })
     },
     isCanShow (formItem) {
@@ -179,7 +214,7 @@ export default {
       if (formItem.show === false) {
         res = false
       }
-      if (!(formItem.userPermissions.includes(2))) {
+      if (this.isOutsideStuff && !(formItem.userPermissions.includes(2))) {
         res = false
       }
       return res
@@ -194,6 +229,13 @@ export default {
         } else {
           res[item.key] = item.value
         }
+      })
+      return res
+    },
+    mergeFormItemsParams (formItems) {
+      let res = {}
+      formItems.forEach((item) => {
+        res = utils.merge(res, item.params)
       })
       return res
     },
@@ -215,12 +257,14 @@ export default {
               message: utils.getFormErrorMessage(err)
             })
           } else {
+            const params = {
+              ...this.getFormItemsValue(this.formItems),
+              ...utils.formatFormValues(values, this.formItems),
+              ...this.mergeFormItemsParams(this.formItems)
+            }
             resolve({
               type: 'success',
-              data: {
-                ...this.getFormItemsValue(this.formItems),
-                ...utils.formatFormValues(values, this.formItems)
-              },
+              data: params,
               message: ''
             })
           }

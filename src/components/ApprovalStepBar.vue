@@ -4,15 +4,29 @@
       <a-step
         v-for="item in stepOption"
         :key="item.nodeCode"
-        :title="item.nodeName"
+        :data-set="item.nodeCode"
+        :style="countStyle(item)"
         :status="matchStatus(item.approvalStatus)"
-      />
+      >
+        <template slot="title">
+          <a-tooltip :title="item.nodeName">
+            <span>{{ item.nodeName }}</span>
+          </a-tooltip>
+        </template>
+      </a-step>
     </a-steps>
   </div>
 </template>
 <script>
 import api from '@/api'
-// import utils from '@/utils'
+function countNodeWidth (str) {
+  // 40: icon宽度
+  // 14：字体大小
+  // 16：字体 margin
+  // 32：连接线预留长度
+  return 40 + str.length * 14 + 16 + 32
+}
+
 export default {
   name: 'ApprovalStepBar',
   props: {
@@ -53,12 +67,8 @@ export default {
   computed: {
     autoWidth () {
       let res = 0
-      // 40: icon宽度
-      // 14：字体大小
-      // 16：字体 margin
-      // 32：连接线预留长度
       this.stepOption.forEach((node) => {
-        res += 40 + node.nodeName.length * 14 + 16 + 32
+        res += countNodeWidth(node.nodeName)
       })
       return res ? res + 'px' : 'auto'
     },
@@ -83,6 +93,9 @@ export default {
     await this.fetchData(this.id)
   },
   methods: {
+    countStyle (node) {
+      return { minWidth: countNodeWidth(node.nodeName) + 'px' }
+    },
     async fetchData (id) {
       const res = await api.ppprojectprocessnodes(id)
       if (res && res instanceof Array) {

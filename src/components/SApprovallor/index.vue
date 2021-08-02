@@ -20,7 +20,7 @@
           v-show="c.tabId === tabProxy.activeId"
           :key="c.tabId"
           :is="'ProjectApply'"
-          :apply-modules-map="c.applyModulesMap"
+          :apply-config="c.applyConfig"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
           :tab-proxy="tabProxy"
@@ -35,7 +35,7 @@
           v-show="c.tabId === tabProxy.activeId"
           :key="c.tabId"
           :is="'ProjectApproval'"
-          :approval-modules-map="c.approvalModulesMap"
+          :approval-config="c.approvalConfig"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
           :tab-proxy="tabProxy"
@@ -80,11 +80,11 @@ export default {
       type: Object,
       default: () => ({})
     },
-    applyModulesMap: {
+    applyConfig: {
       type: Object,
       default: () => ({})
     },
-    approvalModulesMap: {
+    approvalConfig: {
       type: Object,
       default: () => ({})
     },
@@ -116,23 +116,23 @@ export default {
   computed: {
     applyComponents () {
       const panes = this.tabProxy.panes.filter((pane) => {
-        pane.applyModulesMap = utils.clone(this.activeApplyModulesMap)
+        pane.applyConfig = utils.clone(this.activeApplyModulesMap)
         return /\d_1_.+/.test(pane.tabId)
       })
       return panes
     },
     approvalComponents () {
       const panes = this.tabProxy.panes.filter((pane) => {
-        pane.approvalModulesMap = utils.clone(this.activeApprovalModulesMap)
+        pane.approvalConfig = utils.clone(this.activeApprovalModulesMap)
         return /\d_2_.+/.test(pane.tabId)
       })
       return panes
     },
     activeApplyModulesMap () {
-      return this.applyModulesMap[this.tabProxy.lastListId]
+      return this.applyConfig[this.tabProxy.lastListId]
     },
     activeApprovalModulesMap () {
-      return this.approvalModulesMap[this.tabProxy.lastListId]
+      return this.approvalConfig[this.tabProxy.lastListId]
     },
     activeApimap () {
       return this.apimap[this.tabProxy.lastListId]

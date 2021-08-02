@@ -60,6 +60,10 @@ export default {
       }
     }
   },
+  model: {
+    prop: 'value',
+    event: 'change'
+  },
   data () {
     return {
       attendanceCycleEnd: null,

@@ -121,6 +121,7 @@ export default {
     async beforeUploadResume (file, files) {
       const pass = utils.verifyUploadType(file.name, this.supportSeries)
       if (!pass) return false
+      Vue.bus.emit('loading', true) // 显示正在上传
       Vue.bus.emit('uploadDisabled', true) // 提交按钮禁用
       this.resumeFileList = [file]
       let form = new FormData()
@@ -128,6 +129,17 @@ export default {
       form.append('auth_token', `oms:${getToken()}`)
       form.append('scene', `oms`)
       form.append('output', 'json')
+
+      /** ***********************测试用的逻辑 start***************************/
+      // /group1/oms/20200811/15/21/7/项目阶段主要交付内容2013489867307212701.xlsx
+      // const res = await api[this.action](form, this.currentDomain, this.injectParams).catch(() => {})
+      // let obj = utils.splitUrl('/group1/oms/20200811/15/21/7/项目阶段主要交付内容2013489867307212701.xlsx')
+      // this.currentFile = obj
+      // Vue.bus.emit('uploadDisabled', false)
+      // Vue.bus.emit('loading', false)
+      // this.$message.success('文件上传成功')
+      // this.$emit('change', [{ fileName: obj.fileName, filePath: obj.path }], res ? res.data : '/group1/oms/20200811/15/21/7/项目阶段主要交付内容2013489867307212701.xlsx')
+      /** ***********************测试用的逻辑 end***************************/
       api[this.action](form, this.currentDomain, this.injectParams).then(
         res => {
           if (res.data === null || res.data === undefined) {
@@ -146,6 +158,7 @@ export default {
             )
             this.resumeFileList = []
             Vue.bus.emit('uploadDisabled', false)
+            Vue.bus.emit('loading', false)
             this.$emit('change', [])
             this.$emit('update', [])
           }
@@ -154,6 +167,7 @@ export default {
             let obj = utils.splitUrl(res.data.url || res.data.filePath)
             this.currentFile = obj
             Vue.bus.emit('uploadDisabled', false)
+            Vue.bus.emit('loading', false)
             this.$message.success('文件上传成功')
             this.$emit('change', [{ fileName: obj.fileName, filePath: obj.path }], res.data)
             this.$emit('update', [{ fileName: obj.fileName, filePath: obj.path }])
@@ -162,6 +176,7 @@ export default {
         () => {
           this.resumeFileList = []
           Vue.bus.emit('uploadDisabled', false)
+          Vue.bus.emit('loading', false)
           this.$emit('change', [])
           this.$emit('update', [])
           this.$message.error('登录已过期,请重新登录!')

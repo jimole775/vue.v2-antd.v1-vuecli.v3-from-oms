@@ -16,10 +16,14 @@
         </a-tooltip>
       </div>
     </template>
+    <template slot="receiverName" slot-scope="text, record">
+      <HandlerTableCell :name="record.receiverName" :account="record.receiverAccount" />
+    </template>
   </a-table>
 </template>
 
 <script>
+import _ from 'lodash'
 import api from '@/api/'
 import utils from '@/utils/'
 
@@ -54,7 +58,8 @@ export default {
         },
         {
           title: '操作人',
-          dataIndex: 'receiverName'
+          dataIndex: 'receiverName',
+          scopedSlots: { customRender: 'receiverName' }
         },
         {
           title: '操作结果',
@@ -78,6 +83,14 @@ export default {
   },
   methods: {
     async loadList () {
+      this.isSupplierFlag = await this.isSupplier
+      await api.currentRole().then(res => {
+        if (res.code === 200) {
+          if (res.data.type === 'SUPPLIER') {
+            this.isSupplierFlag = true
+          }
+        }
+      })
       if (!this.businessId) {
         return
       }
@@ -85,7 +98,7 @@ export default {
         businessId: this.businessId.toString(),
         businessCategory: this.businessCategory
       })
-      if (res.code === 200 && utils.isArray(res.data.content)) {
+      if (res.code === 200 && _.isArray(res.data.content)) {
         this.dataList = res.data.content
         this.dataList.forEach(item => {
           if (this.businessCategory === 'PostApplyProcess') {

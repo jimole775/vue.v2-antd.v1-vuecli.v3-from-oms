@@ -4,7 +4,7 @@
 
 <script>
 import echarts from 'echarts'
-import utils from '@/utils'
+import _ from 'lodash'
 
 let idIndex = 0
 
@@ -38,7 +38,7 @@ export default {
   },
   mounted () {
     this.initChart()
-    window.addEventListener('resize', this.resize)
+    window.addEventListener('resize', _.debounce(this.resize, 50))
   },
   methods: {
     genID () {
@@ -46,7 +46,7 @@ export default {
       this.id = 'pie' + idIndex
     },
     getLegendByData () {
-      if (utils.isNone(this.pieData)) {
+      if (_.isEmpty(this.pieData)) {
         return []
       }
       return this.pieData.map(item => {
@@ -74,7 +74,7 @@ export default {
       return res
     },
     initChart () {
-      if (utils.isNone(this.pieData)) {
+      if (_.isEmpty(this.pieData)) {
         return
       }
       let option = {
@@ -114,7 +114,7 @@ export default {
     }
   },
   beforeDestroy () {
-    window.removeEventListener('resize', this.resize)
+    window.removeEventListener('resize', _.debounce(this.resize, 50))
   }
 }
 </script>

@@ -45,6 +45,10 @@ export default {
       default: () => ['开始日期', '结束日期']
     }
   },
+  model: {
+    prop: 'value',
+    event: 'change'
+  },
   data () {
     return {}
   },
