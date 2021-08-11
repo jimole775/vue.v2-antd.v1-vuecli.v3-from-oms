@@ -1109,6 +1109,74 @@ const utils = {
         }
       }
     })
+  },
+  /**
+   * 封装一个对象，这个对象可以无视访问边界
+   * @param {Object} obj 要封装的对象
+   * @param {*} top 给递归用的，正常调用不需要传值
+   * @returns {Proxy}
+   */
+  createGetter (obj, top) {
+    if (!top) {
+      top = defineProps(obj, null, Object.create(null))
+      utils.createGetter(obj, top)
+    }
+
+    Object.keys(obj).forEach((key) => {
+      let nextObj = obj[key]
+      top[key] = defineProps(nextObj, key, Object.create(null))
+      utils.createGetter(nextObj, top[key])
+      top[key] = createProxy(top[key])
+    })
+
+    function defineProps (_obj, _key, _top) {
+      _top['_k'] = _key // 绑定 key 值
+      _top['_isTop'] = !_key // 确认是否是顶层对象
+      if (utils.isValuable(_obj)) {
+        _top['_v'] = utils.clone(_obj) // 绑定返回值，外部可以通过访问这个来获取真实的值，这种访问不会经过 proxy
+        _top['_c'] = !!(Object.keys(_obj).length) // 是否有子项
+        _top['_ct'] = Object.prototype.toString.call(_obj) // 子项类型
+      }
+      return _top
+    }
+
+    function createProxy (_obj) {
+      return new Proxy(_obj, {
+        get (obj, key) {
+          // 判断结束符，遇到结束符就直接返回真实值
+          if (hasAccessOver(key)) {
+            return obj['_v']
+          }
+          if (hasProp(obj, key)) {
+            // 如果有子项"_c"，那么，就需要返回 proxy
+            // 如果没有子项，就返回 $end 值
+            if (obj['_c']) {
+              return obj[key]
+            } else {
+              return obj['_v']
+            }
+          } else {
+            // 当突破访问边界时，重新构造一个空值的 proxy
+            return createProxy({ _v: undefined })
+          }
+        }
+      })
+
+      function hasAccessOver (key) {
+        return key === '$end' || /.+(\$)$/.test(key)
+      }
+    }
+
+    function hasProp (o, k) {
+      return Object.prototype.hasOwnProperty.call(o, k)
+    }
+
+    // 最后再用proxy封装顶层的top对象
+    if (top._isTop) {
+      top = createProxy(top)
+    }
+
+    return top
   }
 }
 export default utils
