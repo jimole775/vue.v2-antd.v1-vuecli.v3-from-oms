@@ -986,75 +986,101 @@ function buildSearchorGroup (h) {
       <a-form class={['form-wrap']}>
         <a-row>
           {
-            this.searchorGroups && this.searchorGroups.map((searchItem, index) => {
-              return (
-                <a-col span={ searchItem.layout ? searchItem.layout.span : 6 } >
-                  <a-form-item
-                    label={searchItem.title}
-                    label-col={{ span: searchItem.layout ? searchItem.layout.label : 8 }}
-                    wrapper-col={{ span: searchItem.layout ? searchItem.layout.wrapper : 16 }}
-                  >
-                    {
-                      searchItem.key
-                        ? <searchItem.component
-                          props={searchItem.props}
-                          attrs={searchItem.attrs}
-                          dom-attrs={searchItem.domAttrs}
-                          allow-clear={!searchItem.required}
-                          default-value={searchItem.default}
-                          v-model={this.queryObj[searchItem.key]}
-                          ref={`${searchItem.component}${searchItem.key}`}
-                          depend={this.queryObj[searchItem.dependKey]}
-                          onChange={
-                            (value, optionItem) => { this.simpleSelectEvent(value, optionItem, searchItem) }
-                          }
-                        />
-                        : <searchItem.component
-                          props={searchItem.props}
-                          attrs={searchItem.attrs}
-                          dom-attrs={searchItem.domAttrs}
-                          allow-clear={!searchItem.required}
-                          default-value={searchItem.default}
-                          ref={`${searchItem.component}${searchItem.keys[0]}`}
-                          depend={this.queryObj[searchItem.dependKey]}
-                          onChange={
-                            (value, optionItem) => { this.multiSelectEvent(value, optionItem, searchItem) }
-                          }
-                        />
-                    }
-                  </a-form-item>
-                </a-col>
-              )
-            }).filter((item, index) => filterExpandSearchor(index, this.isSearchorExpand))
+            buildSearchItems.call(this)
           }
-        </a-row>
-        <a-row>
-          <a-col span={24} class={['t-center', 'mt5']}>
-            <a-button ghost type={'primary'} onClick={() => this.search()}>查询</a-button>
-            <a-button style={{ margin: '0 8px' }} onClick={() => this.resetSearch()}>重置</a-button>
-            {
-              this.searchorGroups.length > 4 &&
-              <a
-                style={{ 'color': '#999', 'font-size': '0.8rem' }}
-                onClick={() => { this.isSearchorExpand = !this.isSearchorExpand }}
-              >
-                { this.isSearchorExpand ? '收起' : '展开' }
-                <a-icon class={this.isSearchorExpand ? 'trans-reverse' : 'trans'} type={'double-right'} />
-              </a>
-            }
-          </a-col>
+          {
+            buildSearchButton.call(this)
+          }
         </a-row>
       </a-form>
     </div>
   )
-}
 
-function filterExpandSearchor (index, isSearchorExpand) {
-  if (index < 4) {
-    return true
+  function buildSearchItems () {
+    if (this.searchorGroups && this.searchorGroups.length) {
+      return this.searchorGroups
+        .filter((item, index) => filterItems.call(this, index))
+        .map(searchItem => {
+          return (
+            <a-col span={ searchItem.layout ? searchItem.layout.span : 6 } >
+              <a-form-item
+                label={searchItem.title}
+                label-col={{ span: searchItem.layout ? searchItem.layout.label : 8 }}
+                wrapper-col={{ span: searchItem.layout ? searchItem.layout.wrapper : 16 }}
+              >
+                {
+                  searchItem.key
+                    ? createFormItem.call(this, searchItem)
+                    : createMultiFormItem.call(this, searchItem)
+                }
+              </a-form-item>
+            </a-col>
+          )
+        })
+    } else {
+      return ''
+    }
   }
-  if (index >= 4 && isSearchorExpand) {
-    return true
+
+  function createFormItem (searchItem) {
+    return <searchItem.component
+      props={searchItem.props}
+      attrs={searchItem.attrs}
+      dom-attrs={searchItem.domAttrs}
+      allow-clear={!searchItem.required}
+      default-value={searchItem.default}
+      ref={`${searchItem.component}${searchItem.key}`}
+      v-model={this.queryObj[searchItem.key]}
+      depend={this.queryObj[searchItem.dependKey]}
+      onChange={
+        (value, optionItem) => { this.simpleSelectEvent(value, optionItem, searchItem) }
+      }
+    />
+  }
+
+  function createMultiFormItem (searchItem) {
+    return <searchItem.component
+      props={searchItem.props}
+      attrs={searchItem.attrs}
+      dom-attrs={searchItem.domAttrs}
+      allow-clear={!searchItem.required}
+      default-value={searchItem.default}
+      ref={`${searchItem.component}${searchItem.keys[0]}`}
+      depend={this.queryObj[searchItem.dependKey]}
+      onChange={
+        (value, optionItem) => { this.multiSelectEvent(value, optionItem, searchItem) }
+      }
+    />
+  }
+
+  function buildSearchButton () {
+    return (
+      <a-col span={this.searchorGroups.length > 3 ? 24 : 8} class={['t-center', 'mt5']}>
+        <a-button ghost type={'primary'} onClick={() => this.search()}>查询</a-button>
+        <a-button style={{ margin: '0 8px' }} onClick={() => this.resetSearch()}>重置</a-button>
+        {
+          this.searchorGroups.length > 4 &&
+          <a
+            style={{ 'color': '#999', 'font-size': '0.8rem' }}
+            onClick={() => { this.isSearchorExpand = !this.isSearchorExpand }}
+          >
+            { this.isSearchorExpand ? '收起' : '展开' }
+            <a-icon class={this.isSearchorExpand ? 'trans-reverse' : 'trans'} type={'double-right'} />
+          </a>
+        }
+      </a-col>
+    )
+  }
+  // 返回true展示，返回false隐藏
+  function filterItems (index) {
+    // 如果下标小于4，返回true
+    if (index < 4) {
+      return true
+    }
+    // 如果下标大于4，且是展开状态，返回false
+    if (index >= 4 && this.isSearchorExpand) {
+      return true
+    }
   }
 }
 
