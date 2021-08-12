@@ -705,7 +705,7 @@ const utils = {
       }
     }
     if (this.isObject(srcobject)) {
-      newobject = {}
+      newobject = Object.create(null)
       objPropsIteration.apply(this, [srcobject, newobject])
       // 对象类型，第二个参数必须是有效的字符串
       if (this.isValuable(attrName) && this.isString(attrName)) {
@@ -717,7 +717,7 @@ const utils = {
       const isTop = arguments.length === 2
       const [src, res, pkey] = arguments
       if (this.isObject(src)) {
-        if (!isTop) res[pkey] = {}
+        if (!isTop) res[pkey] = Object.create(null)
         return Object.keys(src).forEach((ckey) => {
           return objPropsIteration.apply(this, [src[ckey], isTop ? res : res[pkey], ckey])
         })
@@ -750,7 +750,7 @@ const utils = {
       return res
     }
     if (this.isObject(a) && this.isObject(b)) {
-      res = {}
+      res = Object.create(null)
       objPropsIteration.call(this, a, b, res)
       return res
     }
@@ -769,7 +769,7 @@ const utils = {
                 return arrItemsIteration.call(this, av, bv, res[key])
               }
               if (this.isObject(av) && this.isObject(bv)) {
-                res[key] = {}
+                res[key] = Object.create(null)
                 return objPropsIteration.call(this, av, bv, res[key])
               }
               // 如果相同属性，相同层级，那么只取 b 对象的值
@@ -1110,28 +1110,33 @@ const utils = {
       }
     })
   },
+ 
   /**
    * 封装一个对象，这个对象可以无视访问边界
    * @param {Object} obj 要封装的对象
    * @param {*} top 给递归用的，正常调用不需要传值
    * @returns {Proxy}
+   * @template createFatGetter({ a: { b: { c: 123 } } })
+   *                  => Proxy({ a: { b: Proxy(...) }... })
    */
-  createGetter (obj, top) {
+   createFatGetter (obj, top) {
     if (!top) {
       top = defineProps(obj, null, Object.create(null))
-      utils.createGetter(obj, top)
+      utils.createFatGetter(obj, top)
     }
 
     Object.keys(obj).forEach((key) => {
       let nextObj = obj[key]
       top[key] = defineProps(nextObj, key, Object.create(null))
-      utils.createGetter(nextObj, top[key])
+      utils.createFatGetter(nextObj, top[key])
       top[key] = createProxy(top[key])
     })
 
     function defineProps (_obj, _key, _top) {
       _top['_k'] = _key // 绑定 key 值
-      _top['_isTop'] = !_key // 确认是否是顶层对象
+      if (_key === null) {
+        _top['_isTop'] = true // 确认是否是顶层对象
+      }
       if (utils.isValuable(_obj)) {
         _top['_v'] = utils.clone(_obj) // 绑定返回值，外部可以通过访问这个来获取真实的值，这种访问不会经过 proxy
         _top['_c'] = !!(Object.keys(_obj).length) // 是否有子项
@@ -1177,6 +1182,44 @@ const utils = {
     }
 
     return top
+  },
+
+  /**
+   * 通过字符串的形式，创建一个链式map
+   * @param {String} string
+   * @param {*} endval 最后一层的赋值，默认为 undefined
+   * @returns {Object}
+   * @template createChainMap('a.b.c.d') => { a: { b: { c: { d: undefined } } } }
+   * @template createChainMap('a.b.c.d', true) => { a: { b: { c: { d: true } } } }
+   * @template createChainMap('a.b.c.d', {}) => { a: { b: { c: { d: {} } } } }
+   */
+   createChainMap (string, endval) {
+    if (!utils.isString(string)) return createmap()
+    let res = createmap()
+    const fields = string.split('.')
+    const fieldPath = []
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i]
+      fieldPath.push(field)
+      setField(res, [...fieldPath], fieldPath.length === fields.length)
+    }
+    return res
+
+    function setField (res, fieldPath, isEnd) {
+      for (let i = 0; i < fieldPath.length;) {
+        const field = fieldPath[i]
+        if (res[field]) {
+          fieldPath.shift()
+          setField(res[field], fieldPath, isEnd)
+          break
+        } else {
+          res[field] = isEnd ? endval : createmap()
+        }
+      }
+    }
+    function createmap () {
+      return Object.create(null)
+    }
   }
 }
 export default utils
