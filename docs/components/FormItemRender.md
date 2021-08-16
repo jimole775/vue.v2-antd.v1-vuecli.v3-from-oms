@@ -12,11 +12,7 @@
 </template>
 <script>
 import api from '@/api'
-import FormItemRender from '@/components/FormItemRender'
 export default {
-  components: {
-    FormItemRender
-  },
   data () {
     return {
       dataSource: {}, // 一般当作默认值填入表单中

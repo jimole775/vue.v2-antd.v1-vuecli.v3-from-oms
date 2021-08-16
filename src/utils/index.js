@@ -1110,7 +1110,6 @@ const utils = {
       }
     })
   },
- 
   /**
    * 封装一个对象，这个对象可以无视访问边界
    * @param {Object} obj 要封装的对象
@@ -1119,7 +1118,7 @@ const utils = {
    * @template createFatGetter({ a: { b: { c: 123 } } })
    *                  => Proxy({ a: { b: Proxy(...) }... })
    */
-   createFatGetter (obj, top) {
+  createFatGetter (obj, top) {
     if (!top) {
       top = defineProps(obj, null, Object.create(null))
       utils.createFatGetter(obj, top)
@@ -1193,7 +1192,7 @@ const utils = {
    * @template createChainMap('a.b.c.d', true) => { a: { b: { c: { d: true } } } }
    * @template createChainMap('a.b.c.d', {}) => { a: { b: { c: { d: {} } } } }
    */
-   createChainMap (string, endval) {
+  createChainMap (string, endval) {
     if (!utils.isString(string)) return createmap()
     let res = createmap()
     const fields = string.split('.')

@@ -18,7 +18,6 @@
 </template>
 <script>
 import SApprovallor from '@/components/SApprovallor'
-import FormItemRender from '@/components/FormItemRender'
 import ApprovalOperation from '@/components/ApprovalOperation'
 import code from './code.md'
 export default {
@@ -97,7 +96,7 @@ export default {
         0: {
           // 配置需要展示的组件，一个组件等同于一个板块
           components: [{
-            component: FormItemRender,
+            component: 'FormItemRender',
             title: '基本信息',
             mode: 'edit',
             show: true,
@@ -120,7 +119,7 @@ export default {
             components: {
               // 没权限审批的，只能看“只读”内容
               dispermission: [{
-                component: FormItemRender,
+                component: 'FormItemRender',
                 title: '基本信息',
                 mode: 'readonly',
                 show: true,
@@ -134,7 +133,7 @@ export default {
               // 有权限进行审批的
               permission: [
                 {
-                  component: FormItemRender,
+                  component: 'FormItemRender',
                   title: '基本信息',
                   mode: 'edit',
                   show: true,

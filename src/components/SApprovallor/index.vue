@@ -16,10 +16,9 @@
     </div>
     <div v-show="tabProxy.showApply">
       <template v-for="c in applyComponents">
-        <component
+        <ProjectApply
           v-show="c.tabId === tabProxy.activeId"
           :key="c.tabId"
-          :is="'ProjectApply'"
           :apply-config="c.applyConfig"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
@@ -31,10 +30,9 @@
     </div>
     <div v-show="tabProxy.showDetail">
       <template v-for="c in approvalComponents">
-        <component
+        <ProjectApproval
           v-show="c.tabId === tabProxy.activeId"
           :key="c.tabId"
-          :is="'ProjectApproval'"
           :approval-config="c.approvalConfig"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"

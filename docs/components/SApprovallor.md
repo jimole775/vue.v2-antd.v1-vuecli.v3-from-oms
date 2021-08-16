@@ -12,7 +12,6 @@
 </template>
 <script>
 import SApprovallor from '@/components/SApprovallor'
-import FormItemRender from '@/components/FormItemRender'
 import FormItemViewRender from '@/components/FormItemViewRender'
 import ApprovalOperation from '@/components/ApprovalOperation'
 const FormItemRenderFormItems = [
@@ -137,7 +136,7 @@ const listmodel = {
     }
   ]
 }
-const BaseInfoEdit = { component: FormItemRender, title: '基本信息', mode: 'edit', show: true, formItems: FormItemRenderFormItems }
+const BaseInfoEdit = { component: 'FormItemRender', title: '基本信息', mode: 'edit', show: true, formItems: FormItemRenderFormItems }
 const BaseInfoView = { component: FormItemViewRender, title: '基本信息', mode: 'readonly', show: true, columns: FormItemViewRenderFormItems }
 const ApprovalOperationEdit = { component: ApprovalOperation, title: '审批操作', mode: 'edit', show: true, operationItem: ApprovalOperationItems }
 const applymodel = {

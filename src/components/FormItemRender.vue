@@ -286,8 +286,8 @@ export default {
                       wrapper-col={{ span: formItem.layout ? formItem.layout.wrapper : 16 }}
                     >
                       {[
-                        this.labelRender(h, formItem),
-                        this.wrapperRender(h, formItem)
+                        this.labelRender(h, utils.clone(formItem)),
+                        this.wrapperRender(h, utils.clone(formItem))
                       ]}
                     </a-form-item>
                   </a-col>

@@ -18,14 +18,10 @@
   </Panel>
 </template>
 <script>
-import FormItemRender from '@/components/FormItemRender'
 import code from './code.md'
 export default {
   title: '关联样例',
   name: 'Example3',
-  components: {
-    FormItemRender
-  },
   data () {
     return {
       code,

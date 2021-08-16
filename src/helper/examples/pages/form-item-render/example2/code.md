@@ -9,11 +9,7 @@
   </div>
 </template>
 <script>
-import FormItemRender from '@/components/FormItemRender'
 export default {
-  components: {
-    FormItemRender
-  },
   data () {
     return {
       dataSource: {

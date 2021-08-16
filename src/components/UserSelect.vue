@@ -104,7 +104,6 @@ export default {
         valueList = [value]
       }
       this.fetching = false
-      
       this.$emit('change', valueList)
     }
   }
