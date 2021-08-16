@@ -2,28 +2,34 @@
   <div class="moveBox">
     <OmsTabsPlus :ref="'OmsTabsRef'" :tab-proxy="tabProxy" />
     <div v-show="tabProxy.showList">
-      <ProjectList
-        :ref="'ProjectListRef'"
-        :transfer-searchor="transferSearchor"
-        :list-config="activeListConfig"
-        :stable-row-key="stableRowKey"
-        :apply-anchor-text="applyAnchorText"
-        :apimap="activeApimap"
-        :before-render="beforeRender"
-        :before-submit="beforeSubmit"
-        @addDetailTab="addDetailTab"
-      />
+      <template v-for="c in listComponents">
+        <ProjectList
+          v-show="c.tabId === tabProxy.activeId"
+          :key="c.tabId"
+          :apimap="c.apimap"
+          :list-config="c.listConfig"
+          :ref="'ProjectListRef' + c.tabId"
+          :transfer-searchor="transferSearchor"
+          :stable-row-key="stableRowKey"
+          :apply-anchor-text="applyAnchorText"
+          :tab-proxy="tabProxy"
+          :before-render="beforeRender"
+          :before-submit="beforeSubmit"
+          @addDetailTab="addDetailTab"
+        />
+      </template>
     </div>
     <div v-show="tabProxy.showApply">
       <template v-for="c in applyComponents">
         <ProjectApply
           v-show="c.tabId === tabProxy.activeId"
           :key="c.tabId"
+          :apimap="c.apimap"
           :apply-config="c.applyConfig"
+          :ref="'ProjectApplyRef' + c.tabId"
+          :tab-proxy="tabProxy"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
-          :tab-proxy="tabProxy"
-          :apimap="activeApimap"
           @close="removePane()"
         />
       </template>
@@ -32,12 +38,13 @@
       <template v-for="c in approvalComponents">
         <ProjectApproval
           v-show="c.tabId === tabProxy.activeId"
+          :ref="'ProjectApprovalRef' + c.tabId"
           :key="c.tabId"
+          :apimap="c.apimap"
           :approval-config="c.approvalConfig"
+          :tab-proxy="tabProxy"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
-          :tab-proxy="tabProxy"
-          :apimap="activeApimap"
           @close="removePane()"
         />
       </template>
@@ -68,7 +75,7 @@ export default {
     },
     stableRowKey: {
       type: String,
-      default: 'flowInstanceId'
+      default: 'id'
     },
     listConfig: {
       type: Object,
@@ -108,36 +115,56 @@ export default {
         showDetail: false,
         activeId: '0',
         lastListId: '0'
-      }
+      },
+      listComponents: []
     }
   },
   computed: {
     applyComponents () {
-      const panes = this.tabProxy.panes.filter((pane) => {
-        pane.applyConfig = utils.clone(this.activeApplyModulesMap)
-        return /\d_1_.+/.test(pane.tabId)
+      return this.tabProxy.panes.filter((pane) => {
+        const live = /\d_1_.+/.test(pane.tabId)
+        if (live) {
+          pane.applyConfig = utils.clone(this.activeApplyConfig)
+          pane.apimap = utils.clone(this.activeApimap)
+        }
+        return live
       })
-      return panes
     },
     approvalComponents () {
-      const panes = this.tabProxy.panes.filter((pane) => {
-        pane.approvalConfig = utils.clone(this.activeApprovalModulesMap)
-        return /\d_2_.+/.test(pane.tabId)
+      return this.tabProxy.panes.filter((pane) => {
+        const live = /\d_2_.+/.test(pane.tabId)
+        if (live) {
+          pane.approvalConfig = utils.clone(this.activeApprovalConfig)
+          pane.apimap = utils.clone(this.activeApimap)
+        }
+        return live
       })
-      return panes
     },
-    activeApplyModulesMap () {
+    activeApplyConfig () {
       return this.applyConfig[this.tabProxy.lastListId]
     },
-    activeApprovalModulesMap () {
+    activeApprovalConfig () {
       return this.approvalConfig[this.tabProxy.lastListId]
     },
     activeApimap () {
       return this.apimap[this.tabProxy.lastListId]
-    },
-    activeListConfig () {
-      return this.listConfig[this.tabProxy.lastListId]
     }
+  },
+  mounted () {
+    // listComponents 不能使用 computed 构建
+    // 因为 STable 太过冗余，
+    // computed 会导致频繁调用渲染函数，
+    // 而频繁调用渲染函数会在切换 tab 时导致卡顿
+    this.listComponents = this.tabProxy.panes.filter((pane) => {
+      const live = pane.type === 'list'
+      const listConfig = this.listConfig[pane.tabId] || {}
+      const apimap = this.apimap[pane.tabId] || {}
+      if (live) {
+        pane.listConfig = utils.clone(listConfig)
+        pane.apimap = utils.clone(apimap)
+      }
+      return live
+    })
   },
   methods: {
     async addDetailTab (typeId, recordData) {
