@@ -1,4 +1,5 @@
 import moment from 'moment'
+import { cloneDeep, merge } from 'lodash'
 import { Modal } from 'ant-design-vue'
 import axios from 'axios'
 import { getToken } from './auth'
@@ -693,45 +694,53 @@ const utils = {
   isValuable (src) {
     return !this.isUndefined(src) && !this.isNull(src) && src !== ''
   },
+  toString (src) {
+    return Object.prototype.toString.call(src)
+  },
   clone (srcobject, attrName, value) {
-    let newobject = null
-    if (this.isArray(srcobject)) {
-      newobject = []
-      objPropsIteration.apply(this, [srcobject, newobject])
-      // 数组类型，第二个参数必须是数字
-      if (this.isNumber(attrName)) {
-        const index = attrName
-        newobject[index] = value
-      }
+    const newobject = cloneDeep(srcobject)
+    if (utils.isValuable(attrName) && utils.isValuable(value)) {
+      newobject[attrName] = value
     }
-    if (this.isObject(srcobject)) {
-      newobject = Object.create(null)
-      objPropsIteration.apply(this, [srcobject, newobject])
-      // 对象类型，第二个参数必须是有效的字符串
-      if (this.isValuable(attrName) && this.isString(attrName)) {
-        newobject[attrName] = value
-      }
-    }
+    return newobject
+    // let newobject = null
+    // if (this.isArray(srcobject)) {
+    //   newobject = []
+    //   objPropsIteration.apply(this, [srcobject, newobject])
+    //   // 数组类型，第二个参数必须是数字
+    //   if (this.isNumber(attrName)) {
+    //     const index = attrName
+    //     newobject[index] = value
+    //   }
+    // }
+    // if (this.isObject(srcobject)) {
+    //   newobject = Object.create(srcobject)
+    //   objPropsIteration.apply(this, [srcobject, newobject])
+    //   // 对象类型，第二个参数必须是有效的字符串
+    //   if (this.isValuable(attrName) && this.isString(attrName)) {
+    //     newobject[attrName] = value
+    //   }
+    // }
 
-    function objPropsIteration () {
-      const isTop = arguments.length === 2
-      const [src, res, pkey] = arguments
-      if (this.isObject(src)) {
-        if (!isTop) res[pkey] = Object.create(null)
-        return Object.keys(src).forEach((ckey) => {
-          return objPropsIteration.apply(this, [src[ckey], isTop ? res : res[pkey], ckey])
-        })
-      }
-      if (this.isArray(src)) {
-        if (!isTop) res[pkey] = []
-        return src.forEach((item, index) => {
-          return objPropsIteration.apply(this, [item, isTop ? res : res[pkey], index])
-        })
-      }
-      res[pkey] = src
-    }
+    // function objPropsIteration () {
+    //   const isTop = arguments.length === 2
+    //   const [src, res, pkey] = arguments
+    //   if (this.isObject(src)) {
+    //     if (!isTop) res[pkey] = Object.create(src)
+    //     return Object.keys(src).forEach((ckey) => {
+    //       return objPropsIteration.apply(this, [src[ckey], isTop ? res : res[pkey], ckey])
+    //     })
+    //   }
+    //   if (this.isArray(src)) {
+    //     if (!isTop) res[pkey] = []
+    //     return src.forEach((item, index) => {
+    //       return objPropsIteration.apply(this, [item, isTop ? res : res[pkey], index])
+    //     })
+    //   }
+    //   res[pkey] = src
+    // }
 
-    return newobject || srcobject
+    // return newobject || srcobject
   },
   /**
    * 合并(对象|数组)
@@ -743,53 +752,57 @@ const utils = {
    * @template merge([{ a: 1 }], [{ a: 2 }]) => [{ a: 1 }, { a: 2 }]
    */
   merge (a, b) {
-    let res = null
-    if (this.isArray(a) && this.isArray(b)) {
-      res = []
-      arrItemsIteration.call(this, a, b, res)
-      return res
+    if (utils.toString(a) !== utils.toString(b)) {
+      return new Error(`utils.merge => 出现不支持的合并类型!`)
     }
-    if (this.isObject(a) && this.isObject(b)) {
-      res = Object.create(null)
-      objPropsIteration.call(this, a, b, res)
-      return res
-    }
-    return new Error(`utils.merge => 出现不支持的合并类型!`)
+    return merge(a, b)
+    // let res = null
+    // if (this.isArray(a) && this.isArray(b)) {
+    //   res = []
+    //   arrItemsIteration.call(this, a, b, res)
+    //   return res
+    // }
+    // if (this.isObject(a) && this.isObject(b)) {
+    //   res = Object.create(a)
+    //   objPropsIteration.call(this, a, b, res)
+    //   return res
+    // }
+    // return new Error(`utils.merge => 出现不支持的合并类型!`)
 
-    function objPropsIteration (aObj, bObj, res) {
-      if (this.isObject(aObj) && this.isObject(bObj)) {
-        const allKeys = Object.keys(aObj).concat(Object.keys(bObj))
-        if (allKeys.length) {
-          allKeys.forEach((key) => {
-            const av = aObj[key]
-            const bv = bObj[key]
-            if (av && bv) {
-              if (this.isArray(av) && this.isArray(bv)) {
-                res[key] = []
-                return arrItemsIteration.call(this, av, bv, res[key])
-              }
-              if (this.isObject(av) && this.isObject(bv)) {
-                res[key] = Object.create(null)
-                return objPropsIteration.call(this, av, bv, res[key])
-              }
-              // 如果相同属性，相同层级，那么只取 b 对象的值
-              res[key] = bv
-            } else {
-              res[key] = av || bv
-            }
-          })
-        }
-      }
-      if (this.isArray(aObj) && this.isArray(bObj)) {
-        arrItemsIteration.call(this, aObj, bObj, res)
-      }
-    }
-    function arrItemsIteration (aObj, bObj, res) {
-      const all = aObj.concat(bObj)
-      all.forEach((item) => {
-        res.push(item)
-      })
-    }
+    // function objPropsIteration (aObj, bObj, res) {
+    //   if (this.isObject(aObj) && this.isObject(bObj)) {
+    //     const allKeys = Object.keys(aObj).concat(Object.keys(bObj))
+    //     if (allKeys.length) {
+    //       allKeys.forEach((key) => {
+    //         const av = aObj[key]
+    //         const bv = bObj[key]
+    //         if (av && bv) {
+    //           if (this.isArray(av) && this.isArray(bv)) {
+    //             res[key] = []
+    //             return arrItemsIteration.call(this, av, bv, res[key])
+    //           }
+    //           if (this.isObject(av) && this.isObject(bv)) {
+    //             res[key] = Object.create(av)
+    //             return objPropsIteration.call(this, av, bv, res[key])
+    //           }
+    //           // 如果相同属性，相同层级，那么只取 b 对象的值
+    //           res[key] = bv
+    //         } else {
+    //           res[key] = av || bv
+    //         }
+    //       })
+    //     }
+    //   }
+    //   if (this.isArray(aObj) && this.isArray(bObj)) {
+    //     arrItemsIteration.call(this, aObj, bObj, res)
+    //   }
+    // }
+    // function arrItemsIteration (aObj, bObj, res) {
+    //   const all = aObj.concat(bObj)
+    //   all.forEach((item) => {
+    //     res.push(item)
+    //   })
+    // }
     // 数组内部元素合并逻辑，暂时不需要这种合并模式
     // function arrItemsIteration_abandon (aObj, bObj, res) {
     //   const len = aObj.length > bObj.length ? aObj.length : bObj.length
