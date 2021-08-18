@@ -6,9 +6,9 @@
 <script>
 import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN'
 import watermark from 'watermark-dom'
-import moment from 'moment'
 import jumpMixins from '@/mixins/jumpMixins.js'
 import { getOMSJump, removeOMSJump } from '@/utils/auth'
+import utils from '@/utils'
 export default {
   mixins: [jumpMixins],
   data () {
@@ -85,7 +85,7 @@ export default {
     createWatermark ({ employeeNumber }) {
       this.$nextTick(() => {
         watermark.init({
-          watermark_txt: `${employeeNumber || '未登录'} ${moment(new Date()).format('YYYY-MM-DD HH:mm')}`,
+          watermark_txt: `${employeeNumber || '未登录'} ${utils.dateYMDHM(new Date())}`,
           watermark_x: -80, // 水印起始位置x轴坐标
           watermark_y: -50, // 水印起始位置Y轴坐标
           watermark_color: '#A0A4AC', // 水印字体颜色

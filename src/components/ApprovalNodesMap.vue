@@ -22,7 +22,6 @@
 </template>
 <script>
 import api from '@/api'
-// import utils from '@/utils'
 export default {
   name: 'ApprovalNodesMap',
   props: {

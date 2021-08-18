@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import utils from '@/utils'
 /**
  * 当前组件主要是为了解决：
  * RangePicker配置mode = "['month', 'month']"时，
@@ -87,7 +87,7 @@ export default {
       if (!this.attendanceCycleStart) {
         this.startValue = null
       } else {
-        this.startValue = moment(this.attendanceCycleStart).format('YYYY-MM')
+        this.startValue = utils.date2YM(this.attendanceCycleStart)
       }
       this.endValue = null
     },
@@ -117,7 +117,7 @@ export default {
       if (!this.attendanceCycleEnd) {
         this.endValue = null
       } else {
-        this.endValue = moment(this.attendanceCycleEnd).format('YYYY-MM')
+        this.endValue = utils.date2YM(this.attendanceCycleEnd)
       }
     },
     startPanelChange (moment, value) {

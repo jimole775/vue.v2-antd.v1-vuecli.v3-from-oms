@@ -1,5 +1,4 @@
 <script>
-import moment from 'moment'
 import utils from '@/utils'
 import Uploader from '@/components/Uploader'
 export default {
@@ -24,8 +23,6 @@ export default {
     }
   },
   methods: {
-    moment,
-    formatMoney: utils.formatMoney,
     changeEventForRadios ({ target: { value } }) {
       this.form = this.$form.createForm(this)
       if (this.operationItem.radios) {

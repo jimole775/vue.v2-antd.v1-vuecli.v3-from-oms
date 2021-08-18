@@ -10,7 +10,7 @@
   />
 </template>
 <script>
-import moment from 'moment'
+import utils from '@/utils'
 export default {
   name: 'YearPicker',
   props: {
@@ -42,16 +42,14 @@ export default {
         if (val && /\//.test(val)) {
           year = val.split('/')[0]
         }
-        this.year = moment(`${year}-${month}-${day}`)
-        console.log('got year value:', this.value)
-        console.log('got year view:', this.year)
+        this.year = utils.moment(`${year}-${month}-${day}`)
       },
       immediate: true
     }
   },
   methods: {
     panelChange (val) {
-      this.year = moment(val)
+      this.year = utils.moment(val)
       this.yearPickShow = false
       this.$emit('input', val ? val.format('YYYY') : '') // 输出结果给this.value
     },

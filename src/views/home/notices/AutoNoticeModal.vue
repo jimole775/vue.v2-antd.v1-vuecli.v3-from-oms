@@ -58,7 +58,6 @@
   </a-modal>
 </template>
 <script>
-import moment from 'moment'
 import api from '@/api'
 import utils from '@/utils'
 import { getToken } from '@/utils/auth'
@@ -85,7 +84,7 @@ export default {
   filters: {
     // 处理时间戳
     queryDate (dateTimp) {
-      return dateTimp ? moment(dateTimp).format('YYYY-MM-DD') : ''
+      return utils.date2YMD(dateTimp)
     }
   },
   data () {

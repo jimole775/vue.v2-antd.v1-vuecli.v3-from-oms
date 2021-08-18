@@ -48,7 +48,7 @@
 </template>
 <script>
 import api from '@/api'
-import moment from 'moment'
+import utils from '@/utils'
 import GuiViewer from '@/views/basic-info/gui-manager/modals/GuiViewer.vue'
 import AutoNoticeModal from './AutoNoticeModal.vue'
 export default {
@@ -74,7 +74,7 @@ export default {
   filters: {
     // 处理时间戳
     queryDate (dateTimp) {
-      return dateTimp ? moment(dateTimp).format('YYYY-MM-DD') : ''
+      return utils.date2YMD(dateTimp)
     }
   },
   created () {

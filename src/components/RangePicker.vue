@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import utils from '@/utils'
 /**
  * 当前组件主要是为了解决：
  * STable直接引用ARangePicker造成的问题
@@ -60,7 +60,7 @@ export default {
     },
     // month 的模式会调用这个方法
     panelChange (value, mode) {
-      const optionVal = [moment(value[0]).format(this.$props.format), moment(value[1]).format(this.$props.format)]
+      const optionVal = [utils.moment(value[0]).format(this.$props.format), utils.moment(value[1]).format(this.$props.format)]
       // optionVal 是构造给 STable 取值用的
       this.$emit('change', value, optionVal)
     }

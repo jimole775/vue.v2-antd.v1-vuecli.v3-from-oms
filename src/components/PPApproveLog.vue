@@ -32,8 +32,7 @@
 <script>
 // import _ from 'lodash'
 import api from '@/api/'
-import moment from 'moment'
-// import utils from '@/utils/'
+import utils from '@/utils/'
 export default {
   name: 'PPApproveLog',
   props: {
@@ -94,7 +93,7 @@ export default {
     this.loadList()
   },
   methods: {
-    moment,
+    moment: utils.moment,
     // 服务费用分页
     onChangePage (val) {
       this.pagination.current = val.current

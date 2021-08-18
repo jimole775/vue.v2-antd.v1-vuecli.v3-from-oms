@@ -51,7 +51,6 @@
 </template>
 <script>
 import api from '@/api'
-import moment from 'moment'
 import utils from '@/utils'
 import baseMixins from '@/mixins/baseMixins.js'
 import ApprovalStepBar from '@/components/ApprovalStepBar'
@@ -143,8 +142,6 @@ export default {
     }
   },
   methods: {
-    moment,
-    formatMoney: utils.formatMoney,
     updateCurrentNode (node) {
       this.currentNode = node
     },

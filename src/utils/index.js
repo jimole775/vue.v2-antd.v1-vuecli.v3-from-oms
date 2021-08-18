@@ -1,11 +1,35 @@
 import moment from 'moment'
+import 'moment/locale/zh-cn'
 import { cloneDeep, merge } from 'lodash'
 import { Modal } from 'ant-design-vue'
 import axios from 'axios'
 import { getToken } from './auth'
 import store from '@/store'
 import base64 from './base64'
+moment.locale('zh-cn')
 const utils = {
+  moment,
+  date2Y (strOrDate) {
+    return this.isValuable(strOrDate) ? moment(strOrDate).format('YYYY') : ''
+  },
+  date2M (strOrDate) {
+    return this.isValuable(strOrDate) ? moment(strOrDate).format('MM') : ''
+  },
+  date2YM (strOrDate, splitSign = '-') {
+    return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM`) : ''
+  },
+  date2HM (strOrDate) {
+    return this.isValuable(strOrDate) ? moment(strOrDate).format('HH:mm') : ''
+  },
+  date2YMD (strOrDate, splitSign = '-') {
+    return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD`) : ''
+  },
+  date2YMDH (strOrDate, splitSign = '-') {
+    return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD HH`) : ''
+  },
+  date2YMDHM (strOrDate, splitSign = '-') {
+    return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD HH:mm`) : ''
+  },
   /**
    * @param {string} input value
    * @returns {number} output value
@@ -1234,4 +1258,5 @@ const utils = {
     }
   }
 }
+console.log(utils.dateToHM(''))
 export default utils

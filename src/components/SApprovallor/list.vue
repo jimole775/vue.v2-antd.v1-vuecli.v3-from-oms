@@ -1,5 +1,4 @@
 <script>
-import moment from 'moment'
 import STable from '@/components/STable'
 import utils from '@/utils'
 import baseMixins from '@/mixins/baseMixins.js'
@@ -49,8 +48,6 @@ export default {
     }
   },
   methods: {
-    moment,
-    formatMoney: utils.formatMoney,
     fixTextWrapper () {
       // 如果文本长度超过20，就省略掉
       const h = this.$createElement

@@ -50,8 +50,6 @@
 </template>
 <script>
 import api from '@/api'
-import moment from 'moment'
-import utils from '@/utils'
 export default {
   props: {
     id: {
@@ -94,8 +92,6 @@ export default {
     this.fetchData()
   },
   methods: {
-    moment,
-    formatMoney: utils.formatMoney,
     async fetchData () {
       const res = await api.getppmodifylog({
         pageNum: this.current,

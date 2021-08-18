@@ -66,7 +66,6 @@
 </template>
 <script>
 import OmsMenu from './OmsMenu'
-import moment from 'moment'
 import utils from '@/utils'
 import api from '@/api'
 import ExportExcelManager from '@/components/ExportExcelManager.vue'
@@ -88,7 +87,6 @@ export default {
     }
   },
   methods: {
-    moment,
     async logout () {
       let res = await api.logout()
       if (res.code === 403) {

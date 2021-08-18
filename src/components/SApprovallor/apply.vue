@@ -41,7 +41,6 @@
 </template>
 <script>
 import api from '@/api'
-import moment from 'moment'
 import utils from '@/utils'
 export default {
   props: {
@@ -93,8 +92,6 @@ export default {
     }
   },
   methods: {
-    moment,
-    formatMoney: utils.formatMoney,
     async emitApply () {
       const { successData, failureTips } = await this.getComponentsFieldsValue()
       if (failureTips.length) {

@@ -1,6 +1,5 @@
 <script>
 import utils from '@/utils'
-import moment from 'moment'
 import api from '@/api'
 const indexKey = '_index_'
 // 如果文本长度超过20，就省略掉
@@ -273,7 +272,6 @@ export default {
     this.fetchImmediate && this.fetchData()
   },
   methods: {
-    moment,
     fixFields () {
       // 保持key和dataIndex同时存在
       this.searchor && this.searchor.forEach((item) => {
@@ -652,8 +650,8 @@ export default {
 
       // 转换 Moment 类型的值
       Object.keys(queryParams).forEach((key) => {
-        if (queryParams[key] instanceof moment) {
-          queryParams[key] = moment(queryParams[key]).format('YYYY-MM-DD')
+        if (queryParams[key] instanceof utils.moment) {
+          queryParams[key] = utils.date2YMD(queryParams[key])
         }
       })
 

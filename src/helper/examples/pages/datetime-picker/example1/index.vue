@@ -11,7 +11,7 @@
 <script>
 import DatetimePicker from '@/components/DatetimePicker'
 import code from './code.md'
-import moment from 'moment'
+import utils from '@/utils'
 export default {
   title: '时间选择',
   name: 'Example1',
@@ -30,7 +30,7 @@ export default {
     async submitEvent () {
       let date = null
       if (this.dataSource.time) {
-        date = moment(this.dataSource.time).format('YYYY-MM-DD HH:mm')
+        date = utils.date2YMDHM(this.dataSource.time)
       }
       this.$modal.success({
         title: '操作结果',

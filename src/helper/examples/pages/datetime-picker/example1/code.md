@@ -6,6 +6,7 @@
   </div>
 </template>
 <script>
+import utils from '@/utils'
 import DatetimePicker from '@/components/DatetimePicker'
 export default {
   components: {
@@ -22,7 +23,7 @@ export default {
     async submitEvent () {
       let date = null
       if (this.dataSource.time) {
-        date = moment(this.dataSource.time).format('YYYY-MM-DD HH:mm')
+        date = utils.date2YMDHM(this.dataSource.time)
       }
       this.$modal.success({
         title: '操作结果',

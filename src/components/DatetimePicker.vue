@@ -20,8 +20,7 @@
 </template>
 
 <script>
-import moment from 'moment'
-
+import utils from '@/utils'
 export default {
   name: 'DatetimePicker',
   data () {
@@ -48,11 +47,11 @@ export default {
       if (!this.dateVal || !this.timeVal) {
         return this.$emit('change', null)
       }
-      const res = moment(this.dateVal.format('YYYY/MM/DD') + ' ' + this.timeVal.format('HH:mm'))
-      this.$emit('change', res, res.format('YYYY-MM-DD HH:mm'))
+      const res = utils.moment(this.dateVal.format('YYYY/MM/DD') + ' ' + this.timeVal.format('HH:mm'))
+      this.$emit('change', res, utils.date2YMDHM(res))
     },
     disabledDate (current) {
-      let todayTime = moment(new Date(moment().endOf('day')) - (24 * 60 * 60 * 1000))
+      let todayTime = utils.moment(new Date(utils.moment().endOf('day')) - (24 * 60 * 60 * 1000))
       return current && current < todayTime
     }
   }
