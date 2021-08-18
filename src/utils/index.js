@@ -1258,5 +1258,4 @@ const utils = {
     }
   }
 }
-console.log(utils.dateToHM(''))
 export default utils
