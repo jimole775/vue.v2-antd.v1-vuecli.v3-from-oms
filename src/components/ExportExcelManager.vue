@@ -113,7 +113,7 @@ export default {
   methods: {
     ...mapActions(['pushExportingList', 'spliceExportingList']),
     delExportListItemConfirm (item) {
-      this.$confirm({
+      this.$modal.confirm({
         title: '提示',
         content: '文件正在导出中，是否删除这个任务？',
         okText: '是',

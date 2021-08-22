@@ -85,7 +85,7 @@ export default {
     createWatermark ({ employeeNumber }) {
       this.$nextTick(() => {
         watermark.init({
-          watermark_txt: `${employeeNumber || '未登录'} ${utils.dateYMDHM(new Date())}`,
+          watermark_txt: `${employeeNumber || '未登录'} ${utils.date2YMDHM(new Date())}`,
           watermark_x: -80, // 水印起始位置x轴坐标
           watermark_y: -50, // 水印起始位置Y轴坐标
           watermark_color: '#A0A4AC', // 水印字体颜色

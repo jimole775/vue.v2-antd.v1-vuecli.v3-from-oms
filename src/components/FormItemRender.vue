@@ -23,9 +23,7 @@ export default {
   },
   data () {
     return {
-      vmcope: {
-        $$target: {}
-      },
+      vmScope: this,
       form: this.$form.createForm(this)
     }
   },
@@ -65,6 +63,9 @@ export default {
   created () {
     this.initialize()
   },
+  beforeUpdate () {
+    this.vmScope = utils.bindVMScopeParent(this)
+  },
   methods: {
     initialize () {
       const dataSource = this.dataSource
@@ -78,10 +79,8 @@ export default {
       // 为特殊组件赋值
       utils.bindDefaultValueForComponent(dataSource, formItems)
 
-      this.vmcope = utils.bindVMScopeParent(this)
-
       this.$nextTick(() => {
-        this.$props.beforeRender(dataSource, formItems, this.vmcope)
+        this.$props.beforeRender(dataSource, formItems, this.vmScope)
       })
 
       // this.triggeringChangeCallback(dataSource, formItems)
@@ -92,13 +91,13 @@ export default {
         labelC = h('span', { slot: 'label' }, formItem.label)
       }
       if (formItem.labelCustomRender) {
-        labelC = formItem.labelCustomRender(h, formItem, this.vmcope)
+        labelC = formItem.labelCustomRender(h, formItem, this.vmScope)
       }
       return labelC
     },
     wrapperRender (h, formItem) {
       if (formItem.wrapperCustomRender) {
-        return formItem.wrapperCustomRender(this.$createElement, formItem, this.vmcope)
+        return formItem.wrapperCustomRender(this.$createElement, formItem, this.vmScope)
       } else if (formItem.component) {
         return (<formItem.component
           props={formItem.props}
@@ -129,12 +128,12 @@ export default {
       })
     },
     componentChangeEvent (val, item) {
-      item.change && item.change(val, item, this.vmcope)
-      this.$emit('change', val, item, this.vmcope)
+      item.change && item.change(val, item, this.vmScope)
+      this.$emit('change', val, item, this.vmScope)
     },
     triggeringChangeCallback (dataSource, items) {
       items.forEach((item) => {
-        item.change && item.change(item.value, item, this.vmcope)
+        item.change && item.change(item.value, item, this.vmScope)
       })
     },
     validateRequiredField () {

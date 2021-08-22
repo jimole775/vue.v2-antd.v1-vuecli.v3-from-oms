@@ -271,6 +271,9 @@ export default {
     this.initialize()
     this.fetchImmediate && this.fetchData()
   },
+  beforeUpdate () {
+    this.vmScope = utils.bindVMScopeParent(this)
+  },
   methods: {
     fixFields () {
       // 保持key和dataIndex同时存在
@@ -411,7 +414,6 @@ export default {
       })
     },
     initialize () {
-      this.vmScope = utils.bindVMScopeParent(this)
       this.searchorGroups = []
       this.searchor.forEach((searchItem) => {
         this.searchorGroups.push(searchItem)
