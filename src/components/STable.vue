@@ -280,6 +280,7 @@ export default {
       this.searchor && this.searchor.forEach((item) => {
         item.key = item.key || item.dataIndex
         item.dataIndex = item.key || item.dataIndex
+        item.componentName = item.component ? (item.component.name ? item.component.name : item.component) : ''
       })
       this.columns && this.columns.forEach((item) => {
         item.key = item.key || item.dataIndex
@@ -422,19 +423,42 @@ export default {
         }
         if (searchItem.key) {
           this.$set(this.queryObj, searchItem.key, searchItem.default)
+          if (searchItem.default) {
+            this.simpleSelectEvent(searchItem.default, null, searchItem)
+          }
         }
         if (searchItem.keys) {
           this.multiSelectEvent(searchItem.default, null, searchItem)
         }
       })
     },
-    simpleSelectEvent (value, optionItem, searchItem) {
-      // 单项取值的组件，都用v-model绑定了this.queryObj，暂时不需要手动关联
+    simpleSelectEvent (e, optionItem, searchItem) {
+      // 赋值元素视图
+      const value = e && e.currentTarget ? e.currentTarget.value : e
+      this.setComponentView(searchItem, value)
+      this.cacheDefaultView(searchItem, value)
+      // 重置操作
+      if (utils.isNone(value) || utils.isEmptyArray(value) || utils.isEmptyObject(value)) {
+        this.queryObj[searchItem.key] = null
+        return this.queryObj
+      }
+
+      if (isLabelOption(value)) {
+        const userOption = value.length ? JSON.parse(value[0].key) : null
+        this.queryObj[searchItem.key] = userOption ? userOption['key'] : null
+      } else {
+        this.queryObj[searchItem.key] = value
+      }
+      function isLabelOption (value) {
+        return (utils.isArray(value) && value.length && value[0].label && value[0].key)
+      }
     },
     // 有两类选项
     multiSelectEvent (value, optionItem, searchItem) {
       // 赋值元素视图
       this.setComponentView(searchItem, value)
+      // 暂存value
+      this.cacheDefaultView(searchItem, value)
 
       // 重置操作
       if (utils.isNone(value) || utils.isEmptyArray(value) || utils.isEmptyObject(value)) {
@@ -444,7 +468,7 @@ export default {
       }
 
       // 主要场景 UserSelect
-      if (searchItem.component === 'UserSelect') {
+      if (searchItem.componentName === 'UserSelect') {
         // userSelect的选项被构造了一次，需要重新解构出来
         const userOption = value.length ? JSON.parse(value[0].key) : null
         searchItem.keys.forEach((key, index) => {
@@ -454,7 +478,7 @@ export default {
       }
 
       // 主要场景：DepatmentSelect
-      if (searchItem.component === 'DepatmentSelect') {
+      if (searchItem.componentName === 'DepatmentSelect') {
         searchItem.keys.forEach((key, index) => {
           const optionKey = searchItem.optionKeys[index]
           this.queryObj[key] = optionItem ? optionItem[optionKey] : null
@@ -543,38 +567,36 @@ export default {
       this.searchor.forEach((searchItem) => {
         if (!searchItem.required) {
           if (searchItem.key) {
-            this.resetvalueByType(this.queryObj, searchItem.key)
+            this.resetByFieldType(this.queryObj, searchItem.key)
           }
           if (searchItem.keys) {
             searchItem.keys.forEach((key) => {
-              this.resetvalueByType(this.queryObj, key)
+              this.resetByFieldType(this.queryObj, key)
             })
           }
-          // 重置dom视图
-          const component = this.$refs[`${searchItem.component}${searchItem.key || searchItem.keys[0]}`]
-          if (utils.isObject(component)) {
-            this.resetvalueByType(component, 'value')
-          }
-          if (utils.isArray(component)) {
-            component.forEach((comp) => {
-              this.resetvalueByType(comp, 'value')
-            })
-          }
+          // 置空 default，避免重新渲染的时候会进行默认赋值
+          this.resetByFieldType(searchItem, 'default')
         }
       })
       this.pagination.current = 1
       this.fetchData()
     },
     // 设置组件的视图
+    // ****************************************
+    // * 注意：这个函数会触发组件的change事件
+    // * 所以，谨慎在change事件函数中对
+    // * “searchItem.value” 或者 “searchItem.default”
+    // * 字段进行赋值操作，会造成死循环
+    // ****************************************
     setComponentView (searchItem, view) {
-      const ref = `${searchItem.component}${searchItem.key ? searchItem.key : searchItem.keys[0]}`
+      const ref = this.spillComponentRef(searchItem)
       const comp = this.$refs[ref]
       if (comp) {
         if (utils.isObject(comp)) {
-          comp.value = view
+          comp.value = view // 会触发change事件
         }
         if (utils.isArray(comp)) {
-          comp[0].value = view
+          comp[0].value = view // 会触发change事件
         }
       } else {
         return setTimeout(() => {
@@ -582,8 +604,12 @@ export default {
         }, 150)
       }
     },
+    // 暂存组件的视图,帮助“required”字段在刷新时不会被刷掉
+    cacheDefaultView (searchItem, view) {
+      searchItem.default = view
+    },
     // 根据value类型，进行置空操作
-    resetvalueByType (obj, key) {
+    resetByFieldType (obj, key) {
       if (utils.isString(obj[key])) {
         obj[key] = ''
       }
@@ -638,7 +664,7 @@ export default {
       // 2. searchItem.keys 获取多个值，但是 this.multiSelectEvent 已经对取值进行处理了
       // 原始取值样例：[{key: "{"key":"51000001","label":"Hongkui Yang"}", label: "51000001 Hongkui Yang"}]
       this.searchor.forEach((searchItem) => {
-        if (searchItem.component === 'UserSelect') {
+        if (searchItem.componentName === 'UserSelect') {
           if (searchItem.key && utils.isArray(queryParams[searchItem.key])) {
             if (utils.isArray(queryParams[searchItem.key])) {
               if (queryParams[searchItem.key][0]) {
@@ -788,6 +814,9 @@ export default {
       this.pagination.current = val.current
       this.pagination.pageSize = val.pageSize
       this.fetchData()
+    },
+    spillComponentRef (searchItem) {
+      return `${searchItem.componentName}${searchItem.key ? searchItem.key : searchItem.keys[0]}`
     }
   },
   render (h) {
@@ -1009,9 +1038,7 @@ function buildSearchorGroup (h) {
                 wrapper-col={{ span: searchItem.layout ? searchItem.layout.wrapper : 16 }}
               >
                 {
-                  searchItem.key
-                    ? createFormItem.call(this, searchItem)
-                    : createMultiFormItem.call(this, searchItem)
+                  createFormItem.call(this, searchItem)
                 }
               </a-form-item>
             </a-col>
@@ -1028,34 +1055,23 @@ function buildSearchorGroup (h) {
       attrs={searchItem.attrs}
       dom-attrs={searchItem.domAttrs}
       allow-clear={!searchItem.required}
-      default-value={searchItem.default}
-      ref={`${searchItem.component}${searchItem.key}`}
-      v-model={this.queryObj[searchItem.key]}
+      value={searchItem.default}
+      ref={this.spillComponentRef(searchItem)}
       depend={this.queryObj[searchItem.dependKey]}
+      onKeyup={(e) => /13/.test(e.keyCode) && this.fetchData()}
       onChange={
-        (value, optionItem) => { this.simpleSelectEvent(value, optionItem, searchItem) }
-      }
-    />
-  }
-
-  function createMultiFormItem (searchItem) {
-    return <searchItem.component
-      props={searchItem.props}
-      attrs={searchItem.attrs}
-      dom-attrs={searchItem.domAttrs}
-      allow-clear={!searchItem.required}
-      default-value={searchItem.default}
-      ref={`${searchItem.component}${searchItem.keys[0]}`}
-      depend={this.queryObj[searchItem.dependKey]}
-      onChange={
-        (value, optionItem) => { this.multiSelectEvent(value, optionItem, searchItem) }
+        (value, optionItem) => {
+          searchItem.key ?
+          this.simpleSelectEvent(value, optionItem, searchItem) :
+          this.multiSelectEvent(value, optionItem, searchItem)
+        }
       }
     />
   }
 
   function buildSearchButton () {
     return (
-      <a-col span={this.searchorGroups.length > 3 ? 24 : 8} class={['t-center', 'mt5']}>
+      <a-col span={this.searchorGroups.length < 4 ? 8 : 24} class={['t-center', 'mt5']}>
         <a-button ghost type={'primary'} onClick={() => this.search()}>查询</a-button>
         <a-button style={{ margin: '0 8px' }} onClick={() => this.resetSearch()}>重置</a-button>
         {
