@@ -46,7 +46,8 @@
           <div v-if="item.guideFileUrl && item.guideFileUrl.length" class="noticeCont_warp bottom_noticeCont_warp">
             <p>相关附件：</p>
             <p v-for="url in item.guideFileUrl" :key="url">
-              <a :href="spillHref(url)">{{ splitUrl(url).fileName }}</a>
+              <SDownload :value="url">
+              <!-- <a :href="spillHref(url)">{{ splitUrl(url).fileName }}</a> -->
             </p>
           </div>
         </div>

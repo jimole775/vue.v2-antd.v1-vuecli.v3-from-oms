@@ -20,7 +20,7 @@
                     :rowspan="colItem.rowspan"
                   >
                     <span v-if="colItem.key === 'createdDate'">{{ colItem.value }}</span>
-                    <span v-else-if="colItem.key === 'attachmentUrl'"><DownLoadFile :value="colItem.value" /></span>
+                    <span v-else-if="colItem.key === 'attachmentUrl'"><s-download :value="colItem.value" /></span>
                     <span v-else>{{ colItem.value }}</span>
                   </td>
                 </template>

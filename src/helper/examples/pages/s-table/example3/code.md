@@ -4,7 +4,6 @@
     :columns="columns"
     :searchor="searchor"
     :data-api="'ppprojecttmbankpage'"
-    :data-dict="'records'"
   />
 </template>
 <script>
@@ -69,7 +68,7 @@ export default {
         {
           title: 'col3',
           keys: ['col31', 'col32'],
-          component: 'RangePicker',
+          component: 'RangeDatePicker',
           permission: [0, 1]
         },
         {

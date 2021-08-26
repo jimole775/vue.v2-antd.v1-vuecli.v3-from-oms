@@ -2,8 +2,7 @@
 <template>
   <STable
     :columns="columns"
-    :data-api="'postworkRuleFlowpage'"
-    :data-dict="'records'"
+    :data-api="'postmocklist'"
   />
 </template>
 <script>

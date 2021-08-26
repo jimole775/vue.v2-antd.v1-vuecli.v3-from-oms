@@ -1061,9 +1061,9 @@ function buildSearchorGroup (h) {
       onKeyup={(e) => /13/.test(e.keyCode) && this.fetchData()}
       onChange={
         (value, optionItem) => {
-          searchItem.key ?
-          this.simpleSelectEvent(value, optionItem, searchItem) :
-          this.multiSelectEvent(value, optionItem, searchItem)
+          searchItem.key
+            ? this.simpleSelectEvent(value, optionItem, searchItem)
+            : this.multiSelectEvent(value, optionItem, searchItem)
         }
       }
     />

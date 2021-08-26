@@ -36,16 +36,6 @@ export default [
         component: () => import('@/helper/examples/pages/user-select/index.vue')
       },
       {
-        path: '/helper/examples/uploader',
-        name: 'Uploader',
-        component: () => import('@/helper/examples/pages/uploader/index.vue')
-      },
-      {
-        path: '/helper/examples/uploader-multiple',
-        name: 'UploaderMultiple',
-        component: () => import('@/helper/examples/pages/uploader-multiple/index.vue')
-      },
-      {
         path: '/helper/examples/s-approvallor',
         name: 'SApprovallor',
         component: () => import('@/helper/examples/pages/s-approvallor/index.vue')
@@ -91,19 +81,19 @@ export default [
         component: () => import('@/helper/examples/pages/range-month-picker/index.vue')
       },
       {
-        path: '/helper/examples/range-picker',
-        name: 'RangePicker',
-        component: () => import('@/helper/examples/pages/range-picker/index.vue')
+        path: '/helper/examples/range-date-picker',
+        name: 'RangeDatePicker',
+        component: () => import('@/helper/examples/pages/range-date-picker/index.vue')
       },
       {
-        path: '/helper/examples/oms-tabs-plus',
-        name: 'OmsTabsPlus',
-        component: () => import('@/helper/examples/pages/oms-tabs-plus/index.vue')
+        path: '/helper/examples/s-tabs',
+        name: 'STabs',
+        component: () => import('@/helper/examples/pages/s-tabs/index.vue')
       },
       {
-        path: '/helper/examples/input-money',
-        name: 'InputMoney',
-        component: () => import('@/helper/examples/pages/input-money/index.vue')
+        path: '/helper/examples/money-input',
+        name: 'MoneyInput',
+        component: () => import('@/helper/examples/pages/money-input/index.vue')
       },
       {
         path: '/helper/examples/duties-description',

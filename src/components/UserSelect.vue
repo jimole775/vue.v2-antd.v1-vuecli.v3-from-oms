@@ -23,7 +23,6 @@
 <script>
 import api from '@/api'
 import utils from '@/utils'
-import { debounce } from 'lodash'
 export default {
   name: 'UserSelect',
   props: {
@@ -45,8 +44,8 @@ export default {
     }
   },
   data () {
-    this.fetchUser = debounce(this.fetchUser, 150)
-    this.handleChange = debounce(this.handleChange, 150)
+    this.fetchUser = utils.debounce(this.fetchUser, 150)
+    this.handleChange = utils.debounce(this.handleChange, 150)
     return {
       valueList: utils.clone(this.value),
       fetching: false,

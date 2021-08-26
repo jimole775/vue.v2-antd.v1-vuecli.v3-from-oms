@@ -29,7 +29,7 @@ export default {
   data () {
     return {
       code,
-      // “tab”配置项，参数参考 [OmsTabsPlus](./OmsTabsPlus.md) 文档
+      // “tab”配置项，参数参考 [STabs](./STabs.md) 文档
       panes: [
         {
           tabName: '关键事件',

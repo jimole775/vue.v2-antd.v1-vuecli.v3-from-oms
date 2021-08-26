@@ -3,8 +3,7 @@
     <template slot="example">
       <STable
         :columns="columns"
-        :data-api="'postworkRuleFlowpage'"
-        :data-dict="'records'"
+        :data-api="'examplesstable4'"
         :export-api="'postworkRuleFlowexport'"
         :close-api="'postworkRuleFlowcloseFlow'"
         :revoke-api="'postworkRuleFlowwithdrawFlow'"
@@ -17,6 +16,7 @@
 </template>
 <script>
 import STable from '@/components/STable'
+import utils from '@/utils'
 import code from './code.md'
 export default {
   title: '审批集成',
@@ -29,28 +29,34 @@ export default {
       code,
       columns: [
         {
-          title: 'col1',
-          dataIndex: 'col1'
+          title: '姓名',
+          dataIndex: 'name'
         },
         {
-          title: 'col2',
-          dataIndex: 'col2'
+          title: '年龄',
+          dataIndex: 'age'
         },
         {
-          title: 'col3',
-          dataIndex: 'col3'
+          title: '钱财',
+          dataIndex: 'money',
+          customRender (text) {
+            return `$ ${utils.number2money(text)}`
+          }
         },
         {
-          title: 'col4',
-          dataIndex: 'col4'
+          title: '等级',
+          dataIndex: 'level',
+          customRender (text) {
+            return `lv.${text}`
+          }
         },
         {
-          title: 'col5',
-          dataIndex: 'col5'
+          title: '开始日期',
+          dataIndex: 'start'
         },
         {
-          title: 'col6',
-          dataIndex: 'col6'
+          title: '结束日期',
+          dataIndex: 'end'
         }
       ]
     }

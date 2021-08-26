@@ -40,8 +40,8 @@ export default {
     }
   },
   methods: {
-    formatMoney: utils.formatMoney,
-    parseMoney: utils.parseMoney,
+    number2money: utils.number2money,
+    money2number: utils.money2number,
     getApiFunction (apiNameOrFunction) {
       if (utils.isFunction(apiNameOrFunction)) {
         return apiNameOrFunction

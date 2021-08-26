@@ -1,6 +1,6 @@
 import moment from 'moment'
 import 'moment/locale/zh-cn'
-import { cloneDeep, merge } from 'lodash'
+import { cloneDeep, merge, debounce } from 'lodash'
 import { Modal } from 'ant-design-vue'
 import axios from 'axios'
 import { getToken } from './auth'
@@ -9,6 +9,7 @@ import base64 from './base64'
 moment.locale('zh-cn')
 const utils = {
   moment,
+  debounce,
   date2Y (strOrDate) {
     return this.isValuable(strOrDate) ? moment(strOrDate).format('YYYY') : ''
   },
@@ -227,10 +228,10 @@ const utils = {
    * @param {Number} decPoint 小数点符号
    * @param {Number} thousandsSep 千分位符号
    * @return {String}
-   * @template = formatMoney(1234) => '123,4.00'
-   * @template = formatMoney(1234, 3) => '123,4.000'
+   * @template = number2money(1234) => '123,4.00'
+   * @template = number2money(1234, 3) => '123,4.000'
    */
-  formatMoney (number, decimals, decPoint, thousandsSep) {
+  number2money (number, decimals, decPoint, thousandsSep) {
     number = (number + '').replace(/[^0-9+-Ee.]/g, '')
     var n = !isFinite(+number) ? 0 : +number
     var prec = !isFinite(+decimals) ? 0 : Math.abs(decimals)
@@ -256,22 +257,36 @@ const utils = {
    * 金钱转数字
    * @param {Number|String} input
    * @return {String}
-   * @template = parseMoney('') => ''
-   * @template = parseMoney(12334) => '12334'
-   * @template = parseMoney('123,234') => '123234'
+   * @template = money2number('') => ''
+   * @template = money2number(12334) => '12334'
+   * @template = money2number('123,234') => '123234'
    */
-  parseMoney (input) {
+  money2number (input) {
     if (!input) return input
     return Number.parseFloat((input + '').replace(/,/g, ''))
   },
   /** 把对象转换成的urlquery字段
+   * @param {String}
+   * @return {Boolean}
+   * @template = hasQueryString('?dasd') => true
+   * @template = hasQueryString('?dasd=1') => true
+   * @template = hasQueryString('/sdad?') => false
+   * @template = hasQueryString('') => false
+   * @template = hasQueryString('?') => false
+   */
+  hasQueryString (src) {
+    if (!src) return false
+    if (!this.isString(src)) return false
+    return /\w*?\?{1}\w+/.test(src)
+  },
+  /** 把对象转换成的urlquery字段
    * @param {Object} obj
    * @return {String}
-   * @template = toQueryString({a: 1}) => '?a=1'
-   * @template = toQueryString({a: ''}) => ''
-   * @template = toQueryString({}) => ''
+   * @template = setParamsToURL({a: 1}) => '?a=1'
+   * @template = setParamsToURL({a: ''}) => ''
+   * @template = setParamsToURL({}) => ''
    */
-  toQueryString (obj) {
+  setParamsToURL (obj) {
     if (!this.isObject(obj)) return new Error('utils.toQueryString参数必须是Object类型')
     const res = []
     Object.keys(obj).forEach(key => {
@@ -285,16 +300,16 @@ const utils = {
   /** 把urlquery转换成的Object对象
    * @param {String} url
    * @return {Object}
-   * @template = fromQueryString('') => { }
-   * @template = fromQueryString('?') => { }
-   * @template = fromQueryString('&') => { }
-   * @template = fromQueryString('/xxx/xxx') => { }
-   * @template = fromQueryString('xxx=xxx') => { xxx: xxx }
-   * @template = fromQueryString('&xxx=xxx') => { xxx: xxx }
-   * @template = fromQueryString('?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
-   * @template = fromQueryString('/xxx/xxx?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
+   * @template = getParamsFromURL('') => { }
+   * @template = getParamsFromURL('?') => { }
+   * @template = getParamsFromURL('&') => { }
+   * @template = getParamsFromURL('/xxx/xxx') => { }
+   * @template = getParamsFromURL('xxx=xxx') => { xxx: xxx }
+   * @template = getParamsFromURL('&xxx=xxx') => { xxx: xxx }
+   * @template = getParamsFromURL('?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
+   * @template = getParamsFromURL('/xxx/xxx?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
    */
-  fromQueryString (url) {
+  getParamsFromURL (url) {
     if (!url) return {}
     if (!/[&\?]/g.test(url)) return {}
     const paramPartString = url.split('?')[1]
@@ -364,7 +379,7 @@ const utils = {
     const link = document.createElement('a')
     const fileName = customFileName || (url.indexOf('/') !== -1 ? url.split('/')[url.split('/').length - 1] : 'unknowFile')
     const fileUrl = `${domain}${this.encodeFileName(url.split('?')[0])}`
-    const fileParam = `${this.toQueryString({ ...this.fromQueryString(url), ...param, auth_token: `oms:${getToken()}` })}`
+    const fileParam = `${this.setParamsToURL({ ...this.getParamsFromURL(url), ...param, auth_token: `oms:${getToken()}` })}`
     link.style.display = 'none'
     link.href = fileUrl + fileParam
     link.setAttribute('download', fileName)
@@ -389,7 +404,7 @@ const utils = {
       method: 'get',
       url: `${domain}${this.encodeFileName(url.split('?')[0])}`,
       params: {
-        ...this.fromQueryString(url),
+        ...this.getParamsFromURL(url),
         auth_token: `oms:${getToken()}`
       },
       responseType: 'blob'
@@ -718,6 +733,12 @@ const utils = {
   isValuable (src) {
     return !this.isUndefined(src) && !this.isNull(src) && src !== ''
   },
+  isMoment (src) {
+    return this.isObject(src) && (src instanceof moment)
+  },
+  isDateString (src) {
+    return this.isString(src) && this.isMoment(moment(src))
+  },
   toString (src) {
     return Object.prototype.toString.call(src)
   },
@@ -907,7 +928,7 @@ const utils = {
             item.value = moment(dataSource[item.key])
           }
           break
-        case 'RangePicker':
+        case 'RangeDatePicker':
           if (item.paramKeys && dataSource[item.paramKeys[0]] && dataSource[item.paramKeys[1]]) {
             item.value = [moment(dataSource[item.paramKeys[0]]), moment(dataSource[item.paramKeys[1]])]
           } else {
@@ -945,7 +966,6 @@ const utils = {
           break
         case 'DepartmentSelectPlus':
           if (item.paramKeys) {
-            console.log(this.splitOptionItems(valueItem))
             res[item.paramKeys[0]] = this.splitOptionItems(valueItem)[0]
             res[item.paramKeys[1]] = this.splitOptionItems(valueItem)[1]
           } else {
@@ -962,29 +982,6 @@ const utils = {
           } else {
             // 如果只有一个key，那么只获取code
             res[item.key] = supplier.supplierCode
-          }
-          break
-        case 'Uploader':
-          // Uploader 只支持单选
-          if (valueItem && valueItem.length) {
-            if (item.paramKeys) {
-              res[item.paramKeys[0]] = valueItem[0].filePath || valueItem[0]
-              res[item.paramKeys[1]] = valueItem[0].fileName || valueItem[0]
-            } else {
-              // 如果只有一个key，那么只获取filePath
-              res[item.key] = valueItem[0].filePath
-            }
-          }
-          break
-        case 'UploaderMultiple':
-          // Uploader 只支持多选
-          if (valueItem && valueItem.length) {
-            if (item.paramKeys) {
-              res[item.paramKeys[0]] = valueItem.map(file => file.path || file)
-              res[item.paramKeys[1]] = valueItem.map(file => file.fileName || file)
-            } else {
-              res[item.key] = valueItem.map(file => file.path || file)
-            }
           }
           break
       }
@@ -1258,4 +1255,5 @@ const utils = {
     }
   }
 }
+
 export default utils

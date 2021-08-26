@@ -1,6 +1,6 @@
 <template>
   <div class="moveBox">
-    <OmsTabsPlus :ref="'OmsTabsRef'" :tab-proxy="tabProxy" />
+    <STabs :ref="'OmsTabsRef'" :tab-proxy="tabProxy" />
     <div v-show="tabProxy.showList">
       <template v-for="c in listComponents">
         <ProjectList
@@ -53,7 +53,6 @@
 </template>
 <script>
 import utils from '@/utils'
-import OmsTabsPlus from '@/components/OmsTabsPlus'
 import baseMixins from '@/mixins/baseMixins'
 import todoMixins from '@/mixins/todoMixins'
 import ProjectList from './list'
@@ -62,7 +61,6 @@ import ProjectApproval from './approval'
 export default {
   name: 'SApprovallor',
   components: {
-    OmsTabsPlus,
     ProjectList,
     ProjectApply,
     ProjectApproval

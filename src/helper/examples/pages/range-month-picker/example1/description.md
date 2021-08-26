@@ -1,6 +1,6 @@
 当前组件主要是为了解决：
 
-RangePicker 配置 <i>mode = "['month', 'month']"</i> 时，
+RangeDatePicker 配置 <i>mode = "['month', 'month']"</i> 时，
 
 start和end <b>无法同时选择同一个月份</b> 的问题，
 

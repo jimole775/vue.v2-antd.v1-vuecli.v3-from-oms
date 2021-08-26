@@ -3,8 +3,7 @@
     <template slot="example">
       <STable
         :columns="columns"
-        :data-api="'postworkRuleFlowpage'"
-        :data-dict="'records'"
+        :data-api="'examplesstable5'"
         :is-pagination="false"
         :is-selection="false"
       />
@@ -18,6 +17,7 @@
 </template>
 <script>
 import STable from '@/components/STable'
+import utils from '@/utils'
 import code from './code.md'
 export default {
   title: '栅格修饰',
@@ -30,42 +30,48 @@ export default {
       code,
       columns: [
         {
-          dataIndex: 'col1',
-          slots: { title: 'col1Title' },
+          dataIndex: 'name',
+          slots: { title: 'nameTitle' },
           slotsRender (h, vm) {
             return (
               <div>
-                <span>col1&nbsp;</span>
-                <a-tooltip title="col1提示">
+                <span>姓名&nbsp;</span>
+                <a-tooltip title="姓名提示">
                   <a-icon type="question-circle-o" />
                 </a-tooltip>
               </div>
             )
           },
-          scopedSlots: { customRender: 'col1' },
+          scopedSlots: { customRender: 'name' },
           scopedSlotsRender (h, record, vm) {
-            return <a onClick={ () => alert(record['col1']) }>{ record['col1'] }</a>
+            return <a onClick={ () => alert(record['name']) }>{ record['name'] }</a>
           }
         },
         {
-          title: 'col2',
-          dataIndex: 'col2'
+          title: '年龄',
+          dataIndex: 'age'
         },
         {
-          title: 'col3',
-          dataIndex: 'col3'
+          title: '钱财',
+          dataIndex: 'money',
+          customRender (text) {
+            return `$ ${utils.number2money(text)}`
+          }
         },
         {
-          title: 'col4',
-          dataIndex: 'col4'
+          title: '等级',
+          dataIndex: 'level',
+          customRender (text) {
+            return `lv.${text}`
+          }
         },
         {
-          title: 'col5',
-          dataIndex: 'col5'
+          title: '开始日期',
+          dataIndex: 'start'
         },
         {
-          title: 'col6',
-          dataIndex: 'col6'
+          title: '结束日期',
+          dataIndex: 'end'
         }
       ]
     }

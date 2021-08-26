@@ -3,7 +3,6 @@
   <STable
     :columns="columns"
     :data-api="'postworkRuleFlowpage'"
-    :data-dict="'records'"
     :export-api="'postworkRuleFlowexport'"
     :close-api="'postworkRuleFlowcloseFlow'"
     :revoke-api="'postworkRuleFlowwithdrawFlow'"

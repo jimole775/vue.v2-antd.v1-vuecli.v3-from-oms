@@ -55,7 +55,6 @@ export default {
     },
     openChange (val) {
       this.yearPickShow = val
-      console.log('openChange:', val)
     }
   }
 }

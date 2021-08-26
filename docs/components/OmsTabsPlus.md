@@ -1,11 +1,7 @@
-### 概述
-相对于旧版的 OmsTabs.vue，新增了多tab支持，意思就是可以无限的add new tab，
-不过对 `tabProxy` 属性的要求比较严谨，使用的时候，注意参照样例模板
-
 ### 样例
 ``` vue
 <template>
-  <OmsTabsPlus :ref="'OmsTabsRef'" :tab-proxy="tabProxy" />
+  <STab :ref="'STabRef'" :tab-proxy="tabProxy" />
 </template>
 <script>
 export default {

@@ -393,7 +393,7 @@ export default {
   },
   closeWebviewForMo () {
     console.log('closeWebviewForMo: ', win.location.href)
-    const query = utils.fromQueryString(win.location.href)
+    const query = utils.getParamsFromURL(win.location.href)
     if (query['returnPage'] && query['returnPage'] === 'mo') {
       this.closeWebview()
     }

@@ -6,12 +6,12 @@ import http from '@/utils/http'
 const base = '/mock'
 export default {
   getuser () {
-    return http.get(`${base}/user`)
+    return http.get(`${base}/home/user`)
   },
   getPermissionMenu () {
-    return http.get(`${base}/menu`)
+    return http.get(`${base}/home/menu`)
   },
   getuserpool () {
-    return http.get(`${base}/user-pool`)
+    return http.get(`${base}/home/user-pool`)
   }
 }

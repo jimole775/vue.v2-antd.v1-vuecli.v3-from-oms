@@ -1,5 +1,4 @@
 <script>
-import OmsTabsPlus from '@/components/OmsTabsPlus'
 import { getComponents } from '@/helper/examples/common/util.js'
 const { components } = getComponents(require.context('./', true, /(\.vue)$/))
 export default {
@@ -14,7 +13,7 @@ export default {
   render (h) {
     return (
       <div>
-        <OmsTabsPlus tab-proxy={this.tabProxy} />
+        <STabs tab-proxy={this.tabProxy} />
         {
           this.tabProxy.panes.map((pane) => {
             if (this.tabProxy.activeId === pane.tabId) {

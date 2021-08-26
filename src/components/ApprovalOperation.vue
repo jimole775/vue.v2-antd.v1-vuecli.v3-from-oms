@@ -1,11 +1,7 @@
 <script>
 import utils from '@/utils'
-import Uploader from '@/components/Uploader'
 export default {
   name: 'ApprovalOperation',
-  components: {
-    Uploader
-  },
   props: {
     operationItem: {
       type: Object,

@@ -3,7 +3,6 @@
   <STable
     :columns="columns"
     :data-api="'postworkRuleFlowpage'"
-    :data-dict="'records'"
     :is-pagination="false"
     :is-selection="false"
   />

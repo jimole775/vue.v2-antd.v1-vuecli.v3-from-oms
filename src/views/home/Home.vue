@@ -1,19 +1,19 @@
 <template>
-  <OmsLayout>
+  <SLayout>
     <Phonevalidate ref="PhonevalidateRef" vtype="clock" />
-  </OmsLayout>
+  </SLayout>
 </template>
 
 <script>
 import baseMixins from '@/mixins/baseMixins.js'
 import jumpMixins from '@/mixins/jumpMixins.js'
 import Phonevalidate from '@/components/Phonevalidate.vue'
-import OmsLayout from '@/components/OmsLayout.vue'
+import SLayout from '@/components/SLayout.vue'
 export default {
   name: 'Home',
   mixins: [baseMixins, jumpMixins],
   components: {
-    OmsLayout,
+    SLayout,
     Phonevalidate
   },
   data () {

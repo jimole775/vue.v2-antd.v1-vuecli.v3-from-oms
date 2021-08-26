@@ -4,8 +4,7 @@
       <STable
         :columns="columns"
         :searchor="searchor"
-        :data-api="'ppprojecttmbankpage'"
-        :data-dict="'records'"
+        :data-api="'examplesstable3'"
       />
     </template>
     <template slot="description">
@@ -16,6 +15,7 @@
 </template>
 <script>
 import STable from '@/components/STable'
+import utils from '@/utils'
 import code from './code.md'
 export default {
   title: '查询样例',
@@ -28,70 +28,65 @@ export default {
       code,
       columns: [
         {
-          title: 'col1',
-          dataIndex: 'col1',
-          permission: [0, 1]
+          title: '姓名',
+          dataIndex: 'name'
         },
         {
-          title: 'col2',
-          dataIndex: 'col2',
-          permission: [0, 1]
+          title: '年龄',
+          dataIndex: 'age'
         },
         {
-          title: 'col3',
-          dataIndex: 'col3',
-          permission: [0, 1]
+          title: '钱财',
+          dataIndex: 'money',
+          customRender (text) {
+            return `$ ${utils.number2money(text)}`
+          }
         },
         {
-          title: 'col4',
-          dataIndex: 'col4',
-          permission: [0, 1]
+          title: '等级',
+          dataIndex: 'level',
+          customRender (text) {
+            return `lv.${text}`
+          }
         },
         {
-          title: 'col5',
-          dataIndex: 'col5',
-          permission: [0, 1]
+          title: '开始日期',
+          dataIndex: 'start'
         },
         {
-          title: 'col6',
-          dataIndex: 'col6',
-          permission: [0, 1]
-        },
-        {
-          title: 'col7',
-          dataIndex: 'col7',
-          permission: [0, 1]
+          title: '结束日期',
+          dataIndex: 'end'
         }
       ],
       searchor: [
         {
-          key: 'col1',
-          title: 'col1',
-          component: 'CitySelect',
-          permission: [0, 1]
+          key: 'name',
+          title: '姓名',
+          component: 'AInput'
         },
         {
-          key: 'col2',
-          title: 'col2',
-          dependKey: 'col1', // 依赖 col1 的值
-          component: 'WorkplaceSelect',
-          permission: [0, 1]
+          key: 'age',
+          title: '年龄',
+          component: 'AInput'
         },
         {
-          title: 'col3',
-          keys: ['col31', 'col32'],
-          component: 'RangePicker',
-          permission: [0, 1]
+          key: 'money',
+          title: '钱财',
+          component: 'MoneyInput'
         },
         {
-          title: 'col4',
-          key: 'col4',
+          title: '日期范围',
+          keys: ['start', 'end'],
+          component: 'RangeDatePicker'
+        },
+        {
+          title: '等级',
+          key: 'level',
           props: {
             'group-code': 'dg_tm',
             'value-field': 'itemName'
           },
-          component: 'DictSelect',
-          permission: [0, 1]
+          component: 'DictSelect'
         }
       ]
     }

@@ -104,9 +104,6 @@ export default {
           attrs={formItem.attrs}
           domProps={formItem.domProps}
           disabled={formItem.mode === 'readonly'}
-          initialValue={formItem.value}
-          defaultValue={formItem.value/** Uploader的属性 */}
-          defaultFiles={formItem.value/** UploaderMultiple的属性 */}
           vDecorator={[formItem.key, { initialValue: formItem.value, rules: [{ required: formItem.required, message: `请确认必填项` }] }]}
           onChange={(val) => this.componentChangeEvent(val, formItem)}
         >
