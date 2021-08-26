@@ -95,7 +95,7 @@ function hasInDateRange (key, row, params) {
     const pStart = moment(params[start])
     const rEnd = moment(row[end])
     const pEnd = moment(params[end])
-    return (rStart >= pStart) && (rEnd >= pEnd)
+    return (rStart >= pStart) && (rEnd <= pEnd)
   } else if (key.includes('year')) {
     return moment(sourceString).format('YYYY') === moment(queryMark).format('YYYY')
   } else if (key.includes('month')) {
