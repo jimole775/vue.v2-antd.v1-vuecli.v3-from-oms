@@ -21,7 +21,7 @@ export default {
   data () {
     return {
       dataSource: {
-        orgCode: 'oppo',
+        orgCode: '123',
         defaultList: [{
           region: '',
           workPlace: '',
