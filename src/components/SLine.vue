@@ -4,27 +4,27 @@ export default {
   functional: true,
   name: 'SLine',
   render (h, data) {
-    const { content = '', len = 10, lineEnd = 'ellipsis', rows = 3 } = data.props || {}
-    if (!content) return ''
+    const { value = '', len = 10, lineEnd = 'ellipsis', rows = 3 } = data.props || {}
+    if (!value) return ''
     let sentence = ''
     if (lineEnd === 'break') {
-      sentence = utils.breakSentence(content, len, rows)
+      sentence = utils.breakSentence(value, len, rows)
     } else {
-      sentence = utils.ellipsisSentence(content, len)
+      sentence = utils.ellipsisSentence(value, len)
     }
     if (utils.isString(sentence)) {
-      if (content === sentence) {
-        return <div>{ content }</div>
+      if (value === sentence) {
+        return <div>{ value }</div>
       } else {
         return (
-          <a-tooltip title={content}>
+          <a-tooltip title={value}>
             <div class="overHidden3">{ sentence }</div>
           </a-tooltip>
         )
       }
     } else if (utils.isArray(sentence)) {
       return (
-        <a-tooltip title={content}>
+        <a-tooltip title={value}>
           <div class="overHidden3">
             {
               sentence.map((line) => {
@@ -35,7 +35,7 @@ export default {
         </a-tooltip>
       )
     } else {
-      return <div>{ content }</div>
+      return <div>{ value }</div>
     }
   }
 }

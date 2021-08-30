@@ -5,7 +5,7 @@ export default {
   render (h, data) {
     const { len = 20, name = '', account = '' } = data.props || {}
     return (
-      <SLine len={len} content={spillCurrentHandler(name, account)} />
+      <SLine len={len} value={spillCurrentHandler(name, account)} />
     )
   }
 }

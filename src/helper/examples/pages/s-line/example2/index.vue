@@ -5,7 +5,7 @@
         <SLine
           :len="20"
           :rows="3"
-          :content="text"
+          :value="text"
           :line-end="'break'"
         />
       </div>

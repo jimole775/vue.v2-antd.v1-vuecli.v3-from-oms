@@ -340,7 +340,7 @@ export default {
     fixTextWrapper (h) {
       return (text, record, index) => {
         if (utils.isString(text)) {
-          return (<SLine len={cellMaxCharLen} content={text} />)
+          return (<SLine len={cellMaxCharLen} value={text} />)
         } else {
           return text
         }

@@ -1,7 +1,7 @@
 ``` html
 <template>
   <div class="color">
-    <SLine :content="text" />
+    <SLine :value="text" />
   </div>
 </template>
 <script>

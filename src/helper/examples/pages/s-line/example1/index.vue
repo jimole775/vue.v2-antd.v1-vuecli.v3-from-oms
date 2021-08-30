@@ -2,7 +2,7 @@
   <Panel :code="code" title="省略">
     <template slot="example">
       <div class="color">
-        <SLine :content="text" />
+        <SLine :value="text" />
       </div>
     </template>
     <template slot="description">

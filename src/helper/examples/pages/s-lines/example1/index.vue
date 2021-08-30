@@ -2,7 +2,7 @@
   <Panel :code="code" title="行末省略">
     <template slot="example">
       <div class="color">
-        <SLines :content="text" />
+        <SLines :value="text" />
       </div>
     </template>
     <template slot="description">

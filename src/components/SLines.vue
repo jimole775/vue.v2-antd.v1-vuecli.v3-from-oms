@@ -4,14 +4,14 @@ export default {
   functional: true,
   name: 'SLines',
   render (h, data) {
-    const { len = 20, content = '', lineEnd = 'ellipsis' } = data.props || {}
-    const sentences = getSentences(content)
+    const { len = 20, value = '', lineEnd = 'ellipsis' } = data.props || {}
+    const sentences = getSentences(value)
     return (
       sentences.map((sentence) => {
         if (lineEnd === 'ellipsis') {
           // xxxxx..
           // xxxxx..
-          return <SLine len={len} content={sentence} />
+          return <SLine len={len} value={sentence} />
         } else if (lineEnd === 'break') {
           // xxxxxxx
           // xxx
