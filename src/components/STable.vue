@@ -101,6 +101,10 @@ export default {
     showRank: { // 显示序号
       type: Boolean,
       default: false
+    },
+    bridge: { // 显示序号
+      type: Object,
+      default: () => ({})
     }
   },
   data () {
@@ -116,7 +120,6 @@ export default {
       expandedRowKeys: [],
       columnSlots: [],
       columnScopedSlots: [],
-      vmScope: this,
       modal: {
         show: false,
         info: {},
@@ -271,9 +274,6 @@ export default {
     this.initialize()
     this.fetchImmediate && this.fetchData()
   },
-  beforeUpdate () {
-    this.vmScope = utils.bindVMScopeParent(this)
-  },
   methods: {
     fixFields () {
       // 保持key和dataIndex同时存在
@@ -419,7 +419,7 @@ export default {
       this.searchor.forEach((searchItem) => {
         this.searchorGroups.push(searchItem)
         if (searchItem.beforeRender) {
-          searchItem.beforeRender(this.queryObj, searchItem, this.vmScope)
+          searchItem.beforeRender(this.queryObj, searchItem, this)
         }
         if (searchItem.key) {
           this.$set(this.queryObj, searchItem.key, searchItem.default)
@@ -710,10 +710,9 @@ export default {
 
     // 最后交给定制的回调参数进行调整
     handleParamsByCustom (finalParams) {
-      // const vm = utils.bindVMScopeParent(this)
       this.searchor.forEach((searchItem) => {
         if (searchItem.beforeSubmit) {
-          searchItem.beforeSubmit(finalParams, this.vmScope)
+          searchItem.beforeSubmit(finalParams, this)
         }
       })
       return finalParams
@@ -967,13 +966,11 @@ function buildModal (h) {
 function buildMainTable (h) {
   const slots = []
   const scopedSlots = {}
-  const vmScope = this.vmScope
-  // const vm = utils.bindVMScopeParent(this)
   /* 表头渲染 */
   this.columnSlots.map((columnSlot, index) => {
     const slotName = (columnSlot.slots && columnSlot.slots.title) || ''
     if (columnSlot.slotsRender) {
-      slots.push(<span slot={slotName}>{columnSlot.slotsRender(h, vmScope)}</span>)
+      slots.push(<span slot={slotName}>{columnSlot.slotsRender(h, this)}</span>)
     } else {
       slots.push(<span slot={slotName}>...</span>)
     }
@@ -983,7 +980,7 @@ function buildMainTable (h) {
     const slotName = (columnSlot.scopedSlots && columnSlot.scopedSlots.customRender) || columnSlot.dataIndex || columnSlot.key
     scopedSlots[slotName] = function (text, record, index) {
       if (columnSlot.scopedSlotsRender) {
-        return columnSlot.scopedSlotsRender(h, record, vmScope)
+        return columnSlot.scopedSlotsRender(h, record, this)
       } else {
         return text
       }

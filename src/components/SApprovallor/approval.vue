@@ -30,15 +30,16 @@
             :before-render="beforeRender"
             :business-id="recordData.id"
             :business-type="apimap.logType"
-            :vmprops="{
-              apimap: apimap,
-              tabProxy: tabProxy,
+            :bridge="{
+              ...bridge,
+              apimap,
+              tabProxy,
+              recordData,
+              currentNode,
+              componentItem,
+              activeComponents,
               datasource: basicData,
-              recordData: recordData,
-              currentNode: currentNode,
-              componentItem: componentItem,
               columns: componentItem.columns,
-              activeComponents: activeComponents,
               formItems: componentItem.formItems,
               operationItem: componentItem.operationItem,
             }"
@@ -71,6 +72,10 @@ export default {
     apimap: {
       type: Object,
       required: true
+    },
+    bridge: {
+      type: Object,
+      default: () => ({})
     },
     beforeRender: {
       type: Function,
@@ -222,7 +227,7 @@ export default {
     },
     // 发起审批
     async startApprove (params) {
-      const cparams = this.$props.beforeSubmit(params, utils.bindVMScopeParent(this))
+      const cparams = this.$props.beforeSubmit(params, this)
       const res = await api[this.apimap.approval](cparams)
       if (res.code === 200) {
         this.$message.success('操作成功')

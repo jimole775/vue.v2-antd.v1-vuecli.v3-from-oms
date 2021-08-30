@@ -16,14 +16,17 @@ export default {
       type: Function,
       default: p => p
     },
-    vmprops: {
+    afterRender: {
+      type: Function,
+      default: p => p
+    },
+    bridge: {
       type: Object,
       default: () => ({})
     }
   },
   data () {
     return {
-      vmScope: this,
       form: this.$form.createForm(this)
     }
   },
@@ -63,9 +66,6 @@ export default {
   created () {
     this.initialize()
   },
-  beforeUpdate () {
-    this.vmScope = utils.bindVMScopeParent(this)
-  },
   methods: {
     initialize () {
       const dataSource = this.dataSource
@@ -80,7 +80,7 @@ export default {
       utils.bindDefaultValueForComponent(dataSource, formItems)
 
       this.$nextTick(() => {
-        this.$props.beforeRender(dataSource, formItems, this.vmScope)
+        this.$props.beforeRender(dataSource, formItems, this)
       })
 
       // this.triggeringChangeCallback(dataSource, formItems)
@@ -91,13 +91,13 @@ export default {
         labelC = h('span', { slot: 'label' }, formItem.label)
       }
       if (formItem.labelCustomRender) {
-        labelC = formItem.labelCustomRender(h, formItem, this.vmScope)
+        labelC = formItem.labelCustomRender(h, formItem, this)
       }
       return labelC
     },
     wrapperRender (h, formItem) {
       if (formItem.wrapperCustomRender) {
-        return formItem.wrapperCustomRender(this.$createElement, formItem, this.vmScope)
+        return formItem.wrapperCustomRender(this.$createElement, formItem, this)
       } else if (formItem.component) {
         return (<formItem.component
           props={formItem.props}
@@ -125,12 +125,12 @@ export default {
       })
     },
     componentChangeEvent (val, item) {
-      item.change && item.change(val, item, this.vmScope)
-      this.$emit('change', val, item, this.vmScope)
+      item.change && item.change(val, item, this)
+      this.$emit('change', val, item, this)
     },
     triggeringChangeCallback (dataSource, items) {
       items.forEach((item) => {
-        item.change && item.change(item.value, item, this.vmScope)
+        item.change && item.change(item.value, item, this)
       })
     },
     validateRequiredField () {

@@ -1025,27 +1025,6 @@ const utils = {
     }
     return `${prepath}/${window.encodeURIComponent(fileName)}`
   },
-  bindVMScopeParent (scope) {
-    let correctRef = scope.$vnode && scope.$vnode.data && scope.$vnode.data.ref
-    if (!correctRef) {
-      return new Error('请给当前组件设置"ref"属性，并确保其唯一，以便定位元素位置！')
-    }
-    let proxyVM = {
-      $$target: scope
-    }
-    loopSeeking(scope)
-    function loopSeeking (vm) {
-      if (vm.$refs && vm.$refs[correctRef]) {
-        vm.$$target = scope
-        proxyVM = vm
-      } else {
-        if (vm.$parent) {
-          return loopSeeking(vm.$parent)
-        }
-      }
-    }
-    return proxyVM
-  },
   getFormErrorMessage (error = {}) {
     const field = Object.keys(error)[0] || ''
     const erObj = error[field].errors ? error[field].errors[0] : {}

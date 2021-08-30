@@ -12,6 +12,7 @@
           :transfer-searchor="transferSearchor"
           :stable-row-key="stableRowKey"
           :apply-anchor-text="applyAnchorText"
+          :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
@@ -27,6 +28,7 @@
           :apimap="c.apimap"
           :apply-config="c.applyConfig"
           :ref="'ProjectApplyRef' + c.tabId"
+          :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
@@ -42,6 +44,7 @@
           :key="c.tabId"
           :apimap="c.apimap"
           :approval-config="c.approvalConfig"
+          :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
@@ -102,6 +105,10 @@ export default {
     beforeSubmit: {
       type: Function,
       default: p => p
+    },
+    bridge: {
+      type: Object,
+      default: () => ({})
     }
   },
   data () {

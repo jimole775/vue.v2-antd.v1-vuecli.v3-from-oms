@@ -7,7 +7,7 @@ export default {
       type: Object,
       default: () => ({})
     },
-    vmprops: {
+    bridge: {
       type: Object,
       default: () => ({})
     }
@@ -25,7 +25,7 @@ export default {
         this.operationItem.radios.forEach((radioItem) => {
           if (Number.parseInt(value) === Number.parseInt(radioItem.value)) {
             if (radioItem.event && utils.isFunction(radioItem.event)) {
-              radioItem.event(value, this.operationItem, utils.bindVMScopeParent(this))
+              radioItem.event(value, this.operationItem, this)
             }
           }
         })
@@ -39,7 +39,7 @@ export default {
         pureval = val
       }
       if (inputItem.change && utils.isFunction(inputItem.change)) {
-        inputItem.change(pureval, this.operationItem, utils.bindVMScopeParent(this))
+        inputItem.change(pureval, this.operationItem, this)
       }
     },
     async emitSubmit () {
@@ -168,14 +168,14 @@ function labelRender (h, inputItem, index) {
     labelC = h('span', { slot: 'label' }, inputItem.label)
   }
   if (inputItem.labelCustomRender) {
-    labelC = inputItem.labelCustomRender(h, inputItem, utils.bindVMScopeParent(this))
+    labelC = inputItem.labelCustomRender(h, inputItem, this)
   }
   return labelC
 }
 
 function wrapperRender (h, inputItem, index) {
   if (inputItem.wrapperCustomRender) {
-    return inputItem.wrapperCustomRender(this.$createElement, inputItem, utils.bindVMScopeParent(this))
+    return inputItem.wrapperCustomRender(this.$createElement, inputItem, this)
   } else {
     return (
       <inputItem.component
@@ -193,7 +193,7 @@ function wrapperRender (h, inputItem, index) {
 
 function buildFooter (h) {
   if (this.operationItem.footerCustomRender) {
-    return this.operationItem.footerCustomRender(h, this.operationItem, utils.bindVMScopeParent(this))
+    return this.operationItem.footerCustomRender(h, this.operationItem, this)
   } else {
     return (
       <a-form-item

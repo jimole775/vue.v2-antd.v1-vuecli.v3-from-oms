@@ -28,6 +28,10 @@ export default {
     transferSearchor: {
       type: Function,
       required: true
+    },
+    bridge: {
+      type: Object,
+      default: () => ({})
     }
   },
   data () {
@@ -91,6 +95,7 @@ export default {
       <div>
         <STable
           ref={'STableRef'}
+          bridge={this.bridge}
           columns={this.columns}
           searchor={this.searchor}
           row-key={stableRowKey}

@@ -20,7 +20,8 @@
             :active-components="activeComponents"
             :mode="componentItem.mode"
             :tab-proxy="tabProxy"
-            :vmprops="{
+            :bridge="{
+              ...bridge,
               apimap,
               tabProxy,
               applyConfig,
@@ -55,6 +56,10 @@ export default {
     tabProxy: {
       type: Object,
       required: true
+    },
+    bridge: {
+      type: Object,
+      default: () => ({})
     },
     beforeRender: {
       type: Function,
@@ -107,7 +112,7 @@ export default {
     },
     // 发起审批
     async startApprove (params) {
-      const cparams = this.$props.beforeSubmit(params, utils.bindVMScopeParent(this))
+      const cparams = this.$props.beforeSubmit(params, this)
       const res = await api[this.apimap.apply](cparams)
       if (res.code === 200) {
         this.$message.success('操作成功')
