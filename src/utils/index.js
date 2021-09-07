@@ -1056,26 +1056,6 @@ const utils = {
     const date = (no + '').substring(12, 14)
     return `${year}-${month}-${date}`
   },
-  /**
-   * 新窗口打开一个页面
-   * @param {Object|Map} targetDetail
-   * @return {Undefined}
-   * @template newWindow()
-   * @template newWindow({
-   *  id: '',【可选】
-   *  businessId: 1004,【必填】
-   *  businessCategory: 'RECRUITION'【必填】
-   * })
-   */
-  newWindow (targetDetail) {
-    if (targetDetail && targetDetail.businessCategory) {
-      // 另开一个页面展示
-      const params = base64.encode(JSON.stringify(targetDetail))
-      window.open(`?omsjump=${params}`)
-    } else {
-      window.open()
-    }
-  },
   readBlobAsText (blob) {
     return new Promise((resolve, reject) => {
       if (this.isBlob(blob)) {
