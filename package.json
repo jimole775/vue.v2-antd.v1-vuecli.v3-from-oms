@@ -13,7 +13,7 @@
     "make:CHANGELOG": "conventional-changelog -p angular -i docs/CHANGELOG.md -s -r 0",
     "track:CHANGELOG": "git add docs/CHANGELOG.md",
     "handup:CHANGELOG": "git commit docs/CHANGELOG.md -m \"chore: 创建周迭代CHANGELOG\"",
-    "version": "npm run update:version && npm run make:CHANGELOG && npm run track:CHANGELOG && npm run handup:CHANGELOG",
+    "version": "npm pull && npm run update:version && npm run make:CHANGELOG && npm run track:CHANGELOG && npm run handup:CHANGELOG",
     "postversion": "npm run make:tag && git push && git push --tags"
   },
   "dependencies": {
@@ -59,7 +59,8 @@
     "markdown-loader": "^6.0.0",
     "marked": "^0.7.0",
     "mockjs": "^1.1.0",
-    "vue-template-compiler": "^2.5.21"
+    "vue-template-compiler": "^2.5.21",
+    "webpack-bundle-analyzer": "^4.4.2"
   },
   "gitHooks": {
     "pre-commit": "lint-staged",

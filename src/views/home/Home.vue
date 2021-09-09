@@ -6,12 +6,11 @@
 
 <script>
 import baseMixins from '@/mixins/baseMixins.js'
-import jumpMixins from '@/mixins/jumpMixins.js'
 import Phonevalidate from '@/components/Phonevalidate.vue'
 import SLayout from '@/components/SLayout.vue'
 export default {
   name: 'Home',
-  mixins: [baseMixins, jumpMixins],
+  mixins: [baseMixins],
   components: {
     SLayout,
     Phonevalidate

@@ -6,11 +6,10 @@
 <script>
 import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN'
 import watermark from 'watermark-dom'
-import jumpMixins from '@/mixins/jumpMixins.js'
 import { getOMSJump, removeOMSJump } from '@/utils/auth'
+import jumper from '@/utils/jumper'
 import utils from '@/utils'
 export default {
-  mixins: [jumpMixins],
   data () {
     return {
       locale: zhCN,
@@ -54,7 +53,8 @@ export default {
       const jumpdata = getOMSJump()
       if (jumpdata && jumpdata.length > 2) {
         removeOMSJump()
-        this.mixin_jumping.apply(jumpMixins, [JSON.parse(jumpdata), 'detail', 'approve'])
+        const params = utils.isJSONString(jumpdata) ? JSON.parse(jumpdata) : jumpdata
+        jumper.go(params)
       }
     },
     getMenusList (tempData) {
