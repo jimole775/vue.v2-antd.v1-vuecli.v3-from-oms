@@ -34,6 +34,10 @@ export default {
       type: Object | Function,
       default: () => ({})
     },
+    validate: {
+      type: Function,
+      default: () => true
+    },
     fileName: {
       type: String,
       default: '导出文件'
@@ -75,6 +79,8 @@ export default {
       }
     },
     async sniffExports () {
+      const pass = this.validate()
+      if (!pass) return false
       let res = null
       Vue.bus.emit('loading', true)
       const apiFun = api[this.api]
