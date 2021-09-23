@@ -27,10 +27,10 @@ export default {
     } else if (utils.isArray(sentence)) {
       return (
         <a-tooltip title={value}>
-          <div class="line-standard" style={style}>
+          <div class="line-multiple" style={style}>
             {
               sentence.map((line) => {
-                return <div class="line-standard">{ line }</div>
+                return <div>{ line }</div>
               })
             }
           </div>

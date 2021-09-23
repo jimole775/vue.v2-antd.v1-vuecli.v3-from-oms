@@ -22,7 +22,7 @@ export default {
               // xxxxx
               const lines = utils.breakSentence(sentence, len)
               return lines.map(line => {
-                return <div class="line-standard">{ line }</div>
+                return <div class="line-multiple">{ line }</div>
               })
             } else {
               return ''
