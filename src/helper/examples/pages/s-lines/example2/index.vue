@@ -2,7 +2,7 @@
   <Panel :code="code" title="行末换行">
     <template slot="example">
       <div class="color">
-        <SLines :value="text" :len="20" line-end="break" />
+        <SLines :value="text" :len="20" line-end="break" :rows="3" />
       </div>
     </template>
     <template slot="description">

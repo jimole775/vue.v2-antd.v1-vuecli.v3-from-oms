@@ -1,37 +1,84 @@
 <script>
 import utils from '@/utils'
 export default {
-  functional: true,
   name: 'SLines',
-  render (h, vm) {
-    const { len = 20, value = '', lineEnd = 'ellipsis' } = vm.props || {}
-    const style = vm.data.style || {}
-    const sentences = getSentences(value)
-    return (
-      <div style={style}>
-        {
-          sentences.map((sentence) => {
-            if (lineEnd === 'ellipsis') {
-              // xxxxx..
-              // xxxxx..
-              return <SLine style={style} len={len} value={sentence} />
-            } else if (lineEnd === 'break') {
-              // xxxxxxx
-              // xxx
-              // xxxxxxx
-              // xxxxx
-              const lines = utils.breakSentence(sentence, len)
-              return lines.map(line => {
-                return <div class="line-multiple">{ line }</div>
-              })
-            } else {
-              return ''
-            }
+  props: {
+    value: {
+      type: String,
+      default: ''
+    },
+    len: {
+      type: Number,
+      default: 20
+    },
+    lineEnd: {
+      type: String,
+      default: 'ellipsis'
+    },
+    rows: {
+      type: Number,
+      default: 0
+    }
+  },
+  render (h) {
+    const text = this.value || getChildrenText(this.$children)
+    if (utils.isNone(text)) return ''
+    const sentences = getSentences(text)
+    if (sentences.length === 1) {
+      return <SLine len={this.len} value={sentences[0]} />
+    } else {
+      let multiSentences = sentences
+      // 裁剪多余行
+      if (this.rows > 0 && sentences.length > this.rows) {
+        multiSentences = sentences.slice(0, this.rows)
+      }
+      multiSentences = multiSentences.map((sentence) => {
+        if (this.lineEnd === 'ellipsis') {
+          // xxxxx..
+          // xxxxx..
+          return <SLine len={this.len} value={sentence} />
+        } else if (this.lineEnd === 'break') {
+          // xxxxxxx
+          // xxx
+          // xxxxxxx
+          // xxxxx
+          return utils.breakSentence(sentence, this.len).map(line => {
+            return <div>{ line }</div>
           })
+        } else {
+          return ''
         }
-      </div>
-    )
+      })
+      // 增加查看全部文本的锚点
+      if (this.rows > 0 && sentences.length > this.rows) {
+        multiSentences.push(
+          <div>
+            <a style="color: inherit" onClick={ () => this.$modal.warning({
+              title: '提示',
+              content: sentences.join('\r\n')
+            })}>...</a>
+          </div>
+        )
+      }
+      return (
+        <div class="line-multiple">
+          {
+            multiSentences
+          }
+        </div>
+      )
+    }
   }
+}
+
+function getChildrenText (children = []) {
+  let res = ''
+  children.forEach((vnode) => {
+    if (vnode.text) {
+      res += vnode.text + '\n'
+    }
+  })
+  return res
 }
 
 function getSentences (content) {

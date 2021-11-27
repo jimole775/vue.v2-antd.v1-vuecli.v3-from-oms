@@ -5,10 +5,10 @@ const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 module.exports = {
   configureWebpack: {
     devtool: 'source-map',
-    plugins: [new BundleAnalyzerPlugin({
-      analyzerHost: 'localhost',
-      analyzerPort: '8088'
-    })]
+    // plugins: [new BundleAnalyzerPlugin({
+    //   analyzerHost: 'localhost',
+    //   analyzerPort: '8088'
+    // })]
   },
   chainWebpack: config => {
     config.module

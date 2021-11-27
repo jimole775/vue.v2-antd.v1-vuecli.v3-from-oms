@@ -5,7 +5,7 @@ import { Modal } from 'ant-design-vue'
 import axios from 'axios'
 import { getToken } from './auth'
 import store from '@/store'
-import base64 from './base64'
+// import base64 from './base64'
 moment.locale('zh-cn')
 const utils = {
   moment,

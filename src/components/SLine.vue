@@ -1,44 +1,90 @@
 <script>
 import utils from '@/utils'
 export default {
-  functional: true,
   name: 'SLine',
-  render (h, vm) {
-    const { value = '', len = 10, lineEnd = 'ellipsis', rows = 3 } = vm.props || {}
-    const style = vm.data.style || {}
-    if (!value) return ''
+  props: {
+    value: {
+      type: String,
+      default: ''
+    },
+    len: {
+      type: Number,
+      default: 20
+    },
+    lineEnd: {
+      type: String,
+      default: 'ellipsis'
+    },
+    rows: {
+      type: Number,
+      default: 0
+    }
+  },
+  methods: {
+    showmodal (text) {
+      this.$modal.warning({
+        title: '提示',
+        content: text
+      })
+    },
+    getChildrenText (children = []) {
+      let res = ''
+      children.forEach((vnode) => {
+        if (vnode.text) {
+          res += vnode.text + '\n'
+        }
+      })
+      return res
+    }
+  },
+  render (h) {
+    const text = this.value || this.getChildrenText(this.$children)
+    if (utils.isNone(text)) return ''
     let sentence = ''
-    if (lineEnd === 'break') {
-      sentence = utils.breakSentence(value, len, rows)
+    if (this.lineEnd === 'break') {
+      sentence = utils.breakSentence(text, this.len, this.rows)
     }
-    if (lineEnd === 'ellipsis') {
-      sentence = utils.ellipsisSentence(value, len)
+    if (this.lineEnd === 'ellipsis') {
+      sentence = utils.ellipsisSentence(text, this.len)
     }
+    // 只有一行
     if (utils.isString(sentence)) {
-      if (value === sentence) {
-        return <div class="line-standard" style={style}>{ value }</div>
+      if (/(\.\.\.)$/.test(sentence)) {
+        // 有省略
+        return <div class="line-standard">
+          <a style="color: inherit" onClick={() => {
+            this.showmodal(text)
+          }}>{ sentence }</a>
+        </div>
       } else {
-        return (
-          <a-tooltip title={value}>
-            <div class="line-standard" style={style}>{ sentence }</div>
-          </a-tooltip>
-        )
+        // 无省略
+        return <div class="line-standard">{ sentence }</div>
       }
     } else if (utils.isArray(sentence)) {
+      // 多行
       return (
-        <a-tooltip title={value}>
-          <div class="line-multiple" style={style}>
-            {
-              sentence.map((line) => {
+        <div class="line-multiple">
+          {
+            sentence.map((line) => {
+              if (/(\.\.\.)$/.test(line)) {
+                // 有省略
+                return <div>
+                  <a style="color: inherit" onClick={() => {
+                    this.showmodal(text)
+                  }}>{ line }</a>
+                </div>
+              } else {
+                // 无省略
                 return <div>{ line }</div>
-              })
-            }
-          </div>
-        </a-tooltip>
+              }
+            })
+          }
+        </div>
       )
     } else {
-      return <div class="line-standard" style={style}>{ value }</div>
+      return <div class="line-standard">{ sentence }</div>
     }
   }
 }
+
 </script>
