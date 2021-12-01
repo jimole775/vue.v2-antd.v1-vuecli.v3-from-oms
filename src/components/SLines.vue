@@ -25,7 +25,11 @@ export default {
     if (utils.isNone(text)) return ''
     const sentences = getSentences(text)
     if (sentences.length === 1) {
-      return <SLine len={this.len} value={sentences[0]} />
+      if (this.rows > 0) {
+        return <SLine len={this.len} value={sentences[0]} line-end={'break'} rows={this.rows} />
+      } else {
+        return <SLine len={this.len} value={sentences[0]} line-end={'ellipsis'} />
+      }
     } else {
       let multiSentences = sentences
       // 裁剪多余行
