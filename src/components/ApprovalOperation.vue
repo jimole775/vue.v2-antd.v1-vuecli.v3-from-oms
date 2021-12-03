@@ -14,6 +14,7 @@ export default {
   },
   data () {
     return {
+      scope: this,
       approvalResult: '1',
       form: this.$form.createForm(this)
     }
@@ -24,8 +25,8 @@ export default {
       if (this.operationItem.radios) {
         this.operationItem.radios.forEach((radioItem) => {
           if (Number.parseInt(value) === Number.parseInt(radioItem.value)) {
-            if (radioItem.event && utils.isFunction(radioItem.event)) {
-              radioItem.event(value, this.operationItem, this)
+            if (utils.isFunction(radioItem.onChecked)) {
+              radioItem.onChecked(value, this.operationItem, this)
             }
           }
         })
@@ -38,8 +39,8 @@ export default {
       } else {
         pureval = val
       }
-      if (inputItem.change && utils.isFunction(inputItem.change)) {
-        inputItem.change(pureval, this.operationItem, this)
+      if (utils.isFunction(inputItem.onChange)) {
+        inputItem.onChange(pureval, this.operationItem, this)
       }
     },
     async emitSubmit () {
@@ -52,6 +53,17 @@ export default {
       } else {
         this.$emit('submit', res.data)
       }
+    },
+    formatParams (values) {
+      // 只处理 inputs 的参数，不处理 radios 的
+      const inputs = this.operationItem.inputs || []
+      let params = utils.clone(values)
+      inputs.forEach((item) => {
+        if (item.paramTransfer && utils.isFunction(item.paramTransfer)) {
+          params = item.paramTransfer(params, this.scope)
+        }
+      })
+      return params
     },
     getFieldsValue () {
       return new Promise((resolve) => {
@@ -67,7 +79,7 @@ export default {
               type: 'success',
               data: {
                 approvalResult: this.approvalResult,
-                ...utils.formatFormValues(values, this.operationItem.inputs)
+                ...this.formatParams(values)
               },
               message: ''
             })
@@ -139,20 +151,22 @@ function buildRadios (h) {
 function buildInputs (h) {
   if (this.operationItem.inputs) {
     return this.operationItem.inputs.map((inputItem, index) => {
-      if (inputItem.permissions.includes(this.approvalResult)) {
-        return (
-          <a-col span={inputItem.layout ? inputItem.layout.span : 8}>
-            <a-form-item
-              label-col={{ span: inputItem.layout ? inputItem.layout.label : 6 }}
-              wrapper-col={{ span: inputItem.layout ? inputItem.layout.wrapper : 16 }}
-            >
-              {[
-                labelRender.apply(this, [h, inputItem, index]),
-                wrapperRender.apply(this, [h, inputItem, index])
-              ]}
-            </a-form-item>
-          </a-col>
-        )
+      if ((utils.isArray(inputItem.show) && inputItem.show.includes(this.approvalResult)) ||
+        (utils.isBoolean(inputItem.show) && inputItem.show) ||
+        (utils.isFunction(inputItem.show) && inputItem.show(inputItem, this.scope))) {
+          return (
+            <a-col span={inputItem.layout ? inputItem.layout.span : 8}>
+              <a-form-item
+                label-col={{ span: inputItem.layout ? inputItem.layout.label : 6 }}
+                wrapper-col={{ span: inputItem.layout ? inputItem.layout.wrapper : 16 }}
+              >
+                {[
+                  labelRender.apply(this, [h, inputItem, index]),
+                  wrapperRender.apply(this, [h, inputItem, index])
+                ]}
+              </a-form-item>
+            </a-col>
+          )
       } else {
         return ''
       }
@@ -184,7 +198,10 @@ function wrapperRender (h, inputItem, index) {
         props={inputItem.props}
         attrs={inputItem.attrs}
         domProps={inputItem.domProps}
-        vDecorator={[inputItem.key, { initialValue: inputItem.default || inputItem.value, rules: [{ required: inputItem.required, message: `请确认${inputItem.label}` }] }]}
+        vDecorator={[inputItem.key, {
+          initialValue: utils.isFunction(inputItem.default) ? inputItem.default(inputItem, this.scope) : inputItem.default,
+          rules: [{ required: inputItem.required, message: `请确认${inputItem.label}` }]
+        }]}
         onChange={(val, option) => this.changeEventForInput(val, option, inputItem)}
       />
     )

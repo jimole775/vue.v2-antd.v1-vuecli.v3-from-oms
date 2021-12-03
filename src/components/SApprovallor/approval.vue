@@ -177,14 +177,9 @@ export default {
           component.componentName === 'ApprovalOperation') {
           const inputs = component.operationItem.inputs || []
           inputs.forEach((item) => {
-            if (item.permissions.includes(params.approvalResult)) {
+            if (item.show.includes(params.approvalResult)) {
               if (item.required === true) {
-                if (item.paramKeys) {
-                  requiredFields = [...requiredFields, ...item.paramKeys]
-                } else if (item.key) {
-                  // 如果没有 item.paramKeys，默认就是 item.key
-                  requiredFields.push(item.key)
-                }
+                requiredFields.push(item.key)
               }
             }
           })
