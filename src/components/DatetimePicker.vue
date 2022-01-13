@@ -22,7 +22,9 @@
 <script>
 import utils from '@/utils'
 export default {
+  title: '时分秒选择',
   name: 'DatetimePicker',
+  forBuilder: true,
   data () {
     return {
       dateVal: null,

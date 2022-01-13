@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex'
 import STable from '@/components/STable'
 import utils from '@/utils'
 import baseMixins from '@/mixins/baseMixins.js'
@@ -41,17 +42,34 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      user: state => state.global.user,
+      roleType: state => state.global.userRole.type
+    }),
+    isOutsideStuff () {
+      return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
+    },
     searchor () {
-      return this.transferSearchor(this.listConfig.searchor || [])
+      return this.transferSearchor(this.queryPermissionItem(this.listConfig.searchor || []))
     },
     columns () {
       const columns = this.listConfig.columns || []
-      return columns.map((colItem) => {
-        return colItem
-      })
+      return this.queryPermissionItem(columns)
     }
   },
   methods: {
+    queryPermissionItem (list) {
+      // 外部人员标识为1，内部为0
+      const SIGN = this.isOutsideStuff ? 1 : 0
+      return list.filter(item => {
+        if (!utils.isEmpty(item.permission)) {
+          // item.permission 中被填入的有可能时字符串，也有可能是数字
+          return item.permission.includes(SIGN) || item.permission.includes(SIGN + '')
+        } else {
+          return true
+        }
+      })
+    },
     fixTextWrapper () {
       // 如果文本长度超过20，就省略掉
       const h = this.$createElement
@@ -95,7 +113,12 @@ export default {
       <div>
         <STable
           ref={'STableRef'}
-          bridge={this.bridge}
+          bridge={{
+            ...this.bridge,
+            reload: this.reload,
+            projectApply: this.projectApply,
+            projectApproval: this.projectApproval
+          }}
           columns={this.columns}
           searchor={this.searchor}
           row-key={stableRowKey}

@@ -15,7 +15,9 @@
 <script>
 import api from '@/api'
 export default {
+  title: '工作地选择',
   name: 'WorkplaceSelect',
+  forBuilder: true,
   props: {
     disabled: {
       type: Boolean,

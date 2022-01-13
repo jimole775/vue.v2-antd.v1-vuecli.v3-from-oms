@@ -38,7 +38,7 @@
               currentNode,
               componentItem,
               activeComponents,
-              datasource: basicData,
+              dataSource: basicData,
               columns: componentItem.columns,
               formItems: componentItem.formItems,
               operationItem: componentItem.operationItem,
@@ -88,6 +88,7 @@ export default {
   },
   data () {
     return {
+      scope: this,
       currentPane: {},
       basicData: {},
       currentNode: {},
@@ -111,6 +112,9 @@ export default {
           }
           if (utils.isNone(item.component)) {
             item.componentName = 'customRender'
+          }
+          if (item.show === undefined) {
+            item.show = true
           }
           return item
         })
@@ -148,6 +152,7 @@ export default {
   },
   methods: {
     updateCurrentNode (node) {
+      // 获取审批节点信息，并刷新组件
       this.currentNode = node
     },
     // 获取每个模块的form数据
@@ -222,7 +227,7 @@ export default {
     },
     // 发起审批
     async startApprove (params) {
-      const cparams = this.$props.beforeSubmit(params, this)
+      const cparams = this.$props.beforeSubmit(params, this.scope)
       const res = await api[this.apimap.approval](cparams)
       if (res.code === 200) {
         this.$message.success('操作成功')

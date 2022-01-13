@@ -1,7 +1,23 @@
 <script>
 export default {
+  title: '处理人解析',
+  forBuilder: true,
   functional: true,
   name: 'HandlerTableCell',
+  props: {
+    len: {
+      type: Number,
+      default: 20
+    },
+    name: {
+      type: String,
+      default: ''
+    },
+    account: {
+      type: String,
+      default: ''
+    }
+  },
   render (h, data) {
     const { len = 20, name = '', account = '' } = data.props || {}
     return (

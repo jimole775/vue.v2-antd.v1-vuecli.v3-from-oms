@@ -5,6 +5,7 @@ const indexKey = '_index_'
 // 如果文本长度超过20，就省略掉
 const cellMaxCharLen = 20
 export default {
+  title: '标准表格',
   props: {
     columns: {
       type: Array,
@@ -102,7 +103,11 @@ export default {
       type: Boolean,
       default: false
     },
-    bridge: { // 显示序号
+    moduleName: { // 当前菜单名，主要用于下载列表
+      type: String,
+      default: '异步列表'
+    },
+    bridge: {
       type: Object,
       default: () => ({})
     }
@@ -120,6 +125,7 @@ export default {
       expandedRowKeys: [],
       columnSlots: [],
       columnScopedSlots: [],
+      scope: this,
       modal: {
         show: false,
         info: {},
@@ -419,16 +425,17 @@ export default {
       this.searchor.forEach((searchItem) => {
         this.searchorGroups.push(searchItem)
         if (searchItem.beforeRender) {
-          searchItem.beforeRender(this.queryObj, searchItem, this)
+          searchItem.beforeRender(this.queryObj, searchItem, this.scope)
         }
+        const defvalue = utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default
         if (searchItem.key) {
-          this.$set(this.queryObj, searchItem.key, searchItem.default)
-          if (searchItem.default) {
-            this.simpleSelectEvent(searchItem.default, null, searchItem)
+          this.$set(this.queryObj, searchItem.key, defvalue)
+          if (defvalue) {
+            this.simpleSelectEvent(defvalue, null, searchItem)
           }
         }
         if (searchItem.keys) {
-          this.multiSelectEvent(searchItem.default, null, searchItem)
+          this.multiSelectEvent(defvalue, null, searchItem)
         }
       })
     },
@@ -679,7 +686,7 @@ export default {
       // 转换 Moment 类型的值
       Object.keys(queryParams).forEach((key) => {
         if (queryParams[key] instanceof utils.moment) {
-          queryParams[key] = utils.date2YMD(queryParams[key])
+          queryParams[key] = utils.moment(queryParams[key]).format('YYYY-MM-DD')
         }
       })
 
@@ -712,21 +719,21 @@ export default {
     handleParamsByCustom (finalParams) {
       this.searchor.forEach((searchItem) => {
         if (searchItem.beforeSubmit) {
-          searchItem.beforeSubmit(finalParams, this)
+          searchItem.beforeSubmit(finalParams, this.scope)
         }
       })
       return finalParams
     },
 
     // 导出
-    exportOut () {
-      if (this.dataList.length === 0) {
-        return this.$modal.warning({
-          title: '提示',
-          okText: '确定',
-          content: '暂无数据导出!'
-        })
-      }
+    exportParams () {
+      // if (this.dataList.length === 0) {
+      //   return this.$modal.warning({
+      //     title: '提示',
+      //     okText: '确定',
+      //     content: '暂无数据导出!'
+      //   })
+      // }
       // eslint-disable-next-line no-unused-vars
       const ids = []
       if (this.selectedRows && this.selectedRows.length > 0) {
@@ -735,7 +742,8 @@ export default {
         })
         // ids = ids.substring(0, ids.length - 1)
       }
-      this.getApiFunction(this.exportApi)(this.formatQueryObj({ selectedRows: this.selectedRows, ids }))
+      return this.formatQueryObj({ selectedRows: this.selectedRows, ids })
+      // this.getApiFunction(this.exportApi)(this.formatQueryObj({ selectedRows: this.selectedRows, ids }))
     },
     // 导入模板下载
     downLoadTemplate () {
@@ -814,6 +822,7 @@ export default {
       this.pagination.pageSize = val.pageSize
       this.fetchData()
     },
+
     spillComponentRef (searchItem) {
       return `${searchItem.componentName}${searchItem.key ? searchItem.key : searchItem.keys[0]}`
     }
@@ -891,15 +900,11 @@ function buildsummaryBaseButtons (h) {
       </a-upload>
     )
   }
-  if (this.exportApi) {
+  if (this.exportApi && this.dataList.length > 0) {
     buttons.push(
-      <a-tooltip>
-        <template slot={'title'}>导出</template>
-        <a-button
-          onClick={() => this.exportOut()}
-          class={'cir-button button-export'}
-        />
-      </a-tooltip>
+      <span style="padding: 0 0.5rem">
+        <ExportExcel api={this.exportApi} params={() => this.exportParams()} file-name={this.moduleName} />
+      </span>
     )
   }
   if (this.templateApi) {
@@ -966,11 +971,12 @@ function buildModal (h) {
 function buildMainTable (h) {
   const slots = []
   const scopedSlots = {}
+  const scope = this.scope
   /* 表头渲染 */
   this.columnSlots.map((columnSlot, index) => {
     const slotName = (columnSlot.slots && columnSlot.slots.title) || ''
     if (columnSlot.slotsRender) {
-      slots.push(<span slot={slotName}>{columnSlot.slotsRender(h, this)}</span>)
+      slots.push(<span slot={slotName}>{columnSlot.slotsRender(h, scope)}</span>)
     } else {
       slots.push(<span slot={slotName}>...</span>)
     }
@@ -980,7 +986,7 @@ function buildMainTable (h) {
     const slotName = (columnSlot.scopedSlots && columnSlot.scopedSlots.customRender) || columnSlot.dataIndex || columnSlot.key
     scopedSlots[slotName] = function (text, record, index) {
       if (columnSlot.scopedSlotsRender) {
-        return columnSlot.scopedSlotsRender(h, record, this)
+        return columnSlot.scopedSlotsRender(h, record, scope)
       } else {
         return text
       }
@@ -1045,14 +1051,13 @@ function buildSearchorGroup (h) {
       return ''
     }
   }
-
   function createFormItem (searchItem) {
     return <searchItem.component
       props={searchItem.props}
       attrs={searchItem.attrs}
       dom-attrs={searchItem.domAttrs}
       allow-clear={!searchItem.required}
-      value={searchItem.default}
+      value={utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default}
       ref={this.spillComponentRef(searchItem)}
       depend={this.queryObj[searchItem.dependKey]}
       onKeyup={(e) => /13/.test(e.keyCode) && this.fetchData()}

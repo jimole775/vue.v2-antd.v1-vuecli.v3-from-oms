@@ -1,26 +1,30 @@
 <template>
-  <Panel :code="code" title="极值案例">
+  <Panel :code="code" title="限定案例" :description="description">
     <template slot="example">
       <div style="width: 300px">
-        <MoneyInput v-model="value" :min="0" :max="10000" />
+        <SMoney
+          v-model="value"
+          restrict="negative"
+          :min="-10000"
+          :max="0"
+        />
         <br>
         <br>
         <a-button type="primary" @click="submitEvent">提交</a-button>
       </div>
     </template>
-    <template slot="description">
-      设置最大最小值
-    </template>
   </Panel>
 </template>
 <script>
 import code from './code.md'
+import description from './description.md'
 export default {
-  title: '极值案例',
-  name: 'Example2',
+  title: '限定案例',
+  name: 'Example3',
   data () {
     return {
       code,
+      description,
       value: 20000
     }
   },

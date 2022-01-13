@@ -11,7 +11,9 @@
 
 <script>
 export default {
+  title: '字典(radio)',
   name: 'DictGroupRadio',
+  forBuilder: true,
   props: {
     disabled: {
       type: Boolean,

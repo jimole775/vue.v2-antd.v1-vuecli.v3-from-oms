@@ -1,14 +1,7 @@
 ``` html
 <template>
   <div style="width: 300px">
-    <MoneyInput
-      v-model="value"
-      restrict="negative"
-      :min="-10000"
-      :max="0"
-    />
-    <br>
-    <br>
+    <SMoney v-model="value" :min="0" :max="10000" />
     <a-button type="primary" @click="submitEvent">提交</a-button>
   </div>
 </template>

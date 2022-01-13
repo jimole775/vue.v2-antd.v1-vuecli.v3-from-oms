@@ -1,6 +1,7 @@
 <script>
 import utils from '@/utils'
 export default {
+  title: '审批模块',
   name: 'ApprovalOperation',
   props: {
     operationItem: {
@@ -26,7 +27,7 @@ export default {
         this.operationItem.radios.forEach((radioItem) => {
           if (Number.parseInt(value) === Number.parseInt(radioItem.value)) {
             if (utils.isFunction(radioItem.onChecked)) {
-              radioItem.onChecked(value, this.operationItem, this)
+              radioItem.onChecked(value, this.operationItem, this.scope)
             }
           }
         })
@@ -40,7 +41,7 @@ export default {
         pureval = val
       }
       if (utils.isFunction(inputItem.onChange)) {
-        inputItem.onChange(pureval, this.operationItem, this)
+        inputItem.onChange(pureval, this.operationItem, this.scope)
       }
     },
     async emitSubmit () {
@@ -154,19 +155,19 @@ function buildInputs (h) {
       if ((utils.isArray(inputItem.show) && inputItem.show.includes(this.approvalResult)) ||
         (utils.isBoolean(inputItem.show) && inputItem.show) ||
         (utils.isFunction(inputItem.show) && inputItem.show(inputItem, this.scope))) {
-          return (
-            <a-col span={inputItem.layout ? inputItem.layout.span : 8}>
-              <a-form-item
-                label-col={{ span: inputItem.layout ? inputItem.layout.label : 6 }}
-                wrapper-col={{ span: inputItem.layout ? inputItem.layout.wrapper : 16 }}
-              >
-                {[
-                  labelRender.apply(this, [h, inputItem, index]),
-                  wrapperRender.apply(this, [h, inputItem, index])
-                ]}
-              </a-form-item>
-            </a-col>
-          )
+        return (
+          <a-col span={inputItem.layout ? inputItem.layout.span : 8}>
+            <a-form-item
+              label-col={{ span: inputItem.layout ? inputItem.layout.label : 6 }}
+              wrapper-col={{ span: inputItem.layout ? inputItem.layout.wrapper : 16 }}
+            >
+              {[
+                labelRender.apply(this, [h, inputItem, index]),
+                wrapperRender.apply(this, [h, inputItem, index])
+              ]}
+            </a-form-item>
+          </a-col>
+        )
       } else {
         return ''
       }
@@ -182,14 +183,14 @@ function labelRender (h, inputItem, index) {
     labelC = h('span', { slot: 'label' }, inputItem.label)
   }
   if (inputItem.labelCustomRender) {
-    labelC = inputItem.labelCustomRender(h, inputItem, this)
+    labelC = inputItem.labelCustomRender(h, inputItem, this.scope)
   }
   return labelC
 }
 
 function wrapperRender (h, inputItem, index) {
   if (inputItem.wrapperCustomRender) {
-    return inputItem.wrapperCustomRender(this.$createElement, inputItem, this)
+    return inputItem.wrapperCustomRender(this.$createElement, inputItem, this.scope)
   } else {
     return (
       <inputItem.component
@@ -199,7 +200,7 @@ function wrapperRender (h, inputItem, index) {
         attrs={inputItem.attrs}
         domProps={inputItem.domProps}
         vDecorator={[inputItem.key, {
-          initialValue: utils.isFunction(inputItem.default) ? inputItem.default(inputItem, this.scope) : inputItem.default,
+          initialValue: utils.isFunction(inputItem.default) ? inputItem.default(this.scope) : inputItem.default,
           rules: [{ required: inputItem.required, message: `请确认${inputItem.label}` }]
         }]}
         onChange={(val, option) => this.changeEventForInput(val, option, inputItem)}
@@ -210,7 +211,7 @@ function wrapperRender (h, inputItem, index) {
 
 function buildFooter (h) {
   if (this.operationItem.footerCustomRender) {
-    return this.operationItem.footerCustomRender(h, this.operationItem, this)
+    return this.operationItem.footerCustomRender(h, this.operationItem, this.scope)
   } else {
     return (
       <a-form-item

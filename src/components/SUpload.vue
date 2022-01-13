@@ -7,21 +7,20 @@
       :before-upload="beforeUploadEvent"
       :file-list="fileList"
       :show-upload-list="false"
-      @preview="downloadFile"
     >
       <a-button
         ghost
         type="primary"
         :disabled="disabled"
       >
-        <a-icon type="upload" /> {{ text }}
+        <a-icon type="upload" /> {{ buttonText }}
       </a-button>
     </a-upload>
     <template v-for="(fileItem, index) in fileDataStore">
       <div class="download-bar" :key="index">
         <a-icon class="file-icon" type="paper-clip" />
-        <SDownload class="file-content" :value="fileItem" />
-        <a class="file-close" @click="() => remove(fileItem)">x</a>
+        <SDownload class="file-content" :len="16" :value="fileItem" />
+        <a v-if="!disabled" class="file-close" @click="() => remove(fileItem)">x</a>
       </div>
     </template>
   </div>
@@ -34,7 +33,9 @@ import utils from '@/utils'
 import { getToken } from '@/utils/auth'
 
 export default {
+  title: '上传',
   name: 'SUpload',
+  forBuilder: true,
   props: {
     injectParams: {
       type: Object,
@@ -49,8 +50,8 @@ export default {
       default: false
     },
     value: {
-      type: Array,
-      default: () => []
+      type: [Array, Object],
+      default: undefined
     },
     multiple: {
       type: Boolean,
@@ -60,7 +61,7 @@ export default {
       type: String,
       default: ''
     },
-    text: {
+    buttonText: {
       type: String,
       default: '上传文件'
     }
@@ -83,38 +84,65 @@ export default {
   watch: {
     value: {
       handler (val) {
+        // 暂时不处理旧接口数据
+        if (utils.isString(val)) return false
         // v-model 绑定的对象被清空时，对应的数据也需要清空
-        if (!val) {
+        if (utils.isNone(val)) {
           this.fileDataStore = []
           this.fileList = []
         } else {
-          this.fileDataStore = val
-          this.fileList = []
+          this.defaultSet(val)
         }
       },
       immediate: true
     }
   },
   methods: {
-    // 下载附件
-    downloadFile (file) {
-      this.fileDataStore.forEach((item) => {
-        if (file.name === item.fileName) {
-          api.gfsfiledownload(item.fileId)
-        }
-      })
-    },
     // 移除文件
     remove (file) {
       for (let index = 0; index < this.fileDataStore.length; index++) {
         const item = this.fileDataStore[index]
         if (file.fileId === item.fileId) {
-          this.fileList.splice(index, 1)
-          this.fileDataStore.splice(index, 1)
+          this.reduce(index)
           break
         }
       }
-      this.$emit('change', this.fileDataStore)
+      this.update()
+    },
+    compatible (item) {
+      // 旧接口兼容
+      item.fileId = item.fileId ? item.fileId : item.filePath
+    },
+    defaultSet (val) {
+      this.compatible(val)
+      if (utils.isArray(val)) {
+        this.fileDataStore = val
+      } else {
+        this.$set(this.fileDataStore, 0, val)
+      }
+    },
+    reduce (index) {
+      this.fileList.splice(index, 1)
+      this.fileDataStore.splice(index, 1)
+    },
+    uprise (data, file) {
+      this.compatible(data)
+      if (this.multiple) {
+        const listLen = this.fileList.length
+        const storeLen = this.fileDataStore.length
+        this.$set(this.fileList, listLen, file)
+        this.$set(this.fileDataStore, storeLen, data)
+      } else {
+        this.$set(this.fileList, 0, file)
+        this.$set(this.fileDataStore, 0, data)
+      }
+    },
+    update () {
+      if (this.multiple) {
+        this.$emit('change', this.fileDataStore, this.fileList)
+      } else {
+        this.$emit('change', this.fileDataStore[0], this.fileList[0])
+      }
     },
     // 上传文件，并存储返回的url
     async beforeUploadEvent (file, files) {
@@ -143,13 +171,11 @@ export default {
             res.data.split(':')[res.data.split(':').length - 1]
           }`
         )
-        this.$emit('change', this.fileDataStore)
       }
       if (utils.isObject(res.data)) {
-        this.fileDataStore.push(res.data)
-        this.fileList.push(file)
         this.$message.success('文件上传成功')
-        this.$emit('change', this.fileDataStore, this.fileList)
+        this.uprise(res.data, file)
+        this.update()
       }
     },
     failerHandler (res) {
@@ -174,37 +200,45 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-.file-icon {
-  font-size: 14px;
-  left: 0.4rem;
-  top: 0.4rem;
-  position: absolute;
-  color: rgba(0, 0, 0, 0.45);
-}
-.file-content {
-  font-size: 14px;
-  text-indent: 1.5rem;
-}
-.file-close {
-  position: absolute;
-  right: 1rem;
-  top: -1px;
-  color: #ff4545;
-  padding: 0 0.3rem;
-  font-size: 13px;
-  &:hover {
-    background-color: #efefef;
-  }
-}
 
 .download-bar {
-  line-height: 1.5rem;
-  position: relative;
+  height: 24px;
+  line-height: 24px;
+  transition: height 0.3s;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  &:hover {
+    background-color: #efefef;
+    .file-close {
+      visibility: visible;
+    }
+  }
   /deep/ .default-style {
     margin: 0;
-    line-height: 1.5rem;
+    padding: 0;
+    line-height: 24px;
     &:hover {
       background-color: #efefef;
+    }
+  }
+  .file-icon {
+    font-size: 14px;
+    line-height: 2;
+    color: rgba(0, 0, 0, 0.45);
+  }
+  .file-content {
+    font-size: 14px;
+  }
+  .file-close {
+    color: #ff4545;
+    margin: 0 1rem;
+    padding: 0 1rem;
+    font-size: 14px;
+    line-height: 1.5;
+    visibility: hidden;
+    &:hover {
+      color: #ff9191;
     }
   }
 }

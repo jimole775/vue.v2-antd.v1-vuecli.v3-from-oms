@@ -11,6 +11,8 @@
 <script>
 import api from '@/api'
 export default {
+  title: '岗位说明',
+  forBuilder: true,
   props: {
     modal: {
       type: Object,

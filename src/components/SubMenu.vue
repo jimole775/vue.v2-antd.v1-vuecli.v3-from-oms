@@ -24,6 +24,7 @@
 import { Menu } from 'ant-design-vue'
 
 export default {
+  title: '子菜单',
   isSubMenu: true,
   props: {
     ...Menu.SubMenu.props,

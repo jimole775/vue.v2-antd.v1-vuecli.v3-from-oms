@@ -1,5 +1,6 @@
 <template>
   <a-modal
+    v-if="modal.show"
     v-model="modal.show"
     width="80%"
     style="top: 4rem"
@@ -22,7 +23,9 @@
   </a-modal>
 </template>
 <script>
+import api from '@/api'
 export default {
+  title: '文件预览弹窗',
   name: 'PreviewFrame',
   props: {
     modal: {
@@ -30,10 +33,20 @@ export default {
       default: () => ({})
     }
   },
+  watch: {
+    modal: {
+      async handler (modal) {
+        if (modal.data && modal.show) {
+        }
+      },
+      deep: true,
+      immediate: true
+    }
+  },
   data () {
-    const win = document.body
+    const body = window.document.body
     return {
-      height: (win.clientHeight * 0.8) + 'px'
+      height: (body.clientHeight * 0.8) + 'px'
     }
   }
 }

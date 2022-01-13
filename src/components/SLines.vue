@@ -1,77 +1,54 @@
 <script>
 import utils from '@/utils'
 export default {
+  title: '多行文本',
+  forBuilder: true,
+  functional: true,
   name: 'SLines',
   props: {
-    value: {
-      type: String,
-      default: ''
-    },
     len: {
       type: Number,
       default: 20
     },
+    value: {
+      type: String,
+      default: ''
+    },
     lineEnd: {
       type: String,
       default: 'ellipsis'
-    },
-    rows: {
-      type: Number,
-      default: 0
     }
   },
-  render (h) {
-    const text = this.value || getChildrenText(this.$children)
+  render (h, vm) {
+    const { len = 20, value = '', lineEnd = 'ellipsis' } = vm.props || {}
+    const style = vm.data.style || {}
+    const text = utils.isValuable(value) ? value : getChildrenText(vm.children)
     if (utils.isNone(text)) return ''
     const sentences = getSentences(text)
-    if (sentences.length === 1) {
-      if (this.rows > 0) {
-        return <SLine len={this.len} value={sentences[0]} line-end={'break'} rows={this.rows} />
-      } else {
-        return <SLine len={this.len} value={sentences[0]} line-end={'ellipsis'} />
-      }
-    } else {
-      let multiSentences = sentences
-      // 裁剪多余行
-      if (this.rows > 0 && sentences.length > this.rows) {
-        multiSentences = sentences.slice(0, this.rows)
-      }
-      multiSentences = multiSentences.map((sentence) => {
-        if (this.lineEnd === 'ellipsis') {
-          // xxxxx..
-          // xxxxx..
-          return <SLine len={this.len} value={sentence} />
-        } else if (this.lineEnd === 'break') {
-          // xxxxxxx
-          // xxx
-          // xxxxxxx
-          // xxxxx
-          return utils.breakSentence(sentence, this.len).map(line => {
-            return <div>{ line }</div>
+    return (
+      <div style={style}>
+        {
+          sentences.map((sentence) => {
+            if (lineEnd === 'ellipsis') {
+              // xxxxx..
+              // xxxxx..
+              return <SLine style={style} len={len} value={sentence} />
+            } else if (lineEnd === 'break') {
+              // xxxxxxx
+              // xxx
+              // xxxxxxx
+              // xxxxx
+              const lines = utils.breakSentence(sentence, len)
+              return lines.map(line => {
+                return <div class="line-multiple">{ line }</div>
+              })
+            } else {
+              return ''
+            }
           })
-        } else {
-          return ''
         }
-      })
-      // 增加查看全部文本的锚点
-      if (this.rows > 0 && sentences.length > this.rows) {
-        multiSentences.push(
-          <div>
-            <a style="color: inherit" onClick={ () => this.$modal.warning({
-              title: '提示',
-              content: sentences.join('\r\n')
-            })}>...</a>
-          </div>
-        )
-      }
-      return (
-        <div class="line-multiple">
-          {
-            multiSentences
-          }
-        </div>
-      )
-    }
+      </div>
+    )
   }
 }
 

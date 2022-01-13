@@ -10,9 +10,10 @@
   />
 </template>
 <script>
-import utils from '@/utils'
 export default {
+  title: '年选择',
   name: 'YearPicker',
+  forBuilder: true,
   props: {
     value: {
       type: String,
@@ -22,6 +23,10 @@ export default {
       type: Boolean,
       default: true
     }
+  },
+  model: {
+    prop: 'value',
+    event: 'change'
   },
   data () {
     return {
@@ -42,16 +47,17 @@ export default {
         if (val && /\//.test(val)) {
           year = val.split('/')[0]
         }
-        this.year = utils.moment(`${year}-${month}-${day}`)
+        this.year = this.$utils.moment(`${year}-${month}-${day}`)
       },
       immediate: true
     }
   },
   methods: {
     panelChange (val) {
-      this.year = utils.moment(val)
+      this.year = this.$utils.moment(val)
       this.yearPickShow = false
       this.$emit('input', val ? val.format('YYYY') : '') // 输出结果给this.value
+      this.$emit('change', val ? val.format('YYYY') : '') // 输出结果给this.value
     },
     openChange (val) {
       this.yearPickShow = val

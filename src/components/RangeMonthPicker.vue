@@ -32,7 +32,9 @@ import utils from '@/utils'
  * 不过，新特性造成的不兼容问题或者更令人头疼
  */
 export default {
+  title: '月份范围选择',
   name: 'RangeMonthPicker',
+  forBuilder: true,
   props: {
     value: {
       type: Array,

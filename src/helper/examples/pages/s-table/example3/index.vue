@@ -72,7 +72,7 @@ export default {
         {
           key: 'money',
           title: '钱财',
-          component: 'MoneyInput'
+          component: 'SMoney'
         },
         {
           title: '日期范围',

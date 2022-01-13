@@ -19,6 +19,7 @@
 import utils from '@/utils'
 import api from '@/api'
 export default {
+  title: '导入',
   name: 'Importer',
   props: {
     api: {
@@ -40,8 +41,6 @@ export default {
     }
   },
   methods: {
-    number2money: utils.number2money,
-    money2number: utils.money2number,
     getApiFunction (apiNameOrFunction) {
       if (utils.isFunction(apiNameOrFunction)) {
         return apiNameOrFunction

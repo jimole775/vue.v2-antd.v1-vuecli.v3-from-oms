@@ -62,7 +62,7 @@ export default [
       },
       {
         path: '/helper/examples/down-load-file',
-        name: 'DownLoadFile',
+        name: 'SDownload',
         component: () => import('@/helper/examples/pages/down-load-file/index.vue')
       },
       {
@@ -92,7 +92,7 @@ export default [
       },
       {
         path: '/helper/examples/money-input',
-        name: 'MoneyInput',
+        name: 'SMoney',
         component: () => import('@/helper/examples/pages/money-input/index.vue')
       },
       {

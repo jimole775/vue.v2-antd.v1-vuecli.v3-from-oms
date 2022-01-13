@@ -29,6 +29,7 @@
 </template>
 <script>
 export default {
+  title: '可编辑栅格',
   props: {
     text: {
       type: String,

@@ -2,6 +2,7 @@
 import utils from '@/utils'
 import { mapState } from 'vuex'
 export default {
+  title: '栅格表单',
   name: 'FormItemRender',
   props: {
     dataSource: {
@@ -27,6 +28,7 @@ export default {
   },
   data () {
     return {
+      scope: this,
       form: this.$form.createForm(this)
     }
   },
@@ -53,14 +55,8 @@ export default {
       user: state => state.global.user,
       roleType: state => state.global.userRole.type
     }),
-    edit () {
-      return this.mode === 'edit'
-    },
     isOutsideStuff () {
       return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
-    },
-    readonly () {
-      return this.mode === 'readonly'
     }
   },
   created () {
@@ -68,20 +64,17 @@ export default {
   },
   methods: {
     initialize () {
-      const dataSource = this.dataSource
-      const formItems = this.formItems
-
+      const dataSource = this.dataSource || {}
+      const formItems = this.formItems || []
       this.formatFormItems(formItems)
 
       // 全局统一的默认值
-      this.bindDefaultValue(dataSource, formItems)
-
-      // 为特殊组件赋值
       utils.bindDefaultValueForComponent(dataSource, formItems)
 
-      this.$nextTick(() => {
-        this.$props.beforeRender(dataSource, formItems, this)
-      })
+      // 获取自定义的默认值 item.default
+      this.bindDefaultValue(dataSource, formItems)
+
+      this.$props.beforeRender(dataSource, formItems, this.scope)
 
       // this.triggeringChangeCallback(dataSource, formItems)
     },
@@ -91,19 +84,22 @@ export default {
         labelC = h('span', { slot: 'label' }, formItem.label)
       }
       if (formItem.labelCustomRender) {
-        labelC = formItem.labelCustomRender(h, formItem, this)
+        labelC = formItem.labelCustomRender(h, formItem, this.scope)
       }
       return labelC
     },
     wrapperRender (h, formItem) {
       if (formItem.wrapperCustomRender) {
-        return formItem.wrapperCustomRender(this.$createElement, formItem, this)
+        return formItem.wrapperCustomRender(this.$createElement, formItem, this.scope)
       } else if (formItem.component) {
         return (<formItem.component
           props={formItem.props}
           attrs={formItem.attrs}
           domProps={formItem.domProps}
           disabled={formItem.mode === 'readonly'}
+          initialValue={formItem.value}
+          defaultValue={formItem.value/** Uploader的属性 */}
+          defaultFiles={formItem.value/** UploaderMultiple的属性 */}
           vDecorator={[formItem.key, { initialValue: formItem.value, rules: [{ required: formItem.required, message: `请确认必填项` }] }]}
           onChange={(val) => this.componentChangeEvent(val, formItem)}
         >
@@ -121,17 +117,22 @@ export default {
     },
     bindDefaultValue (dataSource, items) {
       items.forEach((item) => {
-        item.value = utils.isValuable(dataSource[item.key]) ? dataSource[item.key] : item.value
+        if (utils.isValuable(item.default)) {
+          if (utils.isFunction(item.default)) {
+            item.value = item.default(this.scope)
+          } else {
+            item.value = item.default
+          }
+        } else {
+          item.value = item.default = utils.isValuable(dataSource[item.key]) ? dataSource[item.key] : null
+        }
       })
     },
     componentChangeEvent (val, item) {
-      item.change && item.change(val, item, this)
-      this.$emit('change', val, item, this)
-    },
-    triggeringChangeCallback (dataSource, items) {
-      items.forEach((item) => {
-        item.change && item.change(item.value, item, this)
-      })
+      item.value = val // 保持 this.formItems 的 value 们的更新
+      item.change && item.change(val, this.scope)
+      item.onChange && item.onChange(val, this.scope)
+      this.$emit('change', val, this.scope) // 保持 this.form 的 字段值 的更新
     },
     validateRequiredField () {
       const tips = []
@@ -215,23 +216,22 @@ export default {
       }
       return res
     },
-    getFormItemsValue (formItems) {
-      const res = {}
+    getFormItemsValue (values, formItems) {
+      let res = { ...values }
       formItems.forEach((item) => {
         if (item.keys) {
           item.keys.forEach((key) => {
-            res[key] = item.value
+            (utils.isValuable(item.value) && utils.isNone(res[key])) && (res[key] = item.value)
           })
         } else {
-          res[item.key] = item.value
+          (utils.isValuable(item.value) && utils.isNone(res[item.key])) && (res[item.key] = item.value)
         }
-      })
-      return res
-    },
-    mergeFormItemsParams (formItems) {
-      let res = {}
-      formItems.forEach((item) => {
-        res = utils.merge(res, item.params)
+        if (item.params) {
+          res = utils.merge(res, item.params)
+        }
+        if (item.paramTransfer) {
+          res = item.paramTransfer(res, this.scope)
+        }
       })
       return res
     },
@@ -254,9 +254,9 @@ export default {
             })
           } else {
             const params = {
-              ...this.getFormItemsValue(this.formItems),
-              ...utils.formatFormValues(values, this.formItems),
-              ...this.mergeFormItemsParams(this.formItems)
+              ...values,
+              // ...utils.formatFormValues(values, this.formItems),
+              ...this.getFormItemsValue(values, this.formItems)
             }
             resolve({
               type: 'success',

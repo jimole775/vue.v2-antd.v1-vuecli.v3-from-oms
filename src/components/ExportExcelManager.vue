@@ -47,6 +47,7 @@ import api from '@/api'
 import utils from '@/utils'
 import { mapActions } from 'vuex'
 export default {
+  title: '异步导出管理中心',
   name: 'ExportExcelManager',
   data () {
     return {
@@ -113,7 +114,7 @@ export default {
   methods: {
     ...mapActions(['pushExportingList', 'spliceExportingList']),
     delExportListItemConfirm (item) {
-      this.$modal.confirm({
+      this.$confirm({
         title: '提示',
         content: '文件正在导出中，是否删除这个任务？',
         okText: '是',
@@ -209,32 +210,45 @@ export default {
         const exportingList = utils.clone(this.exportingList)
         exportingList.forEach(async (item, index) => {
           const res = await api.getDownFileFileKey(item).catch(() => {})
-          if (res && res.code === 200) {
-            if (res.data && utils.isValuable(res.data.fileStatus)) {
-              // const statusmap = {
-              //   '-1': '不存在',
-              //   0: '失败',
-              //   1: '成功',
-              //   2: '处理中'
-              // }
-              if (res.data.fileStatus === -1 || res.data.fileStatus === 0) {
+          if (utils.isBlob(res)) {
+            // 如果直接返回流，就直接下载
+            this.showSuccessTips(item)
+            this.delExportListItem(item)
+            this.downloadByStream(res, item)
+          } else if (utils.isBackendResponse(res)) {
+            // 如果返回后台数据，根据数据做判断
+            if (res && res.code === 200) {
+              if (res.data && utils.isValuable(res.data.fileStatus)) {
+                // const statusmap = {
+                //   '-1': '不存在',
+                //   0: '失败',
+                //   1: '成功',
+                //   2: '处理中'
+                // }
+                if (res.data.fileStatus === -1 || res.data.fileStatus === 0) {
+                  this.addErrorItem(item)
+                  this.delExportListItem(item)
+                }
+                if (res.data.fileStatus === 1) {
+                  this.showSuccessTips(item)
+                  this.delExportListItem(item)
+                  this.downloadByFileId(res, item)
+                }
+              } else {
                 this.addErrorItem(item)
                 this.delExportListItem(item)
-              }
-              if (res.data.fileStatus === 1) {
-                this.showSuccessTips(item)
-                this.delExportListItem(item)
-                this.downloadHandler(res, item)
               }
             } else {
               this.addErrorItem(item)
               this.delExportListItem(item)
             }
           } else {
+            // 其他类型的数据，一律视作失败
             this.addErrorItem(item)
             this.delExportListItem(item)
           }
           if (index + 1 === exportingList.length) {
+            // 一轮心跳完毕
             resolve()
           }
         })
@@ -248,9 +262,19 @@ export default {
       this.exportingListBackup = [].concat(this.exportingList)
       this.failureList.backup = [].concat(this.failureList.data)
     },
-    downloadHandler (res, item) {
-      const link = res.data && res.data.fileUrl
-      utils.downloadFileByLink(link, item.fileName)
+    downloadByFileId (res, item) {
+      const fileId = res.data && res.data.fileUrl // 后端用fileUrl字段存储fileId
+      api.gfsfiledownload(fileId, item.fileName)
+    },
+    downloadByStream (stream, item) {
+      const link = document.createElement('a')
+      const blob = new Blob([stream], { type: 'application/octet-stream' })
+      link.style.display = 'none'
+      link.href = URL.createObjectURL(blob)
+      link.setAttribute('download', item.fileName)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     }
   }
 }

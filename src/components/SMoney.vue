@@ -11,7 +11,9 @@
 <script>
 import utils from '@/utils'
 export default {
-  name: 'MoneyInput',
+  title: '金钱输入框',
+  name: 'SMoney',
+  forBuilder: true,
   props: {
     value: {
       type: Number
@@ -35,6 +37,10 @@ export default {
     placeholder: {
       type: String,
       default: '请输入金额'
+    },
+    decimal: {
+      type: Number,
+      default: 0
     },
     restrict: {
       type: String/** negative | positive */,
@@ -77,6 +83,19 @@ export default {
         val = this.number2money(val) // 修正预期阈值
       }
       this.view = val
+      setTimeout(() => {
+        this.asyncCursorPosition()
+      })
+    },
+    // 调整光标位置
+    asyncCursorPosition () {
+      const el = this.$refs.moneyinput.$el
+      const input = el.children[0] || {}
+      let position = this.view.length
+      if (position > 0 && this.decimal > 0) {
+        position = position - this.decimal - 1
+      }
+      input.setSelectionRange(position, position)
     },
     updateValue (val) {
       if (!isOnlySign(val)) {
@@ -116,7 +135,7 @@ export default {
     // number 转 money
     number2money (val) {
       if (isNum(val)) {
-        return utils.number2money(val)
+        return utils.number2money(val, this.decimal)
       } else {
         return ''
       }

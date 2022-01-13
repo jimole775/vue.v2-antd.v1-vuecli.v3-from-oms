@@ -1,7 +1,14 @@
 ``` html
 <template>
   <div style="width: 300px">
-    <MoneyInput v-model="value" />
+    <SMoney
+      v-model="value"
+      restrict="negative"
+      :min="-10000"
+      :max="0"
+    />
+    <br>
+    <br>
     <a-button type="primary" @click="submitEvent">提交</a-button>
   </div>
 </template>
@@ -9,7 +16,7 @@
 export default {
   data () {
     return {
-      value: null
+      value: 20000
     }
   },
   methods: {

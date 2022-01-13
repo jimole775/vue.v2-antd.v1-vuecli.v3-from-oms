@@ -17,6 +17,7 @@ import { mapActions } from 'vuex'
 import { getToken } from '@/utils/auth'
 import Phonevalidate from '@/components/Phonevalidate'
 export default {
+  title: '异步导出',
   name: 'ExportExcel',
   components: {
     Phonevalidate
@@ -27,7 +28,7 @@ export default {
       default: 'default'
     },
     api: {
-      type: String,
+      type: [String, Function],
       default: ''
     },
     params: {
@@ -82,8 +83,15 @@ export default {
       const pass = this.validate()
       if (!pass) return false
       let res = null
+      let apiFun = null
+      if (utils.isString(this.api)) {
+        apiFun = api[this.api]
+      }
+      if (utils.isFunction(this.api)) {
+        apiFun = this.api
+      }
+      if (!apiFun) return false
       Vue.bus.emit('loading', true)
-      const apiFun = api[this.api]
       if (utils.isFunction(apiFun)) {
         if (this.type === 'permission') {
           res = await this.$refs.PhonevalidateRef.validate(apiFun, this.getTrulyParams())

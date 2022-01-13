@@ -9,6 +9,7 @@ import utils from '@/utils'
 let idIndex = 0
 
 export default {
+  title: '饼状图',
   name: 'ChartPie',
   props: {
     data: {

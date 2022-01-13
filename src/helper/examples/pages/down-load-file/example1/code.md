@@ -1,5 +1,5 @@
 ``` html
 <template>
-  <DownLoadFile value="xxx/xx/asd.pdf" />
+  <SDownload value="xxx/xx/asd.pdf" />
 </template>
 ```

@@ -30,6 +30,7 @@ const panelmodel = {
   recordData: {}
 }
 export default {
+  title: '页签',
   name: 'STabs',
   props: {
     tabProxy: {
@@ -57,10 +58,11 @@ export default {
     'tabProxy.panes': {
       handler (panes) {
         // tabProxy.panes 有时候是后端返回的，属于异步获取
-        // this.init() 中也会对panes进行更改，所以需要用 currentPanesLen 进行预存
+        // this.initialize() 中也会对panes进行更改，所以需要用 currentPanesLen 进行预存
         // 防止死循环
         if (panes && panes.length && panes.length !== this.cachePanesLen) {
-          this.init()
+          // this.initialize()
+          this.activePane(this.tabProxy.activeId)
           this.cachePanesLen = panes.length
         }
       },
@@ -95,17 +97,16 @@ export default {
     }
   },
   created () {
-    this.init()
+    this.initialize()
   },
   methods: {
     ...mapActions(['loadMenuButtons']),
-    async init () {
+    async initialize () {
+      // 直接show activeId
       // 默认一定要加载按钮权限列表
       await this.getMenuButtons()
       // 根据权限列表裁剪有效的panes
       this.queryPermissionPanes()
-      // 直接show activeId
-      this.activePane(this.tabProxy.activeId)
       return Promise.resolve()
     },
     async getMenuButtons () {
@@ -123,12 +124,20 @@ export default {
         // 如果设置了 permission.config，就匹配这个的值
         return permission.config ? menuButtons.includes(permission.config) : pane.show
       })
+
+      // 没有权限操作
+      if (!this.tabProxy.panes.length) {
+        this.tabProxy.lastListId = this.tabProxy.activeId = null
+        return false
+      }
+
       // 把默认的 pane.show 全部设为 true
       this.tabProxy.panes.forEach(pane => {
         pane.show = true
       })
+
+      // 默认展示第一个 show 为 true 的 pane
       if (this.tabProxy.showList) {
-        // 默认展示第一个 show 为 true 的 pane
         this.tabProxy.lastListId = this.tabProxy.activeId = this.tabProxy.panes[0].tabId
       }
     },

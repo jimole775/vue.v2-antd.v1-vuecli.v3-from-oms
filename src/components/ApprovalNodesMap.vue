@@ -22,7 +22,9 @@
 </template>
 <script>
 import api from '@/api'
+// import utils from '@/utils'
 export default {
+  title: '审批节点视图（静态）',
   name: 'ApprovalNodesMap',
   props: {
     apiName: {

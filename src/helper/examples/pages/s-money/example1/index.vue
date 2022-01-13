@@ -2,7 +2,7 @@
   <Panel :code="code" title="简易案例">
     <template slot="example">
       <div style="width: 300px">
-        <MoneyInput v-model="value" />
+        <SMoney v-model="value" />
         <br>
         <br>
         <a-button type="primary" @click="submitEvent">提交</a-button>

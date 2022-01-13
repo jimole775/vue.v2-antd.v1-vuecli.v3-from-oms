@@ -20,7 +20,8 @@
                     :rowspan="colItem.rowspan"
                   >
                     <span v-if="colItem.key === 'createdDate'">{{ colItem.value }}</span>
-                    <span v-else-if="colItem.key === 'attachmentUrl'"><s-download :value="colItem.value" /></span>
+                    <span v-else-if="colItem.key === 'attachmentUrl'"><SDownload :value="colItem.value" /></span>
+                    <span v-else-if="colItem.key === 'attachmentGfsFile'"><SDownload :value="colItem.value" /></span>
                     <span v-else>{{ colItem.value }}</span>
                   </td>
                 </template>
@@ -51,6 +52,7 @@
 <script>
 import api from '@/api'
 export default {
+  title: '变更记录',
   props: {
     id: {
       type: Number,

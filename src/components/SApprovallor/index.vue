@@ -1,6 +1,6 @@
 <template>
   <div class="moveBox">
-    <STabs :ref="'OmsTabsRef'" :tab-proxy="tabProxy" />
+    <STabs :ref="'STabsRef'" :tab-proxy="tabProxy" />
     <div v-show="tabProxy.showList">
       <template v-for="c in listComponents">
         <ProjectList
@@ -8,7 +8,7 @@
           :key="c.tabId"
           :apimap="c.apimap"
           :list-config="c.listConfig"
-          :ref="'ProjectListRef' + c.tabId"
+          :ref="'ProjectList' + c.tabId"
           :transfer-searchor="transferSearchor"
           :stable-row-key="stableRowKey"
           :apply-anchor-text="applyAnchorText"
@@ -27,7 +27,7 @@
           :key="c.tabId"
           :apimap="c.apimap"
           :apply-config="c.applyConfig"
-          :ref="'ProjectApplyRef' + c.tabId"
+          :ref="'ProjectApply' + c.tabId"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
@@ -40,10 +40,10 @@
       <template v-for="c in approvalComponents">
         <ProjectApproval
           v-show="c.tabId === tabProxy.activeId"
-          :ref="'ProjectApprovalRef' + c.tabId"
           :key="c.tabId"
           :apimap="c.apimap"
           :approval-config="c.approvalConfig"
+          :ref="'ProjectApproval' + c.tabId"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
@@ -102,7 +102,15 @@ export default {
       type: Function,
       default: p => p
     },
+    afterRender: {
+      type: Function,
+      default: p => p
+    },
     beforeSubmit: {
+      type: Function,
+      default: p => p
+    },
+    afterSubmit: {
       type: Function,
       default: p => p
     },
@@ -129,8 +137,8 @@ export default {
       return this.tabProxy.panes.filter((pane) => {
         const live = /\d_1_.+/.test(pane.tabId)
         if (live) {
-          pane.applyConfig = utils.clone(this.activeApplyConfig)
           pane.apimap = utils.clone(this.activeApimap)
+          pane.applyConfig = utils.clone(this.activeApplyConfig)
         }
         return live
       })
@@ -139,8 +147,8 @@ export default {
       return this.tabProxy.panes.filter((pane) => {
         const live = /\d_2_.+/.test(pane.tabId)
         if (live) {
-          pane.approvalConfig = utils.clone(this.activeApprovalConfig)
           pane.apimap = utils.clone(this.activeApimap)
+          pane.approvalConfig = utils.clone(this.activeApprovalConfig)
         }
         return live
       })
@@ -156,16 +164,15 @@ export default {
     }
   },
   mounted () {
-    // listComponents 不能使用 computed 构建
-    // 因为 STable 太过冗余，
-    // computed 会导致频繁调用渲染函数，
-    // 而频繁调用渲染函数会在切换 tab 时导致卡顿
+    // this.listComponents 不能用 computed 构造
+    // 否则在切换tab的时候，会有性能问题
+    // 原因是 STable 比较臃肿，不便于频繁刷新
     this.listComponents = this.tabProxy.panes.filter((pane) => {
       const live = pane.type === 'list'
-      const listConfig = this.listConfig[pane.tabId] || {}
+      const config = this.listConfig[pane.tabId] || {}
       const apimap = this.apimap[pane.tabId] || {}
-      if (live) {
-        pane.listConfig = utils.clone(listConfig)
+      if (live && config) {
+        pane.listConfig = utils.clone(config)
         pane.apimap = utils.clone(apimap)
       }
       return live
@@ -173,12 +180,12 @@ export default {
   },
   methods: {
     async addDetailTab (typeId, recordData) {
-      await this.$refs.OmsTabsRef
-      this.$refs.OmsTabsRef.addDetailTab(typeId, recordData)
+      await this.$refs.STabsRef
+      this.$refs.STabsRef.addDetailTab(typeId, recordData)
     },
     async removePane () {
-      await this.$refs.OmsTabsRef
-      this.$refs.OmsTabsRef.removePane(this.tabProxy.activeId)
+      await this.$refs.STabsRef
+      this.$refs.STabsRef.removePane(this.tabProxy.activeId)
       this.reload()
     },
     async reload () {

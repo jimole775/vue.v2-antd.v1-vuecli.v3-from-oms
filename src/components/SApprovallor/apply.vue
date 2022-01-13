@@ -6,6 +6,7 @@
     >
       <template v-for="(componentItem, index) in activeComponents">
         <a-collapse-panel
+          v-if="componentItem.show"
           :header="componentItem.title"
           :key="`${index + 1}`"
           class="m-block"
@@ -72,6 +73,7 @@ export default {
   },
   data () {
     return {
+      scope: this,
       activeComponents: []
     }
   },
@@ -88,6 +90,9 @@ export default {
           }
           if (utils.isNone(item.component)) {
             item.componentName = 'customRender'
+          }
+          if (item.show === undefined) {
+            item.show = true
           }
           return item
         })
@@ -112,7 +117,7 @@ export default {
     },
     // 发起审批
     async startApprove (params) {
-      const cparams = this.$props.beforeSubmit(params, this)
+      const cparams = this.$props.beforeSubmit(params, this.scope)
       const res = await api[this.apimap.apply](cparams)
       if (res.code === 200) {
         this.$message.success('操作成功')
@@ -130,6 +135,7 @@ export default {
         const failureTips = []
         for (let index = 0; index < this.activeComponents.length; index++) {
           const component = this.activeComponents[index]
+          if (component.show === false) continue
           const componentDom = await this.$refs[`${component.componentName}_${index}`][0]
           const editData = await componentDom.getFieldsValue()
           if (editData.type === 'failure') {
@@ -140,24 +146,6 @@ export default {
         }
         return resolve({ failureTips, successData })
       })
-    },
-    scrollTo (id) {
-      const targetDom = document.querySelector('#' + id)
-      if (!targetDom) return false
-      targetDom.style.borderColor = '#ff0000'
-      targetDom.style.transition = 'border 3s'
-      setTimeout(() => {
-        targetDom.style.borderColor = '#d9d9d9'
-      }, 3000)
-      const link = document.createElement('a')
-      link.style.display = 'none'
-      link.href = '#' + id
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    },
-    updateDataSet (val) {
-      console.log(val)
     }
   }
 }

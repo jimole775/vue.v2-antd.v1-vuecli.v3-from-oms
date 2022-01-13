@@ -22,7 +22,7 @@ import DictGroupRadio from '@/components/DictGroupRadio'
 import SDownload from '@/components/SDownload'
 import SUpload from '@/components/SUpload'
 import CitySelect from '@/components/CitySelect'
-import MoneyInput from '@/components/MoneyInput'
+import SMoney from '@/components/SMoney'
 import WorkplaceSelect from '@/components/WorkplaceSelect'
 import HandlerTableCell from '@/components/HandlerTableCell'
 import RangeMonthPicker from '@/components/RangeMonthPicker'
@@ -69,7 +69,7 @@ Vue.use(Checkbox)
 Vue.use(Empty)
 Vue.use(Carousel).use(Progress)
 Vue.use(Calendar)
-Vue.use(MoneyInput)
+Vue.use(SMoney)
 Vue.use(HandlerTableCell)
 Vue.use(RangeMonthPicker)
 Vue.use(SLine)
@@ -80,7 +80,7 @@ Vue.use(FormItemRender)
 Vue.use(SDownload)
 Vue.use(SUpload)
 
-Vue.component(MoneyInput.name, MoneyInput)
+Vue.component(SMoney.name, SMoney)
 Vue.component(ExportExcel.name, ExportExcel)
 Vue.component(FormItemRender.name, FormItemRender)
 Vue.component(SLine.name, SLine)

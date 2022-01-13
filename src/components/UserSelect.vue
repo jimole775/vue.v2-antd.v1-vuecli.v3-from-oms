@@ -11,11 +11,11 @@
     :show-search="true"
     :placeholder="placeholder"
     :not-found-content="fetching ? undefined : null"
-    @search="fetchUser"
+    @search="searchEvent"
     @change="handleChange"
   >
     <a-spin v-if="fetching" slot="notFoundContent" size="small" />
-    <a-select-option v-for="item in optionList" :key="item.key">
+    <a-select-option v-for="item in optionList" :key="item.key" :title="item.label">
       {{ item.label }}
     </a-select-option>
   </a-select>
@@ -24,7 +24,9 @@
 import api from '@/api'
 import utils from '@/utils'
 export default {
+  title: '用户选择',
   name: 'UserSelect',
+  forBuilder: true,
   props: {
     value: {
       type: Array,
@@ -41,15 +43,18 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    dataParams: {
+      type: Object,
+      default: () => ({})
     }
   },
   data () {
-    this.fetchUser = utils.debounce(this.fetchUser, 150)
+    this.searchEvent = utils.debounce(this.searchEvent, 150)
     this.handleChange = utils.debounce(this.handleChange, 150)
     return {
       valueList: utils.clone(this.value),
       fetching: false,
-      lastFetchId: 0,
       optionList: []
     }
   },
@@ -69,28 +74,33 @@ export default {
     clearData () {
       this.optionList.length = 0
     },
-    async fetchUser (value) {
-      this.lastFetchId += 1
-      const fetchId = this.lastFetchId
+    async searchEvent (value) {
       this.optionList = []
-      this.fetching = true
-      // 调用接口api
-      let obj = {}
-      obj.name = value
-      let res = await api.getuserpool(obj)
-      if (res.code === 200) {
-        if (fetchId !== this.lastFetchId) {
-          // for fetch callback order
-          return
-        }
-        const list = res.data ? res.data.list : []
-        const data = list.map(item => ({
-          label: `${item.userName} ${item.displayName}（${item.workDeptName}）`,
-          key: JSON.stringify({ key: item.userName, label: item.displayName })
-        }))
-        this.optionList = data
-        this.fetching = false
+      const res = await this.fetcher(value)
+      if (res.code === 200 && res.data) {
+        this.optionList = this.createOptionList(res.data)
       }
+    },
+    async fetcher (value) {
+      this.fetching = true
+      const res = await api.getuserpool({
+        name: value,
+        ...this.$props.dataParams
+      })
+      this.fetching = false
+      return Promise.resolve(res)
+    },
+    createOptionList (data) {
+      const list = data.list ? data.list : data
+      return list.map(item => {
+        const name = item.name || item.displayName || 'N/A'
+        const account = item.workAccount || item.userName || 'N/A'
+        const workDeptName = item.workDeptName || 'N/A'
+        return {
+          label: `${account} ${name}（${workDeptName}）`,
+          key: JSON.stringify({ key: account, label: name })
+        }
+      })
     },
     handleChange (value) {
       this.clearData()

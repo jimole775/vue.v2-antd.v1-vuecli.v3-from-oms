@@ -1,7 +1,7 @@
 <template>
   <Panel :code="code" title="文件下载">
     <template slot="example">
-      <DownLoadFile value="xxx/xx/asd.pdf" />
+      <SDownload value="xxx/xx/asd.pdf" />
     </template>
     <template slot="description">
     </template>

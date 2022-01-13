@@ -3,6 +3,7 @@ import { getToken } from '@/utils/auth'
 import api from '@/api'
 import utils from '@/utils'
 export default {
+  title: '手机校验弹窗',
   props: {
     vtype: {
       type: String,

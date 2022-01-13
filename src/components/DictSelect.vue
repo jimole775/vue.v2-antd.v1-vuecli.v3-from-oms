@@ -18,7 +18,9 @@
 
 <script>
 export default {
+  title: '字典',
   name: 'DictSelect',
+  forBuilder: true,
   props: {
     immediate: {
       type: Boolean,
