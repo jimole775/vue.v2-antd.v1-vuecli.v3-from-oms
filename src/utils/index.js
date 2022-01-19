@@ -1212,6 +1212,73 @@ const utils = {
     function createmap () {
       return Object.create(null)
     }
+  },
+  /**
+   * 小数精算，加法
+   * 由于JS的小数位算法有漏洞
+   * 所以，所有小数都用整数来代替运算过程
+   * @param {Number|String} a
+   * @param {Number|String} b
+   * @returns {Number}
+   */
+  actuary (a = 0, b = 0, fn = '+') {
+    const aStr = a.toString()
+    const bStr = b.toString()
+    const aNum = Number(a)
+    const bNum = Number(b)
+    const aDecimalLen = aStr.split('.')[1] || ''
+    const bDecimalLen = bStr.split('.')[1] || ''
+    // 求得最大小数位数
+    const maxLen = aDecimalLen.length > bDecimalLen.length ? aDecimalLen.length : bDecimalLen.length
+    if (maxLen === 0) {
+      return aNum + bNum
+    } else {
+      let res = ''
+      // 把小数转成整数，可以理解为: 0.01 => 1
+      let aInt = aStr.replace(/\./g, '')
+      let bInt = bStr.replace(/\./g, '')
+
+      // 对比a, b小数位长度，短的位数，用0填充
+      aInt += (new Array(maxLen - aDecimalLen.length).fill(0).join(''))
+      bInt += (new Array(maxLen - bDecimalLen.length).fill(0).join(''))
+
+      // 字符转成数字
+      aInt = Number(aInt)
+      bInt = Number(bInt)
+
+      let counted = 0 // 整数求值
+      let decimalFix = 0 // 需要调整的位数
+      switch (fn) {
+        case '+':
+          decimalFix = maxLen
+          counted = aInt + bInt
+          break
+        case '-':
+          decimalFix = maxLen
+          counted = aInt - bInt
+          break
+        case '*':
+          decimalFix = maxLen * 2
+          counted = aInt * bInt
+          break
+        case '/':
+          decimalFix = maxLen * 2
+          counted = aInt / bInt
+          break
+      }
+
+      // 转成字符串数组
+      const resArr = counted.toString().split('')
+      // 最后把数组转成字符串
+      resArr.forEach((word, index) => {
+        if (index === resArr.length - decimalFix) {
+          res += '.'
+        }
+        res += word
+      })
+
+      return Number(res)
+    }
   }
 }
 
