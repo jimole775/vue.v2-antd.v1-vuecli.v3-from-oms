@@ -38,7 +38,7 @@
       <a-layout-footer class="oms-footer">
         <a-row>
           <a-col :span="16">
-            <span style="color:gray">(OMS系统内发布的信息和相关数据仅限内部公开，不得外传，请注意信息安全)</span>
+            <span style="color:gray">(请注意信息安全)</span>
           </a-col>
           <a-col :span="8">
             <span>
@@ -46,11 +46,8 @@
                 <template slot="title">
                   <div>
                     <p>联系我们</p>
-                    <p>OMS产品经理：李丹</p>
-                    <p>技术负责人：彭高召</p>
                   </div>
                 </template>
-                <a href="javascript:void(0)">OPPO &copy; 平台IT部 &gt; HR产品组</a>
               </a-tooltip>
             </span>
           </a-col>

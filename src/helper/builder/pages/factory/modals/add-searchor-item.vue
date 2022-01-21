@@ -69,12 +69,16 @@
                     :wrapper-col="{span: 16}"
                   >
                     <template slot="label">
-                      <!-- <a-tooltip :title="type2string(param.type)">
-                        &nbsp;<a-icon type="question-circle-o" />
-                      </a-tooltip> -->
                       <span>
-                        {{ `${param.key}` }}
-                        <span v-if="$utils.isValuable(param.type)" style="color: rgb(171 176 29)">
+                        {{ param.key }}
+                        <span v-if="$utils.isArray(param.type)" :style="style.selected">
+                          (<template v-for="t in param.type">
+                            <a :key="t" :style="param.typeSelected === t ? style.selected : style.unselect" @click="() => typeChanged(param, t)">
+                              {{ t | type2string }}
+                            </a>
+                          </template>)
+                        </span>
+                        <span v-else-if="$utils.isValuable(param.type)" :style="style.selected">
                           ({{ param.type | type2string }})
                         </span>
                       </span>
@@ -83,16 +87,54 @@
                       <a-textarea v-model="param.value" />
                     </div>
                     <div v-else-if="$utils.isArray(param.type)">
-                      <a-textarea v-model="param.value" />
+                      <!-- <v-for></v-for> -->
+                      <div v-for="(t, i) in param.type" :key="i">
+                        <div v-if="param.typeSelected === t">
+                          <div v-if="$utils.isNumberConstructor(t)">
+                            <a-input-number allow-clear v-model="param.value" />
+                          </div>
+                          <div v-else-if="$utils.isStringConstructor(t)">
+                            <a-input allow-clear v-model="param.value" />
+                          </div>
+                          <div v-else-if="$utils.isBooleanConstructor(t)">
+                            <a-radio-group v-model="param.value">
+                              <a-radio :value="true">
+                                true
+                              </a-radio>
+                              <a-radio :value="false">
+                                false
+                              </a-radio>
+                            </a-radio-group>
+                          </div>
+                          <div class="reference-object" v-else-if="$utils.isObjectConstructor(t)">
+                            <span>{</span>
+                            <a-textarea v-model="param.value" />
+                            <span>}</span>
+                          </div>
+                          <div class="reference-object" v-else-if="$utils.isArrayConstructor(t)">
+                            <span>[</span>
+                            <a-textarea v-model="param.value" />
+                            <span>]</span>
+                          </div>
+                          <div v-else-if="$utils.isFunctionConstructor(t)">
+                            <span>{{ param.value.head }}</span>
+                            <a-textarea v-model="param.value.body" />
+                            <span>{{ param.value.tail }}</span>
+                          </div>
+                          <div v-else>
+                            <a-textarea v-model="param.value" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <div v-else>
-                      <div v-if="param.type === Number">
+                      <div v-if="$utils.isNumberConstructor(param.type)">
                         <a-input-number allow-clear v-model="param.value" />
                       </div>
-                      <div v-else-if="param.type === String">
+                      <div v-else-if="$utils.isStringConstructor(param.type)">
                         <a-input allow-clear v-model="param.value" />
                       </div>
-                      <div v-else-if="param.type === Boolean">
+                      <div v-else-if="$utils.isBooleanConstructor(param.type)">
                         <a-radio-group v-model="param.value">
                           <a-radio :value="true">
                             true
@@ -101,48 +143,21 @@
                             false
                           </a-radio>
                         </a-radio-group>
-                        <!-- <a-select allow-clear v-model="param.value">
-                          <a-select-option :key="true">true</a-select-option>
-                          <a-select-option :key="false">false</a-select-option>
-                        </a-select> -->
                       </div>
-                      <div v-else-if="param.type === Object">
-                        <a-row>
-                          <a-col v-for="(item, index) in param.value" :key="index">
-                            <a-form-item
-                              :label-col="{span: 8}"
-                              :wrapper-col="{span: 16}"
-                            >
-                              <template slot="label">
-                                <a-input allow-clear v-model="item.key" />
-                              </template>
-                              <div class="object-ctrl">
-                                <a-input allow-clear v-model="item.value" />
-                                <a-button @click="() => addDefParamItem(param.value)">+</a-button>
-                                <a-button @click="() => redDefParamItem(param.value, index)">-</a-button>
-                              </div>
-                            </a-form-item>
-                          </a-col>
-                        </a-row>
+                      <div class="reference-object" v-else-if="$utils.isObjectConstructor(param.type)">
+                        <span>{</span>
+                        <a-textarea v-model="param.value" />
+                        <span>}</span>
                       </div>
-                      <div v-else-if="param.type === Array">
-                        <a-row>
-                          <a-col v-for="(item, index) in param.value" :key="index">
-                            <a-form-item
-                              :label-col="{span: 8}"
-                              :wrapper-col="{span: 16}"
-                            >
-                              <template slot="label">
-                                <a-input allow-clear v-model="item.key" />
-                              </template>
-                              <div class="object-ctrl">
-                                <a-input allow-clear v-model="item.value" />
-                                <a-button @click="() => addDefParamItem(param.value)">+</a-button>
-                                <a-button @click="() => redDefParamItem(param.value, index)">-</a-button>
-                              </div>
-                            </a-form-item>
-                          </a-col>
-                        </a-row>
+                      <div class="reference-object" v-else-if="$utils.isArrayConstructor(param.type)">
+                        <span>[</span>
+                        <a-textarea v-model="param.value" />
+                        <span>]</span>
+                      </div>
+                      <div v-else-if="$utils.isFunctionConstructor(param.type)">
+                        <span>{{ param.value.head }}</span>
+                        <a-textarea v-model="param.value.body" />
+                        <span>{{ param.value.tail }}</span>
                       </div>
                       <div v-else>
                         <a-textarea v-model="param.value" />
@@ -187,13 +202,34 @@ export default {
       form: this.$form.createForm(this),
       customProps: [{ key: '', value: '' }],
       defaultProps: [],
-      configType: 'selection'
+      configType: 'selection',
+      style: {
+        selected: { color: 'rgb(171 176 29)' },
+        unselect: { color: 'rgb(200 200 200)' }
+      }
     }
   },
   filters: {
     type2string
   },
+  watch: {
+    modal: {
+      handler (m) {
+        if (m.show) {
+          
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
+    typeChanged (param, t) {
+      param.typeSelected = t
+      param.value = adjustDefault({
+        ...utils.clone(param),
+        type: t
+      })
+    },
     addProp () {
       this.customProps.push({ key: '', value: '' })
     },
@@ -220,12 +256,12 @@ export default {
           key: values.key,
           title: values.title,
           component: values.component,
+          originProps: this.defaultProps.originProps,
           props: {
             ...getModifyProps(this.defaultProps),
             ...array2object(this.customProps)
           }
         }
-        console.log(model)
         this.$emit('update', model)
       })
     },
@@ -241,14 +277,18 @@ export default {
         let def = adjustDefault(props[key])
         let type = props[key].hasOwnProperty('type') ? props[key].type : undefined
         let required = props[key].hasOwnProperty('required') ? props[key].required : false
+        let typeSelected = utils.isArray(type) ? type[0] : type
         this.defaultProps.push({
           key,
           type,
           required,
           value: def,
+          typeSelected,
           default: utils.clone(def)
         })
       })
+      // 暂存起来，主要为了在编辑状态的时候，可以用来数据回填
+      this.defaultProps.originProps = utils.clone(option.props)
     }
   }
 }
@@ -256,15 +296,16 @@ export default {
 function getModifyProps (src = []) {
   const res = Object.create(null)
   src.forEach((item) => {
-    debugger
     if (item.default !== item.value) {
       // res[item.key] = item.value
       if (item.type === Object) {
-        res[item.key] = deparseObjectType(item.value)
+        res[item.key] = parseObjectType(item.value)
       } else if (item.type === Function) {
-        res[item.key] = deparseFunctionType(item.value)
+        res[item.key] = parseFunctionType(item.value)
       } else if (item.type === Array) {
-        res[item.key] = deparseArrayType(item.value)
+        res[item.key] = parseArrayType(item.value)
+      } else {
+        res[item.key] = item.value
       }
     }
   })
@@ -275,90 +316,126 @@ function adjustDefault (propItem) {
   let def = propItem.hasOwnProperty('default') ? propItem.default : undefined
   let res
   if (propItem.type === Object) {
-    res = parseObjectType(def)
+    res = deparseObjectType(def)
   } else if (propItem.type === Array) {
-    res = parseArrayType(def)
+    res = deparseArrayType(def)
   } else if (propItem.type === Function) { // Function类型，转成 String 方便输入
-    if (utils.isFunction(def)) {
-      res = def.toString()
-    }
+    res = deparseFunctionType(def)
   } else if (utils.isNone(propItem.type)) { // 如果没有限定类型，那么只能根据def来强制一个类型了
     if (utils.isFunction(def)) {
       propItem.type = Function
-      res = parseFunctionType(def)
-    }
-    if (utils.isObject(def)) {
+      res = deparseFunctionType(def)
+    } else if (utils.isObject(def)) {
       propItem.type = Object
-      res = parseObjectType(def)
-    }
-    if (utils.isArray(def)) {
+      res = deparseObjectType(def)
+    } else if (utils.isArray(def)) {
       propItem.type = Array
-      res = parseArrayType(def)
-    }
-    if (utils.isString(def)) {
+      res = deparseArrayType(def)
+    } else if (utils.isString(def)) {
       propItem.type = String
-    }
-    if (utils.isNumber(def)) {
+    } else if (utils.isNumber(def)) {
       propItem.type = Number
-    }
-    if (utils.isBoolean(def)) {
+    } else if (utils.isBoolean(def)) {
       propItem.type = Boolean
+    } else {
+      res = def
     }
+  } else {
+    res = def
   }
-  return utils.isValuable(res) ? res : def
+  return res
 }
 
-function parseObjectType (def) {
-  const res = []
+function deparseObjectType (def) {
+  let res = `{}`
   // Object的Function类型，先求值，然后转成 [{key:'',value:''}] 方便渲染
   if (utils.isFunction(def)) {
     def = def()
   }
-  if (utils.isNone(def)) {
-    def = { '': '' }
-  }
   // Object类型，转成 [{key:'',value:''}] 方便渲染
   if (utils.isObject(def)) {
-    Object.keys(def).forEach((key) => {
-      const val = def[key]
-      res.push({ key: key, value: val })
-    })
-    if (res.length === 0) {
-      res.push({ key: '', value: '' })
+    res = JSON.stringify(def)
+  }
+  return cuteJSONSide(res)
+}
+
+function parseObjectType (src) {
+  let res = {}
+  if (utils.isString(src)) {
+    try {
+      res = JSON.parse(`{${src}}`)
+    } catch (error) {
+      res = {}
     }
   }
   return res
 }
 
-function deparseObjectType (src = []) {
-  const res = {}
-  src.forEach((item) => {
-    if (item.key) {
-      res[item.key] = item.value
-    }
-  })
-  return res
-}
-
-function parseArrayType (def) {
-  let res = ''
-  // Object的Function类型，先求值，然后转成 [] 方便渲染
+// 把Array转成字符串
+function deparseArrayType (def) {
+  let res = `[]`
+  // Array的Function类型，先求值，然后转成 [] 方便渲染
   if (utils.isFunction(def)) {
     def = def()
   }
-  res = def.toString()
+  if (utils.isArray(def)) {
+    res = JSON.stringify(def)
+  }
+  return cuteJSONSide(res)
+}
+
+// 把字符串转成Array
+function parseArrayType (src) {
+  let res = []
+  if (utils.isString(src)) {
+    try {
+      res = JSON.parse(`[${src}]`)
+    } catch (error) {
+      res = []
+    }
+  }
   return res
 }
 
-function deparseArrayType () {
-  
+// 把函数字符串转成函数
+function parseFunctionType (src) {
+  let res = function () {}
+  if (utils.isString(src)) {
+    try {
+      res = new Function(src)
+    } catch (error) {
+      res = function () {}
+    }
+  }
+  return res
 }
 
-function parseFunctionType () {
-
-}
-function deparseFunctionType () {
-  
+// 从函数中获取函数实体
+function deparseFunctionType (def) {
+  let res = {
+    head: '',
+    body: '',
+    tail: '}'
+  }
+  if (utils.isFunction(def)) {
+    def = def.toString()
+  } else {
+    def = 'function () {}'
+  }
+  let regTail = /\}$/
+  // 普通函数
+  let regHead = /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/
+  res.head = def.match(regHead)
+  if (!res.head) {
+    // 箭头函数
+    regHead = /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/
+    res.head = def.match(regHead)
+  }
+  if (res.head) {
+    res.head = res.head[0]
+  }
+  res.body = def.replace(regHead, '').replace(regTail, '')
+  return res
 }
 
 function array2object (src = []) {
@@ -382,6 +459,16 @@ function type2string (src) {
   }
   return `${res.join(',')}`
 }
+
+function cuteJSONSide (src) {
+  let res = ''
+  if (utils.isJSONString(src)) {
+    src = src.trim()
+    res = src.substring(1, src.length - 1)
+  }
+  return res
+}
+
 </script>
 <style lang="less" scoped>
 .object-ctrl {
@@ -390,5 +477,25 @@ function type2string (src) {
   button {
     margin-left: 4px;
   }
+}
+.reference-object {
+   display: flex;
+   > span {
+     padding: 0 0.3rem;
+     border: 1px solid rgb(217 217 217);
+   }
+   > span:first-child {
+     border-right: 0;
+     border-radius: 0;
+     border-radius: 3px 0 0 3px;
+   }
+   > span:last-child {
+     border-left: 0;
+     border-radius: 0 3px 3px 0;
+   }
+   > textarea {
+     margin-bottom: 0;
+     border-radius: 0;
+   }
 }
 </style>

@@ -55,7 +55,7 @@ export default {
     return {
       formItemLayout: {
         labelCol: { span: 6 },
-        wrapperCol: { span: 18 }
+        wrapperCol: { span: 16 }
       },
       columns: [
         {
@@ -68,7 +68,8 @@ export default {
       }],
       searchorItems: [],
       modal: {
-        show: false
+        show: false,
+        data: {}
       }
     }
   },
@@ -76,8 +77,14 @@ export default {
     addSearchorItem () {
       this.modal.show = true
     },
-    searchorItemConfirm (compName, componentInfo) {
-      this.searchorItems.push(utils.clone(componentInfo))
+    searchorItemConfirm (componentInfo) {
+      let canPush = true
+      this.searchorItems.forEach((item) => {
+        if (componentInfo.key === item.key) {
+          canPush = false
+        }
+      })
+      canPush && this.searchorItems.push(utils.clone(componentInfo))
     }
   }
 }
