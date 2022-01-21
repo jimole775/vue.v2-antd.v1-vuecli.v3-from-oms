@@ -1279,6 +1279,68 @@ const utils = {
 
       return Number(res)
     }
+  },
+  trim (src) {
+    if (utils.isValuable(src)) {
+      if (utils.isString(src)) {
+        return src.trim()
+      } else {
+        return src
+      }
+    } else {
+      return ''
+    }
+  },
+  /**
+   * 获取指定月份的最后一天的日期
+   * @param {Moment} date
+   * @param {Number} diff 月份的差额
+   * @returns Number
+   * @template getMonthLastDate('2021-02-01') => 28/29
+   * @template getMonthLastDate('2021-02-01', -1) => 31
+   * @template getMonthLastDate('2021-01-01', 1) => 28/29
+   * @template getMonthLastDate({ t: 2021-01-01}, 1) => 28/29
+   */
+  getMonthLastDate (date, diff) {
+    if (!date) return date
+    // "diff + 1": 先获取指定月份的下一个月
+    let [y, m] = moment(this.getMonth(date, diff + 1))
+      .format('YYYY-MM-DD')
+      .split('-').map(i => Number(i))
+    // 下个月的1号，减去一天的时间，就是上个月的最后一天
+    const ms = moment(`${y}-${m}-${1}`) - 24 * 60 * 60 * 1000
+    const nd = new Date(ms)
+    return nd.getDate()
+  },
+  /**
+   * 调整到指定月份
+   * @param {Moment} date
+   * @param {Number} diff 月份的差额
+   * @returns Moment
+   * @template getMonth('2021-01-01') => { t: 2021-01-01}
+   * @template getMonth('2021-01-01', -1) => { t: 2020-12-01}
+   * @template getMonth('2021-12-01', 1) => { t: 2022-01-01}
+   * @template getMonth({ t: 2021-12-01}, 1) => { t: 2022-01-01}
+   */
+  getMonth (date, diff) {
+    if (!date) return date
+    let [y, m, d] = moment(date).format('YYYY-MM-DD').split('-').map(i => Number(i))
+    if (diff) {
+      m = m + diff
+    }
+    if (m > 12) {
+      y = y + 1
+      m = m % 12
+    }
+    if (m < 0) {
+      y = y - 1
+      m = 12 + m
+    }
+    if (m === 0) {
+      y = y - 1
+      m = 12
+    }
+    return moment(`${y}-${m}-${d}`)
   }
 }
 
