@@ -739,6 +739,24 @@ const utils = {
   isDateString (src) {
     return this.isString(src) && this.isMoment(moment(src))
   },
+  isFunctionConstructor (src) {
+    return src === Function
+  },
+  isArrayConstructor (src) {
+    return src === Array
+  },
+  isObjectConstructor (src) {
+    return src === Object
+  },
+  isStringConstructor (src) {
+    return src === String
+  },
+  isBooleanConstructor (src) {
+    return src === Boolean
+  },
+  isNumberConstructor (src) {
+    return src === Number
+  },
   toString (src) {
     return Object.prototype.toString.call(src)
   },

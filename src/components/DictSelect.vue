@@ -44,7 +44,7 @@ export default {
     },
     valueField: {
       type: String,
-      default: 'itemName'
+      default: 'itemCode'
     },
     initialValue: {
       type: String,

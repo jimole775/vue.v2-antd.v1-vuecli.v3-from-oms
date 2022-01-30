@@ -9,6 +9,7 @@ module.exports = {
   ],
   rules: {
     'no-console': 'off',
+    'no-new-func': 'off',
     'no-debugger': 'off',
     'no-eval': 'off',
     'no-useless-escape': 'off',

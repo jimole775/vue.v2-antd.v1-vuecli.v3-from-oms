@@ -1,12 +1,12 @@
 export default [
   {
-    path: '/builder',
+    path: '/helper/builder',
     name: 'builder',
-    redirect: '/builder/factory',
+    redirect: '/helper/builder/factory',
     component: () => import('@/helper/builder/index.vue'),
     children: [
       {
-        path: '/builder/factory',
+        path: '/helper/builder/factory',
         name: 'builderFactory',
         component: () => import('@/helper/builder/pages/factory/index.vue')
       }

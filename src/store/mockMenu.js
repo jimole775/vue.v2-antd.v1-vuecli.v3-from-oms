@@ -18,5 +18,14 @@ export default [
     //     title: 'xxx'
     //   }
     // ]
+  },
+  {
+    flag: null,
+    icon: 'fas fa-file-chart-line',
+    id: 0,
+    order: 1,
+    parentId: -1,
+    title: 'builder',
+    path: '/helper/builder'
   }
 ]

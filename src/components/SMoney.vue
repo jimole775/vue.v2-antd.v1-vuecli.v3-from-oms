@@ -53,7 +53,10 @@ export default {
   },
   data () {
     return {
-      view: this.value
+      view: this.value,
+      selectionStart: 0,
+      lastView: '', // 上一次输入的值，用来判断用户是输入还是删减
+      direction: 0 // -1是删减，1是输入
     }
   },
   watch: {
@@ -71,6 +74,14 @@ export default {
   methods: {
     inputting (e) {
       let result = utils.isNone(e.target.value) ? '' : e.target.value
+      if (result.length > this.lastView.length) {
+        this.direction = 1
+      }
+      if (result.length < this.lastView.length) {
+        this.direction = -1
+      }
+      this.lastView = result
+      this.getCursorPosition()
       this.updateView(result)
       this.updateValue(result)
     },
@@ -87,13 +98,23 @@ export default {
         this.asyncCursorPosition()
       })
     },
+    getCursorPosition () {
+      const el = this.$refs.moneyinput.$el
+      const input = el.children[0] || {}
+      this.selectionStart = input.selectionStart || 0
+    },
     // 调整光标位置
     asyncCursorPosition () {
       const el = this.$refs.moneyinput.$el
       const input = el.children[0] || {}
-      let position = this.view.length
-      if (position > 0 && this.decimal > 0) {
-        position = position - this.decimal - 1
+      const intView = this.view.split('.')[0] || ''
+      const intViewLen = intView.length || 0
+      let position = this.selectionStart
+      if (this.direction > 0 && position < intViewLen) {
+        position = intViewLen
+      }
+      if (this.direction < 0 && position > intViewLen) {
+        position = intViewLen
       }
       input.setSelectionRange(position, position)
     },

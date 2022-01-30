@@ -8,13 +8,25 @@
     <a-form :form="form">
       <a-row>
         <a-col :span="24">
-          <a-form-item label="字段码" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['key', {rules: [{ required: true, message: '请确认字段码' }]}]" />
+          <a-form-item label="字段名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input v-decorator="['key', {rules: [{ required: true, message: '请确认关键字' }]}]" />
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label="字段名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['title', {rules: [{ required: true, message: '请确认字段名' }]}]" />
+          <a-form-item label="字段标签" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input v-decorator="['title', {rules: [{ required: true, message: '请确认字段标签' }]}]" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
+          <a-form-item label="宽度调整" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <div class="width-adjust" style="display: flex;">
+              <span class="width-adjust-label">span: </span>
+              <a-input-number v-decorator="['span', { rules: [{ required: false }]}]" />
+              <span class="width-adjust-label">label: </span>
+              <a-input-number v-decorator="['label', { rules: [{ required: false }]}]" />
+              <span class="width-adjust-label">wrapper: </span>
+              <a-input-number v-decorator="['wrapper', { rules: [{ required: false }]}]" />
+            </div>
           </a-form-item>
         </a-col>
         <a-col :span="24">
@@ -34,7 +46,7 @@
             <a-form-item label="查询组件" :label-col="{span: 6}" :wrapper-col="{span: 16}">
               <CompSelect
                 v-decorator="['component', {rules: [{ required: true, message: '请确认查询组件' }]}]"
-                @change="compChange"
+                @change="componentChange"
               />
             </a-form-item>
           </a-col>
@@ -52,7 +64,7 @@
                     <div class="object-ctrl">
                       <a-input allow-clear v-model="item.value" />
                       <a-button @click="() => addProp()">+</a-button>
-                      <a-button @click="() => redProp(index)">-</a-button>
+                      <a-button @click="() => reduceProp(index)">-</a-button>
                     </div>
                   </a-form-item>
                 </a-col>
@@ -87,7 +99,6 @@
                       <a-textarea v-model="param.value" />
                     </div>
                     <div v-else-if="$utils.isArray(param.type)">
-                      <!-- <v-for></v-for> -->
                       <div v-for="(t, i) in param.type" :key="i">
                         <div v-if="param.typeSelected === t">
                           <div v-if="$utils.isNumberConstructor(t)">
@@ -214,15 +225,64 @@ export default {
   },
   watch: {
     modal: {
-      handler (m) {
-        if (m.show) {
-          
+      handler ({ data, show }) {
+        if (show) {
+          if (data) {
+            let itemInfo = {
+              key: data.key,
+              title: data.title,
+              span: data.layout ? data.layout.span : 6,
+              label: data.layout ? data.layout.label : 6,
+              wrapper: data.layout ? data.layout.wrapper : 16
+            }
+            if (data.wrapperCustomRender) {
+              this.configType = 'function'
+              itemInfo.wrapperCustomRender = data.wrapperCustomRender
+              this.$nextTick(() => {
+                this.form.setFieldsValue(itemInfo)
+              })
+            } else {
+              this.configType = 'selection'
+              const props = this.deployProps(data)
+              itemInfo.props = props
+              itemInfo.component = data.component
+              this.$nextTick(() => {
+                this.form.setFieldsValue(itemInfo)
+                this.componentChange(data.key, itemInfo)
+              })
+            }
+          } else {
+            this.$nextTick(() => {
+              this.form.setFieldsValue({
+                span: 6,
+                label: 6,
+                wrapper: 16
+              })
+            })
+          }
+        } else {
+          this.form.resetFields()
+          this.configType = 'selection'
+          this.defaultProps = []
+          this.customProps = [{ key: '', value: '' }]
         }
       },
+      deep: true,
       immediate: true
     }
   },
   methods: {
+    deployProps (data) {
+      const res = utils.clone(data.originProps)
+      const props = utils.clone(data.props)
+      Object.keys(res).forEach((key) => {
+        const item = res[key]
+        if (props[key]) {
+          item.default = props[key]
+        }
+      })
+      return res
+    },
     typeChanged (param, t) {
       param.typeSelected = t
       param.value = adjustDefault({
@@ -233,7 +293,7 @@ export default {
     addProp () {
       this.customProps.push({ key: '', value: '' })
     },
-    redProp (i) {
+    reduceProp (i) {
       if (this.customProps && this.customProps.length > 1) {
         this.customProps.splice(i, 1)
       }
@@ -255,20 +315,27 @@ export default {
         const model = {
           key: values.key,
           title: values.title,
-          component: values.component,
-          originProps: this.defaultProps.originProps,
-          props: {
+          configType: this.configType,
+          layout: {
+            span: values.span,
+            label: values.label,
+            wrapper: values.wrapper
+          }
+        }
+        if (this.configType === 'selection') {
+          model.component = values.component
+          model.originProps = this.defaultProps.originProps
+          model.props = {
             ...getModifyProps(this.defaultProps),
             ...array2object(this.customProps)
           }
+        } else {
+          model.wrapperCustomRender = values.wrapperCustomRender
         }
-        this.$emit('update', model)
+        this.$emit('update', utils.clone(model))
       })
     },
-    packageSearchorItem () {
-
-    },
-    compChange (val, option) {
+    componentChange (val, option) {
       this.defaultProps = []
       if (utils.isNone(val)) return false
       if (utils.isNone(option)) return false
@@ -293,6 +360,7 @@ export default {
   }
 }
 
+// 获取变更的属性
 function getModifyProps (src = []) {
   const res = Object.create(null)
   src.forEach((item) => {
@@ -471,6 +539,15 @@ function cuteJSONSide (src) {
 
 </script>
 <style lang="less" scoped>
+.width-adjust {
+  display: flex;
+  span.width-adjust-label {
+    padding: 0 1rem;
+  }
+  /deep/.ant-input-number {
+    top: 4px;
+  }
+}
 .object-ctrl {
   display: flex;
   padding: 4px;

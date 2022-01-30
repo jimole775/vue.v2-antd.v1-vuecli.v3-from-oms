@@ -6,18 +6,19 @@
       type="editable-card"
     >
       <a-tab-pane
-        v-for="pane in panes"
+        v-for="(pane, index) in panes"
         :key="pane.tabId"
-        :closable="!!pane.closable"
+        :closable="false"
       >
         <template slot="tab">
           <div>
-            <span>{{ pane.title }}</span>
-            <a-button>+</a-button>
+            <span class="tab-title">{{ pane.title + '_' + pane.rank }}</span>
+            <a v-if="pane.rank !== 1" class="tab-item warn" @click.stop="() => reducePane(index)"><a-icon type="minus-circle" /></a>
+            <a v-if="pane.rank === 1" class="tab-item" @click.stop="() => addPane(pane)"><a-icon type="plus-circle" /></a>
           </div>
         </template>
         <div>
-          <component :is="pane.component" />
+          <component :is="pane.component" @switchTab="switchTab" />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -41,11 +42,11 @@ export default {
   mixins: [baseMixins, todoMixins],
   data () {
     return {
-      active: '0',
+      active: '1_0',
       panes: [
-        { title: '列表1', tabId: '0', closable: false, component: ProjectList },
-        { title: '申请1', tabId: '1', closable: false, component: ProjectApply },
-        { title: '审批1', tabId: '2', closable: false, component: ProjectApproval }
+        { title: '列表', tabId: '1_0', rank: 1, type: '0', component: ProjectList },
+        { title: '申请', tabId: '1_1', rank: 1, type: '1', component: ProjectApply },
+        { title: '审批', tabId: '1_2', rank: 1, type: '2', component: ProjectApproval }
       ]
     }
   },
@@ -55,46 +56,54 @@ export default {
     })
   },
   methods: {
-    addDetailTab (id, recordData = {}) {
-      this.tabProxy.activeId = id
-      // 如果是被驳回到申请节点，
-      // 并且当前登陆人是项目的申请人，
-      // 就使用【ProjectApply】模块
-      if (recordData.__tabType__) {
-        // 主页待办跳转
-        if (['start', null].includes(recordData.flowNode) && recordData.createdBy === this.employeeNumber) {
-          this.tabProxy.activeId = '1'
+    rerankPane () {
+      this.panes.sort((a, b) => {
+        return a.type - b.type
+      })
+    },
+    upgradePane (pane) {
+      let maxRank = pane.rank
+      let type = pane.type
+      this.panes.forEach((p) => {
+        if (p.type === type) {
+          if (maxRank < p.rank) {
+            maxRank = p.rank
+          }
         }
-      } else {
-        // 列表页跳转
-        if (['start', null].includes(recordData.projectFlowNode) && recordData.applyAccount === this.employeeNumber) {
-          this.tabProxy.activeId = '1'
-        }
-      }
-      this.storeRecordData(recordData)
+      })
+      pane.rank = maxRank + 1
+      pane.tabId = pane.rank + '_' + pane.type
+      return pane
     },
-    async removePane (id) {
-      await this.$refs.OmsTabsRef
-      this.$refs.OmsTabsRef.removePane(id)
-      this.reload()
+    reducePane (index) {
+      this.panes.splice(index, 1)
     },
-    async reload () {
-      await this.$refs.ProjectListRef
-      this.$refs.ProjectListRef.reload()
+    addPane (pane) {
+      const nPane = this.upgradePane(utils.clone(pane))
+      this.panes.push(nPane)
+      this.rerankPane()
     },
-    storeRecordData (recordData) {
-      const id = this.tabProxy.activeId || '0'
-      const pane = this.tabProxy.panes[id]
-      pane.recordData = utils.clone(recordData)
+    switchTab (type) {
+      const pane = utils.clone(this.getCurrentPane())
+      this.active = pane.rank + '_' + type
     },
-    getCurrentRecordData (id) {
-      const pane = this.tabProxy.panes[id]
-      return pane.recordData || {}
+    getCurrentPane () {
+      let id = this.active
+      return this.panes.find(i => i.tabId === id)
     }
   }
 }
 </script>
-
 <style lang="less" scoped>
-
+.tab-item {
+  position: absolute;
+  top: -0.5rem;
+  height: 1rem;
+}
+.tab-title {
+  padding: 0 0.3rem 0 0;
+}
+.warn {
+  color: red;
+}
 </style>

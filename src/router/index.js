@@ -5,6 +5,7 @@ import qs from 'qs'
 import Store from '@/store/index'
 import base64 from '@/utils/base64'
 import examplesRoutes from '@/helper/examples/router/index.js'
+import builderRoutes from '@/helper/builder/router/index.js'
 Vue.use(Router)
 const context = require.context('./modules', true, /(\.js)$/)
 const routerProxy = {
@@ -24,6 +25,7 @@ context.keys().forEach((item) => {
 
 if (process.env.NODE_ENV === 'development') {
   routerProxy.routes = routerProxy.routes.concat(examplesRoutes)
+  routerProxy.routes = routerProxy.routes.concat(builderRoutes)
 }
 const router = new Router(routerProxy)
 router.beforeEach((to, from, next) => {

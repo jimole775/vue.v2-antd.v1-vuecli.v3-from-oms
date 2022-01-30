@@ -18,7 +18,7 @@ import YearPicker from '@/components/YearPicker'
 import RangeDatePicker from '@/components/RangeDatePicker'
 import SBreadcrumb from '@/components/SBreadcrumb'
 import DictSelect from '@/components/DictSelect'
-import DictGroupRadio from '@/components/DictGroupRadio'
+import DictRadio from '@/components/DictRadio'
 import SDownload from '@/components/SDownload'
 import SUpload from '@/components/SUpload'
 import CitySelect from '@/components/CitySelect'
@@ -92,7 +92,7 @@ Vue.component(RangeDatePicker.name, RangeDatePicker)
 Vue.component(YearPicker.name, YearPicker)
 Vue.component(SBreadcrumb.name, SBreadcrumb)
 Vue.component(DictSelect.name, DictSelect)
-Vue.component(DictGroupRadio.name, DictGroupRadio)
+Vue.component(DictRadio.name, DictRadio)
 Vue.component(SDownload.name, SDownload)
 Vue.component(SUpload.name, SUpload)
 Vue.component(CitySelect.name, CitySelect)

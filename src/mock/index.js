@@ -1,6 +1,6 @@
 import mock from 'mockjs'
 import store from '@/store'
-import utils from '../utils'
+import utils from '@/utils'
 const context = require.context('./', true, /(\.js)$/)
 const apiBase = 'mock'
 context.keys().forEach((item) => {

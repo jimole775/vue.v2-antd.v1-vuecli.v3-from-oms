@@ -23,7 +23,7 @@
   </a-modal>
 </template>
 <script>
-import api from '@/api'
+// import api from '@/api'
 export default {
   title: '文件预览弹窗',
   name: 'PreviewFrame',

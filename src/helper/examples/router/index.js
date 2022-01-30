@@ -91,9 +91,9 @@ export default [
         component: () => import('@/helper/examples/pages/s-tabs/index.vue')
       },
       {
-        path: '/helper/examples/money-input',
+        path: '/helper/examples/s-money',
         name: 'SMoney',
-        component: () => import('@/helper/examples/pages/money-input/index.vue')
+        component: () => import('@/helper/examples/pages/s-money/index.vue')
       },
       {
         path: '/helper/examples/duties-description',

@@ -12,7 +12,7 @@
 <script>
 export default {
   title: '字典(radio)',
-  name: 'DictGroupRadio',
+  name: 'DictRadio',
   forBuilder: true,
   props: {
     disabled: {
@@ -29,7 +29,7 @@ export default {
     },
     valueField: {
       type: String,
-      default: 'itemName'
+      default: 'itemCode'
     },
     initialValue: {
       type: String,
