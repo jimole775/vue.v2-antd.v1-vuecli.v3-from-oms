@@ -30,18 +30,6 @@ export default {
           url: undefined,
           method: undefined,
           params: undefined,
-          title: '创建'
-        },
-        {
-          url: undefined,
-          method: undefined,
-          params: undefined,
-          title: '申请'
-        },
-        {
-          url: undefined,
-          method: undefined,
-          params: undefined,
           title: '审批'
         },
         {

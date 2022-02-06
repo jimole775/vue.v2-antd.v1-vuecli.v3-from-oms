@@ -1,34 +1,5 @@
-<template>
-  <div class="panel-content border-bottom-1" style="overflow:auto">
-    <a-steps :style="{ padding: '1rem 2%', minWidth: '100%', width: autoWidth }" :current="current">
-      <a-step
-        v-for="(node, index) in stepNodes"
-        :key="node.key"
-        :status="node.status || 'finish'"
-        :style="countStyle(node)"
-      >
-        <template slot="title">
-          <a-button v-if="node.edit" :type="current === index ? 'primary' : ''" @click="() => nodeChange(index)">{{ node.title }}</a-button>
-          <span v-if="!node.edit">{{ node.title }}</span>
-          <a v-if="!node.fixed" @click="() => reduceNode(index)">
-            <a-icon type="minus-circle" />
-          </a>
-        </template>
-        <template slot="icon">
-          <a v-if="node.key === '__addtion__'" @click="addNode">
-            <a-icon type="plus-circle" />
-          </a>
-          <a v-else @click="() => editNode(index, node)">
-            <a-icon type="edit" />
-          </a>
-        </template>
-      </a-step>
-    </a-steps>
-    <AddStepNode :modal="modal" @update="stepChangeConfirm" />
-  </div>
-</template>
 <script>
-// import utils from '@/utils'
+import utils from '@/utils'
 import AddStepNode from '../modals/add-step-node'
 function countNodeWidth (str = '') {
   // 40: icon宽度
@@ -43,14 +14,10 @@ export default {
     AddStepNode
   },
   props: {
-    value: {
+    dataSource: {
       type: Array,
       default: undefined
     }
-  },
-  model: {
-    prop: 'value',
-    event: 'change'
   },
   data () {
     return {
@@ -73,7 +40,7 @@ export default {
     }
   },
   watch: {
-    value: {
+    dataSource: {
       handler (data) {
         if (data) {
           this.stepNodes = data
@@ -88,14 +55,32 @@ export default {
       this.$emit('update', this.current, this.stepNodes)
     },
     stepChangeConfirm (node) {
-      this.stepNodes[this.modal.index].key = node.key
-      this.stepNodes[this.modal.index].title = node.title
+      const model = this.stepNodes[0]
+      if (utils.isNone(this.modal.index)) {
+        const insertIndex = this.stepNodes.length - 2
+        this.stepNodes.splice(insertIndex, 0, {
+          ...utils.clone(model),
+          fixed: false,
+          key: node.key,
+          title: node.title
+        })
+      } else {
+        this.stepNodes[this.modal.index].key = node.key
+        this.stepNodes[this.modal.index].title = node.title
+      }
       this.$emit('update', this.current, this.stepNodes)
     },
     reduceNode (index) {
-      this.stepNodes.replace(index, 1)
+      this.$modal.confirm({
+        title: '提示',
+        content: '是否删除？',
+        onOk: () => {
+          this.stepNodes.splice(index, 1)
+        }
+      })
     },
     addNode () {
+      this.modal.index = null
       this.modal.show = true
       this.modal.data = undefined
     },
@@ -104,14 +89,72 @@ export default {
       this.modal.data = node
       this.modal.index = index
     },
-    countStyle (node) {
-      return { minWidth: countNodeWidth(node.title) + 'px' }
+    countBarStyle () {
+      return {
+        padding: '1rem 2%', minWidth: '100%', width: this.autoWidth
+      }
+    },
+    countNodeClass (index) {
+      return this.current === index ? 'select-node' : 'diselect-node'
+    },
+    countNodeStyle (node) {
+      return {
+        minWidth: countNodeWidth(node.title) + 'px'
+      }
+    },
+    buildTitle (node, index) {
+      const title = node.key === '__addtion__' ? <span>{ node.title }</span> : <a onClick={() => this.nodeChange(index)}>{ node.title }</a>
+      const editIcon = node.edit && <a onClick={() => this.editNode(index, node)}><a-icon type="edit" /></a>
+      const reduceIcon = !node.fixed && <a style="color:red" onClick={() => this.reduceNode(index)}><a-icon type="minus-circle" /></a>
+      return <template slot="title">
+        {title}&nbsp;{editIcon}&nbsp;{reduceIcon}
+      </template>
+    },
+    buildIcon (node, index) {
+      if (node.key === '__addtion__') {
+        return <template slot="icon">
+          <a onClick={this.addNode}><a-icon type="plus-circle" /></a>
+        </template>
+      } else {
+        const checkIcon = this.current === index && <a onClick={() => this.nodeChange(index)}><a-icon type="check-circle" /></a>
+        const decheckIcon = this.current !== index && <a onClick={() => this.nodeChange(index)}><a-icon type="clock-circle" /></a>
+        return <template slot="icon">
+          {checkIcon}{decheckIcon}
+        </template>
+      }
     }
+  },
+  render (h) {
+    return (<div class="panel-content border-bottom-1" style="overflow:auto">
+      <a-steps style={this.countBarStyle()} size="small" current={this.current}>
+        {
+          this.stepNodes.map((node, index) => {
+            return (<a-step
+              key={node.key}
+              status={node.status || 'finish'}
+              class={this.countNodeClass(index)}
+              style={this.countNodeStyle(node)}
+            >
+              {this.buildTitle(node, index)}
+              {this.buildIcon(node, index)}
+            </a-step>)
+          })
+        }
+      </a-steps>
+      <AddStepNode modal={this.modal} onUpdate={this.stepChangeConfirm} />
+    </div>)
   }
 }
 </script>
 <style lang="less" scoped>
-// /deep/.ant-steps-item-title::after {
-//   height: 0 !important;
-// }
+.select-node {
+  a {
+    color: #2DC84D;
+  }
+}
+.diselect-node {
+  a {
+    color: #999999;
+  }
+}
 </style>

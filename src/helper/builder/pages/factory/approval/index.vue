@@ -1,6 +1,6 @@
 <template>
   <div>
-    <StepBar v-model="stepNodes" @update="nodeChangeConfirm" />
+    <StepBar :data-source="stepNodes" @update="nodeChangeConfirm" />
     <BuildCollapsePanels :key="current" :data-source="currentNode.modules.collapsePanels" @update="panelUpdate" />
     <a-collapse
       :bordered="false"
@@ -11,7 +11,7 @@
         key="1"
         class="m-block"
       >
-        <OperationBar :key="current" v-model="currentNode.modules.operation" />
+        <OperationBar :key="current" :data-source="currentNode.modules.operation" @update="operationUpdate" />
       </a-collapse-panel>
       <a-collapse-panel
         header="审批日志"
@@ -31,7 +31,7 @@ import OperationBar from './modules/operation-bar'
 import BuildCollapsePanels from '@/helper/builder/pages/factory/common/build-collapse-panels'
 const moduleModel = {
   collapsePanels: [],
-  operation: {},
+  operation: [],
   log: {}
 }
 export default {
@@ -50,7 +50,6 @@ export default {
           fixed: true,
           edit: true,
           key: 'start',
-          status: 'finish',
           title: '流程开始',
           modules: utils.clone(moduleModel)
         },
@@ -58,7 +57,6 @@ export default {
           fixed: true,
           edit: false,
           key: '__addtion__',
-          status: 'wait',
           title: '新增节点',
           modules: utils.clone(moduleModel)
         },
@@ -66,7 +64,6 @@ export default {
           fixed: true,
           edit: true,
           key: 'end',
-          status: 'finish',
           title: '流程结束',
           modules: utils.clone(moduleModel)
         }
@@ -79,6 +76,9 @@ export default {
     }
   },
   methods: {
+    operationUpdate (data) {
+      this.currentNode.modules.operation = data
+    },
     panelUpdate (data) {
       this.currentNode.modules.collapsePanels = data
     },

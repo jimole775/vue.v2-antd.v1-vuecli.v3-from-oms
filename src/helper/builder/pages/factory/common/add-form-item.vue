@@ -30,6 +30,22 @@
           </a-form-item>
         </a-col>
         <a-col :span="24">
+          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <span slot="label">
+              提交字段调整
+              <a-tooltip title="当一个组件需要提交至少两个字段时，可以使用。">
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
+            <code v-if="showParamTransfer">
+              <span>paramTransfer (params, vm) {</span>
+              <a-textarea v-decorator="['paramTransfer', {rules: [{ required: false }]}]" />
+              <span>}</span>
+            </code>
+            <a v-else @click="showParamTransfer = true"><a-icon type="plus-circle" /></a>
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
           <a-form-item label="配置类型" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-radio-group v-model="configType">
               <a-radio value="selection">
@@ -43,7 +59,7 @@
         </a-col>
         <div v-if="configType === 'selection'">
           <a-col :span="24">
-            <a-form-item label="查询组件" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-form-item label="组件" :label-col="{span: 6}" :wrapper-col="{span: 16}">
               <CompSelect
                 v-decorator="['component', {rules: [{ required: true, message: '请确认查询组件' }]}]"
                 @change="componentChange"
@@ -198,6 +214,13 @@
 <script>
 import utils from '@/utils'
 import CompSelect from '@/helper/builder/common/comp-select.vue'
+// const itemModel = {
+//   key: '',
+//   title: '',
+//   span: 6,
+//   label: 6,
+//   wrapper: 16
+// }
 export default {
   components: {
     CompSelect
@@ -214,6 +237,7 @@ export default {
       customProps: [{ key: '', value: '' }],
       defaultProps: [],
       configType: 'selection',
+      showParamTransfer: false,
       style: {
         selected: { color: 'rgb(171 176 29)' },
         unselect: { color: 'rgb(200 200 200)' }
@@ -228,29 +252,7 @@ export default {
       handler ({ data, show }) {
         if (show) {
           if (data) {
-            let itemInfo = {
-              key: data.key,
-              title: data.title,
-              span: data.layout ? data.layout.span : 6,
-              label: data.layout ? data.layout.label : 6,
-              wrapper: data.layout ? data.layout.wrapper : 16
-            }
-            if (data.wrapperCustomRender) {
-              this.configType = 'function'
-              itemInfo.wrapperCustomRender = data.wrapperCustomRender
-              this.$nextTick(() => {
-                this.form.setFieldsValue(itemInfo)
-              })
-            } else {
-              this.configType = 'selection'
-              const props = this.deployProps(data)
-              itemInfo.props = props
-              itemInfo.component = data.component
-              this.$nextTick(() => {
-                this.form.setFieldsValue(itemInfo)
-                this.componentChange(data.key, itemInfo)
-              })
-            }
+            this.initialize(data)
           } else {
             this.$nextTick(() => {
               this.form.setFieldsValue({
@@ -261,10 +263,7 @@ export default {
             })
           }
         } else {
-          this.form.resetFields()
-          this.configType = 'selection'
-          this.defaultProps = []
-          this.customProps = [{ key: '', value: '' }]
+          this.reset()
         }
       },
       deep: true,
@@ -272,9 +271,41 @@ export default {
     }
   },
   methods: {
+    initialize (data) {
+      let itemInfo = {
+        key: data.key,
+        title: data.title,
+        span: data.layout ? data.layout.span : 6,
+        label: data.layout ? data.layout.label : 6,
+        wrapper: data.layout ? data.layout.wrapper : 16
+      }
+      if (data.wrapperCustomRender) {
+        this.configType = 'function'
+        itemInfo.wrapperCustomRender = data.wrapperCustomRender
+        this.$nextTick(() => {
+          this.form.setFieldsValue(itemInfo)
+        })
+      } else {
+        this.configType = 'selection'
+        const props = this.deployProps(data)
+        itemInfo.props = props
+        itemInfo.component = data.component
+        this.$nextTick(() => {
+          this.form.setFieldsValue(itemInfo)
+          this.componentChange(data.key, itemInfo)
+        })
+      }
+    },
+    reset () {
+      this.form.resetFields()
+      this.showParamTransfer = false
+      this.configType = 'selection'
+      this.defaultProps = []
+      this.customProps = [{ key: '', value: '' }]
+    },
     deployProps (data) {
-      const res = utils.clone(data.originProps)
-      const props = utils.clone(data.props)
+      const res = utils.clone(data.originProps || {})
+      const props = utils.clone(data.props || {})
       Object.keys(res).forEach((key) => {
         const item = res[key]
         if (props[key]) {
