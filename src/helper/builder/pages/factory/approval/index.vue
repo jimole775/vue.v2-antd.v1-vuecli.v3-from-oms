@@ -26,6 +26,7 @@
 <script>
 // import api from '@/api'
 import utils from '@/utils'
+import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
 import BuildCollapsePanels from '@/helper/builder/pages/factory/common/build-collapse-panels'
@@ -36,6 +37,7 @@ const moduleModel = {
 }
 export default {
   components: {
+    LogBar,
     StepBar,
     OperationBar,
     BuildCollapsePanels

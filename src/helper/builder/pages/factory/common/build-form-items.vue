@@ -9,8 +9,9 @@
             :wrapper-col="{ span: item.layout ? item.layout.wrapper : defaultLayout.wrapper }"
           >
             <div style="text-align: center;border: 1px solid rgb(45 200 77);">
-              {{ item.component ? item.component : 'Function' }}&nbsp;&nbsp;
-              <a @click="() => editFormItem(item)"><a-icon type="edit" /></a>
+              <a style="color: red;" @click.stop="() => reduceFormItem(index)"><a-icon type="minus-circle" /></a>
+              &nbsp;{{ item.component ? item.component : 'Function' }}&nbsp;
+              <a @click.stop="() => editFormItem(item)"><a-icon type="edit" /></a>
             </div>
           </a-form-item>
         </a-col>
@@ -99,6 +100,16 @@ export default {
     }
   },
   methods: {
+    reduceFormItem (index) {
+      this.$modal.confirm({
+        title: '提示',
+        content: '是否删除？',
+        onOk: () => {
+          this.formItems.splice(index, 1)
+          this.update()
+        }
+      })
+    },
     addFormItem () {
       this.modal.show = true
       this.modal.data = {
@@ -129,6 +140,9 @@ export default {
         this.formItems[assertIndex] = copy
         this.$forceUpdate()
       }
+      this.update()
+    },
+    update () {
       this.$emit('update', this.formItems)
     }
   }

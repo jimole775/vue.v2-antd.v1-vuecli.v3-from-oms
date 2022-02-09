@@ -103,11 +103,12 @@ export default {
       }
     },
     buildTitle (node, index) {
-      const title = node.key === '__addtion__' ? <span>{ node.title }</span> : <a onClick={() => this.nodeChange(index)}>{ node.title }</a>
-      const editIcon = node.edit && <a onClick={() => this.editNode(index, node)}><a-icon type="edit" /></a>
+      const title = node.key === '__addtion__'
+        ? <span>{ node.title }</span>
+        : <a onClick={() => this.nodeChange(index)} onDblclick={() => node.edit && this.editNode(index, node)}>{ node.title }</a>
       const reduceIcon = !node.fixed && <a style="color:red" onClick={() => this.reduceNode(index)}><a-icon type="minus-circle" /></a>
       return <template slot="title">
-        {title}&nbsp;{editIcon}&nbsp;{reduceIcon}
+        {reduceIcon}&nbsp;{title}
       </template>
     },
     buildIcon (node, index) {

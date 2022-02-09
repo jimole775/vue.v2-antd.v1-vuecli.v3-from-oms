@@ -5,12 +5,25 @@
     width="60%"
     @ok="confirm"
   >
-    <a-checkbox-group
-      v-model="value"
-      name="checkboxgroup"
-      :options="plainOptions"
-      @change="onChange"
-    />
+    <a-form :form="form">
+      <a-row>
+        <a-col :span="24">
+          <a-form-item label="选项值" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input v-decorator="['value', {rules: [{ required: true, message: '请确认选项值' }]}]" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
+          <a-form-item label="选项标签" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input v-decorator="['label', {rules: [{ required: true, message: '请确认选项标签' }]}]" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
+          <a-form-item label="提示文本" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input v-decorator="['tips', {rules: [{ required: false }]}]" />
+          </a-form-item>
+        </a-col>
+      </a-row>
+    </a-form>
   </a-modal>
 </template>
 <script>
@@ -49,7 +62,14 @@ export default {
           return false
         }
         this.modal.show = false
-        this.$emit('update', utils.clone(values))
+        this.$emit(
+          'update',
+          utils.clone({
+            ...this.modal.data,
+            ...values
+          }),
+          this.modal.index
+        )
       })
     }
   }

@@ -11,9 +11,15 @@
               </span>
             </template>
             <a-radio-group name="radioGroup" v-model="approvalResult">
-              <a-radio v-for="(radio,index) in radioItems" :key="index" :value="radio.value">
+              <a-radio
+                v-for="(radio,index) in radioItemsView"
+                :key="radio.key"
+                :value="radio.key"
+                :class="approvalResult === radio.key ? 'checked' : 'discheck'"
+              >
                 <template>
-                  <span>{{ radio.label }}</span>&nbsp;
+                  <a @dblclick.stop="() => showRadioConfig(radio, index)">{{ radio.label }}</a>&nbsp;
+                  <!-- <a @click.stop="() => showRadioConfig(radio, index)"><a-icon type="edit" /></a>&nbsp; -->
                   <a-tooltip v-if="radio.tips" :title="radio.tips">
                     <a-icon type="question-circle-o" />
                   </a-tooltip>
@@ -46,12 +52,22 @@ const model = {
   handler: {
     title: '审批人',
     key: 'handler',
-    component: 'ASelect'
+    component: 'ASelect',
+    layout: {
+      span: 24,
+      label: 2,
+      wrapper: 16
+    }
   },
   approvalContent: {
     title: '审批意见',
     key: 'approvalContent',
-    component: 'ATextarea'
+    component: 'ATextarea',
+    layout: {
+      span: 24,
+      label: 2,
+      wrapper: 16
+    }
   }
 }
 export default {
@@ -70,6 +86,7 @@ export default {
     return {
       configRadioModal: {
         show: false,
+        index: null,
         data: undefined
       },
       selectRadioModal: {
@@ -78,40 +95,78 @@ export default {
       },
       radioItems: [
         {
+          key: 'pass',
           value: '1',
           label: '通过',
+          show: true,
           tips: '',
           formItems: [
             utils.clone(model.approvalContent)
           ]
         },
         {
+          key: 'reject',
           value: '2',
           label: '驳回',
+          show: true,
           tips: '驳回至流程发起节点，申请人可编辑后重新提交，或关闭流程',
           formItems: [
             utils.clone(model.approvalContent)
           ]
         },
         {
+          key: 'unpass',
           value: '3',
           label: '不通过',
+          show: true,
           tips: '不通过并结束流程',
           formItems: [
             utils.clone(model.approvalContent)
           ]
         },
         {
+          key: 'transfer',
           value: '8',
           label: '转审',
+          show: true,
           tips: '',
           formItems: [
             utils.clone(model.handler)
           ]
+        },
+        {
+          key: 'close',
+          value: '7',
+          label: '关闭',
+          show: false,
+          tips: '',
+          formItems: [
+            utils.clone(model.approvalContent)
+          ]
+        },
+        {
+          key: 'abandon',
+          value: '10',
+          label: '放弃',
+          show: false,
+          tips: '',
+          formItems: [
+            utils.clone(model.approvalContent)
+          ]
+        },
+        {
+          key: 'delete',
+          value: '1',
+          label: '删除',
+          show: false,
+          tips: '',
+          formItems: [
+            utils.clone(model.approvalContent)
+          ]
         }
       ],
       currentRadio: {},
-      approvalResult: '1',
+      approvalResult: 'pass',
       form: this.$form.createForm(this)
     }
   },
@@ -126,12 +181,26 @@ export default {
     },
     approvalResult: {
       handler (val) {
-        this.currentRadio = this.radioItems.find(i => i.value === val)
+        this.currentRadio = this.radioItems.find(i => i.key === val)
       },
       immediate: true
     }
   },
+  computed: {
+    radioItemsView () {
+      return this.radioItems.filter((item) => item.show)
+    }
+  },
   methods: {
+    showRadioConfig (data, index) {
+      this.configRadioModal.show = true
+      this.configRadioModal.index = index
+      this.configRadioModal.data = data
+    },
+    configRadioConfirm (data, index) {
+      this.$set(this.radioItems, index, data)
+      this.update()
+    },
     showSelectRadios () {
       this.selectRadioModal.show = true
       this.selectRadioModal.data = utils.clone(this.radioItems)
@@ -144,7 +213,6 @@ export default {
       this.radioItems = data
       this.update()
     },
-    configRadioConfirm () {},
     update () {
       this.$emit('update', this.radioItems)
     }
@@ -154,5 +222,17 @@ export default {
 <style lang="less" scoped>
 /deep/.ant-row {
   line-height: 2.5;
+}
+.checked {
+  color: #2DC84D;
+  a {
+    color: #2DC84D;
+  }
+}
+.discheck {
+  color: #999999;
+  a {
+    color: #999999;
+  }
 }
 </style>

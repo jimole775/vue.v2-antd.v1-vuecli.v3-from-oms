@@ -6,8 +6,8 @@
   >
     <a-checkbox-group style="width: 100%;" v-model="checkedKeys" @change="checkboxChanged">
       <a-row :span="24">
-        <a-col v-for="(item,index) in checkedItems" :span="6" :key="index">
-          <a-checkbox :value="item.value">
+        <a-col v-for="(item,index) in checkboxItems" :span="6" :key="index">
+          <a-checkbox :value="item.key">
             {{ item.label }}
           </a-checkbox>
         </a-col>
@@ -26,31 +26,37 @@ export default {
   data () {
     return {
       checkedKeys: [],
-      checkedItems: [
-        {
-          value: '1',
-          label: '通过'
-        },
-        {
-          value: '2',
-          label: '驳回'
-        },
-        {
-          value: '3',
-          label: '不通过'
-        },
-        {
-          value: '8',
-          label: '转审'
-        },
-        {
-          value: '9',
-          label: '撤销'
-        },
-        {
-          value: '10',
-          label: '撤回'
-        }
+      checkboxItems: [
+        // {
+        //   key: '1',
+        //   value: '1',
+        //   label: '通过'
+        // },
+        // {
+        //   key: '2',
+        //   value: '2',
+        //   label: '驳回'
+        // },
+        // {
+        //   key: '3',
+        //   value: '3',
+        //   label: '不通过'
+        // },
+        // {
+        //   key: '8',
+        //   value: '8',
+        //   label: '转审'
+        // },
+        // {
+        //   key: '9',
+        //   value: '9',
+        //   label: '撤销'
+        // },
+        // {
+        //   key: '10',
+        //   value: '10',
+        //   label: '撤回'
+        // }
       ]
     }
   },
@@ -59,7 +65,8 @@ export default {
       handler ({ data, show }) {
         if (show) {
           if (data && utils.isArray(data)) {
-            this.checkedKeys = data.map((item) => item.value)
+            this.checkedKeys = data.filter((item) => item.show).map((item) => item.key)
+            this.checkboxItems = utils.clone(data)
           }
         } else {
           this.checkedKeys = []
@@ -75,17 +82,10 @@ export default {
     },
     confirm () {
       this.modal.show = false
-      const selectItems = this.checkedItems.filter((i) => this.checkedKeys.includes(i.value))
-      if (this.modal.data) {
-        selectItems.forEach((si) => {
-          this.modal.data.forEach((da) => {
-            if (si.value === da.value) {
-              si = utils.clone(da)
-            }
-          })
-        })
-      }
-      this.$emit('update', selectItems)
+      this.checkboxItems.forEach((item) => {
+        item.show = this.checkedKeys.includes(item.key)
+      })
+      this.$emit('update', utils.clone(this.checkboxItems))
     }
   }
 }
