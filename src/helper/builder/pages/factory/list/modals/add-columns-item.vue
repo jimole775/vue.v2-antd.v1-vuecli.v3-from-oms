@@ -152,8 +152,7 @@ export default {
           permission: params.permission
         }
       }
-
-      // 添加苗头
+      // 添加锚点
       if (params.anchor === '1') {
         if (!params.scopedSlotsRender) {
           model.anchorTransfer = true // 标记 scopedSlotsRender 是被【详情锚点】改造而来的
@@ -177,7 +176,6 @@ export default {
           model.scopedSlotsRender = model.scopedSlots = model.props.scopedSlots = undefined
         }
       }
-
       // 添加表头提示
       if (params.titleTips) {
         if (!params.slotsRender) {
@@ -200,7 +198,6 @@ export default {
           )`
         }
       }
-
       if (params.slotsRender) {
         delete model.title
         delete model.props.title

@@ -5,37 +5,17 @@
       class="oms-sider"
       width="190"
     >
-      <div class="logo-text pd-x" style="max-height:50px;">
-        <div class="logo-image">
-          <span class="logo-desc">新模块配置</span>
-          &nbsp;&nbsp;
-          <router-link to="/">
-            <a-tooltip title="退回主页">
-              <a-icon type="left-circle" />
-            </a-tooltip>
-          </router-link>
-        </div>
-      </div>
+      <slot name="sider" />
       <Menu />
     </a-layout-sider>
     <a-layout>
       <a-layout-header class="bd-bottom">
-        <a-icon
-          class="trigger"
-          :type="'menu-fold'"
-        />
-        <div class="pull-right">
-          <a-avatar icon="user" class="mr5" :src="user.image" />
-          <span class="black" v-text="user.name" />
-          (<span style="margin: 0 0.2rem;font-size: 12px;" v-text="user.employeeNumber" />
-          <span v-if="user.supplierAbbreation" style="margin: 0 0.2rem;font-size: 12px;" v-text="user.supplierAbbreation" />)
-          <a href="javascript:;" class="sing-out red" />
-        </div>
+        <Header />
       </a-layout-header>
       <a-layout-content class="pd">
-        <slot />
+        <slot name="content" />
       </a-layout-content>
-      <a-layout-footer class="oms-footer">
+      <!-- <a-layout-footer class="oms-footer">
         <a-row>
           <a-col :span="16">
             <span style="color:gray">(请注意信息安全)</span>
@@ -52,27 +32,25 @@
             </span>
           </a-col>
         </a-row>
-      </a-layout-footer>
+      </a-layout-footer> -->
     </a-layout>
   </a-layout>
 </template>
 <script>
 import Menu from './menu'
+import Header from './header'
 export default {
   name: 'Layout',
   components: {
-    Menu
+    Menu,
+    Header
   },
   data () {
     return {
     }
   },
-  computed: {
-    user () {
-      return this.$store.state.global.user
-    }
-  },
   created () {
+    // this.$bus
   },
   methods: {
   }
@@ -86,7 +64,7 @@ export default {
 }
 
 .oms-sider {
-  background: #FFFFFF!important;
+  background: #FFFFFF !important;
   overflow: hidden;
 }
 

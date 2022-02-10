@@ -23,6 +23,11 @@
           </a-form-item>
         </a-col>
         <a-col :span="24">
+          <a-form-item label="权限配置" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input v-decorator="['permission', {rules: [{ required: false }]}]" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
           <a-form-item label="自定义参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-row>
               <a-col v-for="(item, index) in customParams" :key="index">

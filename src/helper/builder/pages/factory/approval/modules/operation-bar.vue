@@ -33,7 +33,7 @@
       <a-row>
         <a-col :span="12">
           <a-form-item :label="' '" :label-col="{span: 4}" :wrapper-col="{span: 18}">
-            <ConfigButton />
+            <ApiButton />
           </a-form-item>
         </a-col>
       </a-row>
@@ -45,7 +45,7 @@
 <script>
 import utils from '@/utils'
 import BuildFormItems from '@/helper/builder/pages/factory/common/build-form-items'
-import ConfigButton from '@/helper/builder/pages/factory/common/config-button'
+import ApiButton from '@/helper/builder/pages/factory/common/api-button'
 import ConfigRadio from '@/helper/builder/pages/factory/approval/modals/config-radio'
 import SelectRadios from '@/helper/builder/pages/factory/approval/modals/select-radios'
 const model = {
@@ -72,7 +72,7 @@ const model = {
 }
 export default {
   components: {
-    ConfigButton,
+    ApiButton,
     SelectRadios,
     BuildFormItems,
     ConfigRadio

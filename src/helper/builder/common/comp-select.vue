@@ -2,7 +2,6 @@
   <div v-if="list && list.length">
     <a-select
       allow-clear
-      show-search
       mode="default"
       :value="value"
       :placeholder="placeholder"

@@ -1,5 +1,5 @@
 <template>
-  <span class="config-button">
+  <span class="api-button">
     <a-button
       type="primary"
       :class="modal.data.url ? '' : 'summary-disabled'"
@@ -7,14 +7,14 @@
     >
       {{ modal.data.title }}
     </a-button>
-    <ConfigApi :modal="modal" @update="update" />
+    <ApiConfig :modal="modal" @update="update" />
   </span>
 </template>
 <script>
-import ConfigApi from '@/helper/builder/pages/factory/common/config-api.vue'
+import ApiConfig from '@/helper/builder/pages/factory/common/api-config.vue'
 export default {
   components: {
-    ConfigApi
+    ApiConfig
   },
   model: {
     prop: 'value',
@@ -63,7 +63,7 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-.config-button {
+.api-button {
   .summary-disabled {
     color: rgba(0, 0, 0, 0.25);
     background-color: #f5f5f5;

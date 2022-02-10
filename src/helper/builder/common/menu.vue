@@ -1,30 +1,44 @@
 <template>
-  <a-menu
-    theme="light"
-    mode="inline"
-  >
-    <a-menu-item>
-      <span style="color: #333;">顶层菜单</span>
-    </a-menu-item>
-    <template v-for="item in menus">
-      <a-menu-item v-if="item.children" :key="item.id">
-        <!-- <span slot="title"> -->
-        <!-- <i v-if="item.icon" :class="['far', item.icon]" /> -->
-        <!-- <span>{{ item.title }}</span>
-        </span> -->
-        <span style="color: #333;">{{ item.title }}</span>
-        <!-- <router-link :to="item.path">
-        <i v-if="item.icon" :class="['far', item.icon]" />
-        <span>{{ item.title }}</span>
-        </router-link> -->
+  <div>
+    <div class="logo-text pd-x" style="max-height:50px;">
+      <div class="logo-image">
+        <span class="logo-desc">新模块配置</span>
+        &nbsp;&nbsp;
+        <router-link to="/">
+          <a-tooltip title="退回主页">
+            <a-icon type="left-circle" />
+          </a-tooltip>
+        </router-link>
+      </div>
+    </div>
+    <a-menu
+      theme="light"
+      mode="inline"
+      class="menu"
+    >
+      <a-menu-item>
+        <span style="color: #333;">顶层菜单</span>
       </a-menu-item>
-      <!-- <sub-menu
-        v-else
-        :menu-info="item"
-        :key="item.id"
-      /> -->
-    </template>
-  </a-menu>
+      <template v-for="item in menus">
+        <a-menu-item v-if="item.children" :key="item.id">
+          <!-- <span slot="title"> -->
+          <!-- <i v-if="item.icon" :class="['far', item.icon]" /> -->
+          <!-- <span>{{ item.title }}</span>
+          </span> -->
+          <span style="color: #333;">{{ item.title }}</span>
+          <!-- <router-link :to="item.path">
+          <i v-if="item.icon" :class="['far', item.icon]" />
+          <span>{{ item.title }}</span>
+          </router-link> -->
+        </a-menu-item>
+        <!-- <sub-menu
+          v-else
+          :menu-info="item"
+          :key="item.id"
+        /> -->
+      </template>
+    </a-menu>
+  </div>
 </template>
 
 <script>
@@ -45,7 +59,7 @@ export default {
     this.loadDictList()
   },
   methods: {
-    ...mapActions(['loadMenus', 'loadDictList', 'loadUser'])
+    ...mapActions(['loadMenus', 'loadDictList'])
   }
 }
 </script>

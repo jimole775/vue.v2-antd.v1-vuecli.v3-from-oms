@@ -32,7 +32,7 @@ import todoMixins from '@/mixins/todoMixins'
 import ProjectList from './list'
 import ProjectApply from './apply'
 import ProjectApproval from './approval'
-import { mapState } from 'vuex'
+// import { mapState } from 'vuex'
 export default {
   components: {
     ProjectList,
@@ -49,11 +49,6 @@ export default {
         { title: '审批', tabId: '1_2', rank: 1, type: '2', component: ProjectApproval }
       ]
     }
-  },
-  computed: {
-    ...mapState({
-      employeeNumber: (state) => state.global.user.employeeNumber
-    })
   },
   methods: {
     rerankPane () {

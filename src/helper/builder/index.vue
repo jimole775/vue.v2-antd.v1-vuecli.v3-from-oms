@@ -1,6 +1,6 @@
 <template>
   <Layout>
-    <div>
+    <div slot="content">
       <router-view keep-alive />
     </div>
   </Layout>
@@ -21,10 +21,3 @@ export default {
   }
 }
 </script>
-
-<style lang="less" scoped>
-.base {
-  background: #fff;
-  padding: 1rem;
-}
-</style>

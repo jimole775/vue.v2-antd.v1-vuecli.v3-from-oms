@@ -395,16 +395,22 @@ export default {
 function getModifyProps (src = []) {
   const res = Object.create(null)
   src.forEach((item) => {
-    if (item.default !== item.value) {
-      // res[item.key] = item.value
-      if (item.type === Object) {
-        res[item.key] = parseObjectType(item.value)
-      } else if (item.type === Function) {
+    if (item.type === Function) {
+      if (item.default.body !== item.value.body) {
         res[item.key] = parseFunctionType(item.value)
-      } else if (item.type === Array) {
-        res[item.key] = parseArrayType(item.value)
-      } else {
-        res[item.key] = item.value
+      }
+    } else {
+      if (item.default !== item.value) {
+        // res[item.key] = item.value
+        if (item.type === Object) {
+          res[item.key] = parseObjectType(item.value)
+        } else if (item.type === Function) {
+          res[item.key] = parseFunctionType(item.value)
+        } else if (item.type === Array) {
+          res[item.key] = parseArrayType(item.value)
+        } else {
+          res[item.key] = item.value
+        }
       }
     }
   })
@@ -497,13 +503,14 @@ function parseArrayType (src) {
 }
 
 // 把函数字符串转成函数
-function parseFunctionType (src) {
-  let res = function () {}
-  if (utils.isString(src)) {
+function parseFunctionType (fnObj) {
+  let res
+  if (fnObj.body && fnObj.body.length > 0) {
     try {
-      res = new Function(src)
+      const args = fnObj.head.replace(/.*?\((.*?)\).*?{/ig, '$1').split(',')
+      res = new Function(args, fnObj.body)
     } catch (error) {
-      res = function () {}
+      res = new Function(error.message)
     }
   }
   return res

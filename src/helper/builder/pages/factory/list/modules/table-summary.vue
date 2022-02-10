@@ -2,16 +2,16 @@
   <div>
     <div class="btn-wrap clearfix summary">
       <template v-for="(item, index) in summaryItems">
-        <ConfigButton :value="item" :key="index" @change="summaryItemConfirm" />
+        <ApiButton :value="item" :key="index" @change="summaryItemConfirm" />
       </template>
     </div>
   </div>
 </template>
 <script>
-import ConfigButton from '@/helper/builder/pages/factory/common/config-button'
+import ApiButton from '@/helper/builder/pages/factory/common/api-button'
 export default {
   components: {
-    ConfigButton
+    ApiButton
   },
   data () {
     return {

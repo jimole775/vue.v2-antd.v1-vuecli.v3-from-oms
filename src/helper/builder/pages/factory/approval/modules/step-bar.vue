@@ -76,6 +76,7 @@ export default {
         content: '是否删除？',
         onOk: () => {
           this.stepNodes.splice(index, 1)
+          this.nodeChange(index - 1 ? index - 1 : 0)
         }
       })
     },

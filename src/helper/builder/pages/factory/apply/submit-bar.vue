@@ -1,13 +1,13 @@
 <template>
   <div class="ppproject-footer">
-    <ConfigButton v-model="button" />
+    <ApiButton v-model="button" />
   </div>
 </template>
 <script>
-import ConfigButton from '@/helper/builder/pages/factory/common/config-button'
+import ApiButton from '@/helper/builder/pages/factory/common/api-button'
 export default {
   components: {
-    ConfigButton
+    ApiButton
   },
   props: {
   },
@@ -31,7 +31,7 @@ export default {
 .ppproject-footer {
   text-align: center;
   margin: 2rem 0;
-  /deep/ .config-button {
+  /deep/ .api-button {
     button {
       width: 16rem;height:2.6rem;margin: 0 0.3rem;
     }

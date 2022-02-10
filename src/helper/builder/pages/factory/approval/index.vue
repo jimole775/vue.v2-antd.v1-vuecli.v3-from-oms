@@ -4,7 +4,7 @@
     <BuildCollapsePanels :key="current" :data-source="currentNode.modules.collapsePanels" @update="panelUpdate" />
     <a-collapse
       :bordered="false"
-      :active-key="['1']"
+      :active-key="['1', '9']"
     >
       <a-collapse-panel
         header="审批操作"
@@ -13,18 +13,11 @@
       >
         <OperationBar :key="current" :data-source="currentNode.modules.operation" @update="operationUpdate" />
       </a-collapse-panel>
-      <a-collapse-panel
-        header="审批日志"
-        key="9"
-        class="m-block"
-      >
-        <LogBar :key="current" v-model="currentNode.modules.log" />
-      </a-collapse-panel>
+      <LogBar :key="'9'" :data-source="currentNode.modules.log" @update="logUpdate" />
     </a-collapse>
   </div>
 </template>
 <script>
-// import api from '@/api'
 import utils from '@/utils'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
@@ -80,9 +73,15 @@ export default {
   methods: {
     operationUpdate (data) {
       this.currentNode.modules.operation = data
+      console.log(this.stepNodes)
+    },
+    logUpdate (data) {
+      this.currentNode.modules.log = data
+      console.log(this.stepNodes)
     },
     panelUpdate (data) {
       this.currentNode.modules.collapsePanels = data
+      console.log(this.stepNodes)
     },
     nodeChangeConfirm (current, stepNodes) {
       this.current = current

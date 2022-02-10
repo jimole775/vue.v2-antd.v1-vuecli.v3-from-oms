@@ -688,6 +688,9 @@ const utils = {
   isBlob (src) {
     return Object.prototype.toString.call(src) === '[object Blob]'
   },
+  isBoolean (src) {
+    return Object.prototype.toString.call(src) === '[object Boolean]'
+  },
   isEmptyObject (src) {
     return Object.prototype.toString.call(src) === '[object Object]' && isEmpty.call(this, src)
     function isEmpty (src) {
