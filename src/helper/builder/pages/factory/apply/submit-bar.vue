@@ -1,6 +1,6 @@
 <template>
   <div class="ppproject-footer">
-    <ApiButton v-model="button" />
+    <ApiButton :value="button" @update="update" />
   </div>
 </template>
 <script>
@@ -17,12 +17,13 @@ export default {
         url: undefined,
         method: undefined,
         params: undefined,
-        title: '发起'
+        label: '发起'
       }
     }
   },
   methods: {
     update (data) {
+      this.$emit('update', { apply: data })
     }
   }
 }

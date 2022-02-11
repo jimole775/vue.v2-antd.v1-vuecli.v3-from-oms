@@ -105,6 +105,7 @@ export default {
         const val = this.dataList[0][aColumn.dataIndex]
         !val && (this.dataList[0][aColumn.dataIndex] = '样例数据')
       }
+      this.$emit('update', this.columns)
     },
     buildTHead () {
       return this.columns.map((item, index) => {

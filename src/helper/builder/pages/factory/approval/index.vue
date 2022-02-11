@@ -18,6 +18,7 @@
   </div>
 </template>
 <script>
+import Vue from 'vue'
 import utils from '@/utils'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
@@ -36,6 +37,10 @@ export default {
     BuildCollapsePanels
   },
   props: {
+    rank: {
+      type: Number,
+      default: 1
+    }
   },
   data () {
     return {
@@ -86,6 +91,9 @@ export default {
     nodeChangeConfirm (current, stepNodes) {
       this.current = current
       this.stepNodes = stepNodes
+    },
+    handup (data) {
+      Vue.bus.$emit('_approvalConfig_', this.rank - 1, data)
     }
   }
 }

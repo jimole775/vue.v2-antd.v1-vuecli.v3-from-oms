@@ -25,7 +25,6 @@ const panelmodel = {
   tabId: '1_1',
   closable: true,
   show: true,
-  visible: true,
   lastListId: '',
   recordData: {}
 }

@@ -4,33 +4,33 @@
       :bordered="false"
       :active-key="['1','2','3','4','5']"
     >
-      <template v-for="(componentItem, index) in activeComponents">
+      <template v-for="(panel, index) in panels">
         <a-collapse-panel
-          v-if="componentItem.show"
-          :header="componentItem.title"
+          v-if="panel.show"
+          :header="panel.title"
           :key="`${index + 1}`"
           class="m-block"
         >
           <component
-            :ref="`${componentItem.componentName}_${index}`"
-            :is="componentItem.component"
-            :operation-item="componentItem.operationItem"
+            :ref="`${panel.panelName}_${index}`"
+            :is="panel.component"
+            :operation-item="panel.operationItem"
             :before-render="beforeRender"
             :before-submit="beforeSubmit"
-            :form-items="componentItem.formItems"
-            :active-components="activeComponents"
-            :mode="componentItem.mode"
+            :form-items="panel.formItems"
+            :panels="panels"
+            :mode="panel.mode"
             :tab-proxy="tabProxy"
             :bridge="{
               ...bridge,
+              panel,
+              panels,
               apimap,
               tabProxy,
               applyConfig,
-              componentItem,
-              activeComponents,
-              columns: componentItem.columns,
-              formItems: componentItem.formItems,
-              operationItem: componentItem.operationItem,
+              columns: panel.columns,
+              formItems: panel.formItems,
+              operationItem: panel.operationItem,
             }"
           />
         </a-collapse-panel>
@@ -74,22 +74,22 @@ export default {
   data () {
     return {
       scope: this,
-      activeComponents: []
+      panels: []
     }
   },
   watch: {
     applyConfig: {
       handler (aModulesMap) {
-        const components = aModulesMap.components || []
-        this.activeComponents = components.map((item) => {
+        const panels = aModulesMap.panels || []
+        this.panels = panels.map((item) => {
           if (utils.isString(item.component)) {
-            item.componentName = item.component
+            item.panelName = item.component
           }
           if (utils.isObject(item.component)) {
-            item.componentName = item.component.name || 'customRender'
+            item.panelName = item.component.name || 'customRender'
           }
           if (utils.isNone(item.component)) {
-            item.componentName = 'customRender'
+            item.panelName = 'customRender'
           }
           if (item.show === undefined) {
             item.show = true
@@ -133,11 +133,11 @@ export default {
       return new Promise(async (resolve) => {
         let successData = {}
         const failureTips = []
-        for (let index = 0; index < this.activeComponents.length; index++) {
-          const component = this.activeComponents[index]
-          if (component.show === false) continue
-          const componentDom = await this.$refs[`${component.componentName}_${index}`][0]
-          const editData = await componentDom.getFieldsValue()
+        for (let index = 0; index < this.panels.length; index++) {
+          const panel = this.panels[index]
+          if (panel.show === false) continue
+          const panelDom = await this.$refs[`${panel.panelName}_${index}`][0]
+          const editData = await panelDom.getFieldsValue()
           if (editData.type === 'failure') {
             failureTips.push(editData.message)
           } else {

@@ -8,40 +8,40 @@
       :bordered="false"
       :active-key="['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']"
     >
-      <template v-for="(componentItem, index) in activeComponents">
+      <template v-for="(panel, index) in panels">
         <a-collapse-panel
-          v-if="componentItem.show"
-          :header="componentItem.title"
+          v-if="panel.show"
+          :header="panel.title"
           :key="`${index + 1}`"
           class="m-block"
         >
           <component
-            :ref="`${componentItem.componentName}_${index}`"
-            :is="componentItem.component"
-            :mode="componentItem.mode"
-            :active-components="activeComponents"
-            :form-items="componentItem.formItems"
-            :component-item="componentItem"
-            :operation-item="componentItem.operationItem"
+            :ref="`${panel.panelName}_${index}`"
+            :is="panel.component"
+            :mode="panel.mode"
+            :panels="panels"
+            :form-items="panel.formItems"
+            :panel="panel"
+            :operation-item="panel.operationItem"
             :data-source="basicData"
             :tab-proxy="tabProxy"
             :current-node="currentNode"
-            :columns="componentItem.columns"
+            :columns="panel.columns"
             :before-render="beforeRender"
             :business-id="recordData.id"
             :business-type="apimap.logType"
             :bridge="{
               ...bridge,
+              panel,
+              panels,
               apimap,
               tabProxy,
               recordData,
               currentNode,
-              componentItem,
-              activeComponents,
               dataSource: basicData,
-              columns: componentItem.columns,
-              formItems: componentItem.formItems,
-              operationItem: componentItem.operationItem,
+              columns: panel.columns,
+              formItems: panel.formItems,
+              operationItem: panel.operationItem,
             }"
             @submit="submitHandler"
           />
@@ -92,7 +92,7 @@ export default {
       currentPane: {},
       basicData: {},
       currentNode: {},
-      activeComponents: [],
+      panels: [],
       form: this.$form.createForm(this)
     }
   },
@@ -100,18 +100,18 @@ export default {
     activeModule: {
       async handler (aModule) {
         if (!aModule) return []
-        const components = this.isApprovallor
-          ? aModule.components.permission
-          : aModule.components.dispermission
-        this.activeComponents = components.map((item) => {
+        const panels = this.isApprovallor
+          ? aModule.panels.permission
+          : aModule.panels.dispermission
+        this.panels = panels.map((item) => {
           if (utils.isString(item.component)) {
-            item.componentName = item.component
+            item.panelName = item.component
           }
           if (utils.isObject(item.component)) {
-            item.componentName = item.component.name || 'customRender'
+            item.panelName = item.component.name || 'customRender'
           }
           if (utils.isNone(item.component)) {
-            item.componentName = 'customRender'
+            item.panelName = 'customRender'
           }
           if (item.show === undefined) {
             item.show = true
@@ -159,13 +159,13 @@ export default {
     async getComponentsValues () {
       const params = {}
       const tips = []
-      for (let index = 0; index < this.activeComponents.length; index++) {
-        const componentItem = this.activeComponents[index]
-        if (componentItem.show === false) continue
-        const componentDomId = `${componentItem.componentName}_${index}`
-        if (componentItem.mode === 'edit') {
-          await this.$refs[componentDomId]
-          const validRes = await this.$refs[componentDomId][0].getFieldsValue()
+      for (let index = 0; index < this.panels.length; index++) {
+        const panel = this.panels[index]
+        if (panel.show === false) continue
+        const panelDomId = `${panel.componentName}_${index}`
+        if (panel.mode === 'edit') {
+          await this.$refs[panelDomId]
+          const validRes = await this.$refs[panelDomId][0].getFieldsValue()
           if (validRes.type === 'success') {
             Object.assign(params, validRes.data)
           } else {
@@ -177,10 +177,10 @@ export default {
     },
     getComponentsRequiredFields (params) {
       let requiredFields = []
-      this.activeComponents.forEach((component) => {
-        if (component.component === 'ApprovalOperation' ||
-          component.componentName === 'ApprovalOperation') {
-          const inputs = component.operationItem.inputs || []
+      this.panels.forEach((panel) => {
+        if (panel.component === 'ApprovalOperation' ||
+          panel.componentName === 'ApprovalOperation') {
+          const inputs = panel.operationItem.inputs || []
           inputs.forEach((item) => {
             if (item.show.includes(params.approvalResult)) {
               if (item.required === true) {

@@ -1,11 +1,12 @@
 <template>
   <div>
     <ApprovalNodesMap :api-name="''" :params="{ organizationCode: '' }" />
-    <BuildCollapsePanels />
-    <SubmitBar />
+    <BuildCollapsePanels @update="panelsUpdate" />
+    <SubmitBar @update="apiUpdate" />
   </div>
 </template>
 <script>
+import Vue from 'vue'
 import ApprovalNodesMap from '@/components/ApprovalNodesMap'
 import BuildCollapsePanels from '@/helper/builder/pages/factory/common/build-collapse-panels'
 import SubmitBar from './submit-bar.vue'
@@ -16,15 +17,27 @@ export default {
     BuildCollapsePanels
   },
   props: {
+    rank: {
+      type: Number,
+      default: 1
+    }
   },
   data () {
     return {
     }
   },
   methods: {
-    dropStage () {
+    apiUpdate (data) {
+      this.handupApi(data)
     },
-    async saveStage () {
+    panelsUpdate (data) {
+      this.handupApply(data)
+    },
+    handupApi (data) {
+      Vue.bus.$emit('_apimap_', this.rank - 1, data)
+    },
+    handupApply (data) {
+      Vue.bus.$emit('_applyConfig_', this.rank - 1, data)
     }
   }
 }

@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="btn-wrap clearfix summary">
-      <template v-for="(item, index) in summaryItems">
-        <ApiButton :value="item" :key="index" @change="summaryItemConfirm" />
+      <template v-for="key in Object.keys(summaryObject)">
+        <ApiButton :value="summaryObject[key]" :key="key" @update="summaryItemConfirm" />
       </template>
     </div>
   </div>
@@ -19,50 +19,71 @@ export default {
         labelCol: { span: 6 },
         wrapperCol: { span: 16 }
       },
-      summaryItems: [
-        {
+      summaryObject: {
+        list: {
           url: undefined,
           method: undefined,
           params: undefined,
-          title: '列表'
+          key: 'list',
+          label: '列表'
         },
-        {
+        approval: {
           url: undefined,
           method: undefined,
           params: undefined,
-          title: '审批'
+          key: 'approval',
+          label: '审批'
         },
-        {
+        transfer: {
           url: undefined,
           method: undefined,
           params: undefined,
-          title: '撤回'
+          key: 'transfer',
+          label: '转审'
         },
-        {
+        revoke: {
           url: undefined,
           method: undefined,
           params: undefined,
-          title: '废弃'
+          key: 'revoke',
+          label: '撤回'
         },
-        {
+        reject: {
           url: undefined,
           method: undefined,
           params: undefined,
-          title: '关闭'
+          key: 'reject',
+          label: '驳回'
         },
-        {
+        abandon: {
           url: undefined,
           method: undefined,
           params: undefined,
-          title: '转审'
+          key: 'abandon',
+          label: '废弃'
         },
-        {
+        close: {
           url: undefined,
           method: undefined,
           params: undefined,
-          title: '导出'
+          key: 'close',
+          label: '关闭'
+        },
+        delete: {
+          url: undefined,
+          method: undefined,
+          params: undefined,
+          key: 'delete',
+          label: '删除'
+        },
+        export: {
+          url: undefined,
+          method: undefined,
+          params: undefined,
+          key: 'export',
+          label: '导出'
         }
-      ],
+      },
       modal: {
         show: false,
         data: undefined
@@ -75,14 +96,12 @@ export default {
       this.modal.data = item
     },
     summaryItemConfirm (summaryInfo) {
-      this.summaryItems.forEach((item) => {
-        if (item.title === summaryInfo.title) {
-          item.url = summaryInfo.url
-          item.method = summaryInfo.method
-          item.params = summaryInfo.params
-        }
-      })
-      this.$emit('update', this.summaryItems)
+      const item = this.summaryObject[summaryInfo.key]
+      item.url = summaryInfo.url
+      item.method = summaryInfo.method
+      item.params = summaryInfo.params
+      item.permission = summaryInfo.permission
+      this.$emit('update', this.summaryObject)
     }
   }
 }

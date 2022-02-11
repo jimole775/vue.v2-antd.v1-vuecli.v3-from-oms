@@ -18,7 +18,7 @@
           </div>
         </template>
         <div>
-          <component :is="pane.component" @switchTab="switchTab" />
+          <component :is="pane.component" :rank="pane.rank" @switchTab="switchTab" />
         </div>
       </a-tab-pane>
     </a-tabs>

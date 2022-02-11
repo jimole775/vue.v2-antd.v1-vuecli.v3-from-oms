@@ -5,7 +5,7 @@
       :class="modal.data.url ? '' : 'summary-disabled'"
       @click="edit"
     >
-      {{ modal.data.title }}
+      {{ modal.data.label }}
     </a-button>
     <ApiConfig :modal="modal" @update="update" />
   </span>
@@ -16,10 +16,6 @@ export default {
   components: {
     ApiConfig
   },
-  model: {
-    prop: 'value',
-    event: 'change'
-  },
   props: {
     value: {
       type: Object,
@@ -27,7 +23,8 @@ export default {
         url: undefined,
         method: undefined,
         params: undefined,
-        title: '提交'
+        permission: undefined,
+        label: '提交'
       })
     }
   },
@@ -57,7 +54,7 @@ export default {
       this.modal.data.url = data.url
       this.modal.data.method = data.method
       this.modal.data.params = data.params
-      this.$emit('change', this.modal.data)
+      this.$emit('update', this.modal.data)
     }
   }
 }

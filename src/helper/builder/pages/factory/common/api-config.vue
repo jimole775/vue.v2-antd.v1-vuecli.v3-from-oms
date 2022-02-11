@@ -116,6 +116,7 @@ export default {
           title: this.modal.data.title,
           url: values.url,
           method: values.method,
+          permission: values.permission,
           params: array2object(this.customParams)
         }
         this.$emit('update', utils.clone(model))
