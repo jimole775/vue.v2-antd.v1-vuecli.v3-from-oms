@@ -32,7 +32,7 @@ import todoMixins from '@/mixins/todoMixins'
 import ProjectList from './list'
 import ProjectApply from './apply'
 import ProjectApproval from './approval'
-// import { mapState } from 'vuex'
+import { mapActions } from 'vuex'
 export default {
   components: {
     ProjectList,
@@ -50,7 +50,19 @@ export default {
       ]
     }
   },
+  watch: {
+    active: {
+      handler (val) {
+        if (val) {
+          const type = val.split('_').pop()
+          this.setTabType(type)
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
+    ...mapActions(['setTabType']),
     rerankPane () {
       this.panes.sort((a, b) => {
         return a.type - b.type

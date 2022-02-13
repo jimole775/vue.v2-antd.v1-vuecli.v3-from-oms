@@ -1,5 +1,6 @@
 <script>
 import utils from '@/utils'
+import { mapActions } from 'vuex'
 import AddStepNode from '../modals/add-step-node'
 function countNodeWidth (str = '') {
   // 40: icon宽度
@@ -47,14 +48,23 @@ export default {
         }
       },
       immediate: true
+    },
+    stepNodes: {
+      handler (nodes) {
+        if (nodes && nodes.length) {
+          this.setStepNodes(nodes.map((i) => i.key).filter(i => i !== '__addtion__'))
+        }
+      },
+      immediate: true
     }
   },
   methods: {
+    ...mapActions(['setStepNodes']),
     nodeChange (index) {
       this.current = index
       this.$emit('update', this.current, this.stepNodes)
     },
-    stepChangeConfirm (node) {
+    AddStepNodeConfirm (node) {
       const model = this.stepNodes[0]
       if (utils.isNone(this.modal.index)) {
         const insertIndex = this.stepNodes.length - 2
@@ -143,7 +153,7 @@ export default {
           })
         }
       </a-steps>
-      <AddStepNode modal={this.modal} onUpdate={this.stepChangeConfirm} />
+      <AddStepNode modal={this.modal} onUpdate={this.AddStepNodeConfirm} />
     </div>)
   }
 }

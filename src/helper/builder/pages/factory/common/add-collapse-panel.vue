@@ -29,12 +29,27 @@
             </a-radio-group>
           </a-form-item>
         </a-col>
+        <a-col v-if="getTabType === '2'" :span="24">
+          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <span slot="label">
+              控制节点
+              <a-tooltip title="勾选即显示">
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
+            <a-checkbox-group
+              v-decorator="['stepNodes', {rules: [{ required: false }]}]"
+              :options="getStepNodes"
+            />
+          </a-form-item>
+        </a-col>
       </a-row>
     </a-form>
   </a-modal>
 </template>
 <script>
 import utils from '@/utils'
+import { mapGetters } from 'vuex'
 export default {
   props: {
     modal: {
@@ -47,13 +62,25 @@ export default {
       form: this.$form.createForm(this)
     }
   },
+  computed: {
+    ...mapGetters(['getStepNodes', 'getTabType'])
+  },
   watch: {
     modal: {
       handler ({ data, show }) {
         if (show) {
           this.$nextTick(() => {
-            if (data) this.form.setFieldsValue(data)
-            else this.form.setFieldsValue({ extend: true })
+            if (data) {
+              if (data.stepNodes === undefined) {
+                data.stepNodes = this.getStepNodes
+              }
+              this.form.setFieldsValue(data)
+            } else {
+              this.form.setFieldsValue({
+                extend: true,
+                stepNodes: this.getStepNodes
+              })
+            }
           })
         } else {
           this.form.resetFields()

@@ -45,6 +45,20 @@
             <a v-else @click="showParamTransfer = true"><a-icon type="plus-circle" /></a>
           </a-form-item>
         </a-col>
+        <a-col v-if="getTabType === '2'" :span="24">
+          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <span slot="label">
+              控制节点
+              <a-tooltip title="勾选即显示">
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
+            <a-checkbox-group
+              v-decorator="['stepNodes', {rules: [{ required: false }]}]"
+              :options="getStepNodes"
+            />
+          </a-form-item>
+        </a-col>
         <a-col :span="24">
           <a-form-item label="配置类型" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-radio-group v-model="configType">
@@ -213,6 +227,7 @@
 </template>
 <script>
 import utils from '@/utils'
+import { mapGetters } from 'vuex'
 import CompSelect from '@/helper/builder/common/comp-select.vue'
 // const itemModel = {
 //   key: '',
@@ -247,6 +262,9 @@ export default {
   filters: {
     type2string
   },
+  computed: {
+    ...mapGetters(['getStepNodes', 'getTabType'])
+  },
   watch: {
     modal: {
       handler ({ data, show }) {
@@ -258,7 +276,8 @@ export default {
               this.form.setFieldsValue({
                 span: 6,
                 label: 6,
-                wrapper: 16
+                wrapper: 16,
+                stepNodes: this.getStepNodes
               })
             })
           }
@@ -275,6 +294,7 @@ export default {
       let itemInfo = {
         key: data.key,
         title: data.title,
+        stepNodes: data.stepNodes || this.getStepNodes,
         span: data.layout ? data.layout.span : 6,
         label: data.layout ? data.layout.label : 6,
         wrapper: data.layout ? data.layout.wrapper : 16
@@ -346,6 +366,7 @@ export default {
         const model = {
           key: values.key,
           title: values.title,
+          stepNodes: values.stepNodes,
           configType: this.configType,
           layout: {
             span: values.span,

@@ -1,34 +1,34 @@
 <template>
   <div>
     <StepBar :data-source="stepNodes" @update="nodeChangeConfirm" />
-    <BuildCollapsePanels :key="current" :data-source="currentNode.modules.collapsePanels" @update="panelUpdate" />
+    <BuildCollapsePanels :key="current" :data-source="collapsePanels" @update="panelUpdate" />
     <a-collapse
       :bordered="false"
-      :active-key="['1', '9']"
+      :active-key="['101', '102']"
     >
       <a-collapse-panel
         header="审批操作"
-        key="1"
+        key="101"
         class="m-block"
       >
-        <OperationBar :key="current" :data-source="currentNode.modules.operation" @update="operationUpdate" />
+        <OperationBar :key="current" :data-source="operation" @update="operationUpdate" />
       </a-collapse-panel>
-      <LogBar :key="'9'" :data-source="currentNode.modules.log" @update="logUpdate" />
+      <LogBar :key="'102'" :data-source="log" @update="logUpdate" />
     </a-collapse>
   </div>
 </template>
 <script>
 import Vue from 'vue'
-import utils from '@/utils'
+// import utils from '@/utils'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
 import BuildCollapsePanels from '@/helper/builder/pages/factory/common/build-collapse-panels'
-const moduleModel = {
-  collapsePanels: [],
-  operation: [],
-  log: {}
-}
+// const moduleModel = {
+//   collapsePanels: [],
+//   operation: [],
+//   log: {}
+// }
 export default {
   components: {
     LogBar,
@@ -44,28 +44,28 @@ export default {
   },
   data () {
     return {
+      log: {},
+      operation: [],
+      collapsePanels: [],
       current: 0,
       stepNodes: [
         {
           fixed: true,
           edit: true,
           key: 'start',
-          title: '流程开始',
-          modules: utils.clone(moduleModel)
+          title: '流程开始'
         },
         {
           fixed: true,
           edit: false,
           key: '__addtion__',
-          title: '新增节点',
-          modules: utils.clone(moduleModel)
+          title: '新增节点'
         },
         {
           fixed: true,
           edit: true,
           key: 'end',
-          title: '流程结束',
-          modules: utils.clone(moduleModel)
+          title: '流程结束'
         }
       ]
     }
@@ -77,23 +77,23 @@ export default {
   },
   methods: {
     operationUpdate (data) {
-      this.currentNode.modules.operation = data
-      console.log(this.stepNodes)
+      this.operation = data
     },
     logUpdate (data) {
-      this.currentNode.modules.log = data
-      console.log(this.stepNodes)
+      this.log = data
     },
     panelUpdate (data) {
-      this.currentNode.modules.collapsePanels = data
-      console.log(this.stepNodes)
+      this.collapsePanels = data
     },
     nodeChangeConfirm (current, stepNodes) {
       this.current = current
       this.stepNodes = stepNodes
     },
+    handupApimap (data) {
+      Vue.bus.$emit('_apimap_', this.rank - 1, data)
+    },
     handup (data) {
-      Vue.bus.$emit('_approvalConfig_', this.rank - 1, data)
+      Vue.bus.$emit('_approval_', this.rank - 1, data)
     }
   }
 }

@@ -27,6 +27,20 @@
             <a-input v-decorator="['permission', {rules: [{ required: false }]}]" />
           </a-form-item>
         </a-col>
+        <a-col v-if="getTabType === '2'" :span="24">
+          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <span slot="label">
+              控制节点
+              <a-tooltip title="勾选即显示">
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
+            <a-checkbox-group
+              v-decorator="['stepNodes', {rules: [{ required: false }]}]"
+              :options="getStepNodes"
+            />
+          </a-form-item>
+        </a-col>
         <a-col :span="24">
           <a-form-item label="自定义参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-row>
@@ -54,6 +68,7 @@
 </template>
 <script>
 import utils from '@/utils'
+import { mapGetters } from 'vuex'
 export default {
   props: {
     modal: {
@@ -67,11 +82,20 @@ export default {
       customParams: [{ key: '', value: '' }]
     }
   },
+  computed: {
+    title () {
+      return this.modal.data ? this.modal.data.title : ''
+    },
+    ...mapGetters(['getStepNodes', 'getTabType'])
+  },
   watch: {
     modal: {
       handler ({ data, show }) {
         if (show) {
           this.deployParams(data)
+          if (data.stepNodes === undefined) {
+            data.stepNodes = this.getStepNodes
+          }
           this.form.setFieldsValue(data)
         } else {
           this.form.resetFields()
@@ -82,11 +106,6 @@ export default {
       },
       deep: true,
       immediate: true
-    }
-  },
-  computed: {
-    title () {
-      return this.modal.data ? this.modal.data.title : ''
     }
   },
   methods: {

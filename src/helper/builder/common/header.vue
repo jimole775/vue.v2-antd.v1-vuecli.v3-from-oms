@@ -52,7 +52,6 @@ export default {
         // “申请页面” 配置项
         applyConfig: {
           // 0: {
-          // 配置需要展示的组件，一个组件等同于一个板块
           // panels: [{
           //   component: 'FormItemRender',
           //   title: '基本信息',
@@ -73,7 +72,6 @@ export default {
           // 0: {
           // 节点名“start”
           // start: {
-          //   // 配置每个节点需要展示的组件，一个组件等同于一个板块
           //   panels: {
           //     // 没权限审批的，只能看“只读”内容
           //     dispermission: [{
@@ -173,26 +171,27 @@ export default {
     })
 
     Vue.bus.$on('_apply_', (tabIndex, value) => {
-      if (!this.buildedData['applyConfig'][tabIndex]) {
-        this.buildedData['applyConfig'][tabIndex] = Object.create(null)
-      }
-      this.buildedData['applyConfig'][tabIndex]['panels'] = value
+      this.buildedData['applyConfig'][tabIndex] = value
       console.log(this.buildedData)
     })
 
-    Vue.bus.$on('_approval_', (tabIndex, node, value) => {
-      if (!this.buildedData['approvalConfig'][tabIndex]) {
-        this.buildedData['approvalConfig'][tabIndex] = Object.create(null)
-        this.buildedData['approvalConfig'][tabIndex][node] = Object.create(null)
-      }
-      this.buildedData['approvalConfig'][tabIndex][node]['panels'] = value
+    Vue.bus.$on('_approval_', (tabIndex, value) => {
+      this.buildedData['approvalConfig'][tabIndex] = value
       console.log(this.buildedData)
     })
   },
   methods: {
     validBuildedData () {
 
-    }
+    },
+    transferStepNodes () {
+      // const approvalConfig = this.buildedData['approvalConfig']
+      // const tabIndexs = Object.keys(approvalConfig)
+      // panels: [opeartion: [], panels: []]
+      // tabs
+    },
+    getPermission () {},
+    getDispermission () {}
   }
 }
 </script>

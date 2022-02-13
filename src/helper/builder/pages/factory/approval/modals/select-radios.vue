@@ -4,7 +4,7 @@
     v-model="modal.show"
     @ok="confirm"
   >
-    <a-checkbox-group style="width: 100%;" v-model="checkedKeys" @change="checkboxChanged">
+    <a-checkbox-group style="width: 100%;" v-model="checkedKeys">
       <a-row :span="24">
         <a-col v-for="(item,index) in checkboxItems" :span="6" :key="index">
           <a-checkbox :value="item.key">
@@ -26,38 +26,7 @@ export default {
   data () {
     return {
       checkedKeys: [],
-      checkboxItems: [
-        // {
-        //   key: '1',
-        //   value: '1',
-        //   label: '通过'
-        // },
-        // {
-        //   key: '2',
-        //   value: '2',
-        //   label: '驳回'
-        // },
-        // {
-        //   key: '3',
-        //   value: '3',
-        //   label: '不通过'
-        // },
-        // {
-        //   key: '8',
-        //   value: '8',
-        //   label: '转审'
-        // },
-        // {
-        //   key: '9',
-        //   value: '9',
-        //   label: '撤销'
-        // },
-        // {
-        //   key: '10',
-        //   value: '10',
-        //   label: '撤回'
-        // }
-      ]
+      checkboxItems: []
     }
   },
   watch: {
@@ -77,9 +46,6 @@ export default {
     }
   },
   methods: {
-    checkboxChanged (a, b) {
-      console.log(a, b)
-    },
     confirm () {
       this.modal.show = false
       this.checkboxItems.forEach((item) => {

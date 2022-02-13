@@ -31,7 +31,8 @@ export default {
   },
   computed: {
     isShowTable () {
-      return !!this.summaryObject['list'].url
+      const list = this.summaryObject['list'] || {}
+      return !!list.url
     }
   },
   data () {
