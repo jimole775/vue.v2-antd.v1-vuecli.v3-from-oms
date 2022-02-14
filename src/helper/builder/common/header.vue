@@ -139,7 +139,7 @@ export default {
   created () {
     Vue.bus.$on('_panes_', (tabIndex, value) => {
       this.buildedData['panes'][tabIndex] = value
-      console.log(this.buildedData)
+      console.log(this.buildedData['panes'])
     })
 
     Vue.bus.$on('_apimap_', (tabIndex, value) => {
@@ -151,44 +151,38 @@ export default {
         ...already,
         ...value
       }
-      console.log(this.buildedData)
+      console.log(this.buildedData['apimap'])
     })
 
-    Vue.bus.$on('_listSearchor_', (tabIndex, value) => {
+    Vue.bus.$on('_list_', (tabIndex, value) => {
       if (!this.buildedData['listConfig'][tabIndex]) {
         this.buildedData['listConfig'][tabIndex] = Object.create(null)
       }
-      this.buildedData['listConfig'][tabIndex]['searchor'] = value
-      console.log(this.buildedData)
+      this.buildedData['listConfig'][tabIndex] = value
+      console.log(this.buildedData['listConfig'])
     })
 
-    Vue.bus.$on('_listColumns_', (tabIndex, value) => {
-      if (!this.buildedData['listConfig'][tabIndex]) {
-        this.buildedData['listConfig'][tabIndex] = Object.create(null)
-      }
-      this.buildedData['listConfig'][tabIndex]['columns'] = value
-      console.log(this.buildedData)
-    })
+    // Vue.bus.$on('_listColumns_', (tabIndex, value) => {
+    //   if (!this.buildedData['listConfig'][tabIndex]) {
+    //     this.buildedData['listConfig'][tabIndex] = Object.create(null)
+    //   }
+    //   this.buildedData['listConfig'][tabIndex]['columns'] = value
+    //   console.log(this.buildedData['listConfig'])
+    // })
 
     Vue.bus.$on('_apply_', (tabIndex, value) => {
       this.buildedData['applyConfig'][tabIndex] = value
-      console.log(this.buildedData)
+      console.log(this.buildedData['applyConfig'])
     })
 
     Vue.bus.$on('_approval_', (tabIndex, value) => {
       this.buildedData['approvalConfig'][tabIndex] = value
-      console.log(this.buildedData)
+      console.log(this.buildedData['approvalConfig'])
     })
   },
   methods: {
     validBuildedData () {
 
-    },
-    transferStepNodes () {
-      // const approvalConfig = this.buildedData['approvalConfig']
-      // const tabIndexs = Object.keys(approvalConfig)
-      // panels: [opeartion: [], panels: []]
-      // tabs
     },
     getPermission () {},
     getDispermission () {}

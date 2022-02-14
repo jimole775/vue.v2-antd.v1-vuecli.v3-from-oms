@@ -1,13 +1,13 @@
 <template>
   <div>
     <div class="panel-content">
-      <BuildFormItems :config="{ anchorText: '配置查询表单' }" @update="handupSearchor" />
+      <BuildFormItems :config="{ anchorText: '配置查询表单' }" @update="updateSearchor" />
     </div>
     <div class="panel-content">
       <TableSummary @update="updateSummary" />
     </div>
     <div v-if="isShowTable" class="panel-content">
-      <TableColumns :data-source="tableAgent.data" @projectApproval="projectApproval" @update="handupColumns" />
+      <TableColumns :data-source="tableAgent.data" @projectApproval="projectApproval" @update="updateColumns" />
     </div>
   </div>
 </template>
@@ -37,6 +37,10 @@ export default {
   },
   data () {
     return {
+      listConfig: {
+        cloumns: [],
+        searchor: []
+      },
       summaryObject: {},
       tableAgent: {
         url: undefined,
@@ -79,11 +83,16 @@ export default {
         }
       }
     },
-    handupSearchor (data) {
-      Vue.bus.$emit('_listSearchor_', this.rank - 1, data)
+    updateSearchor (data) {
+      this.listConfig.searchor = data
+      this.handup()
     },
-    handupColumns (data) {
-      Vue.bus.$emit('_listColumns_', this.rank - 1, data)
+    updateColumns (data) {
+      this.listConfig.columns = data
+      this.handup()
+    },
+    handup () {
+      Vue.bus.$emit('_list_', this.rank - 1, this.listConfig)
     },
     handupApimap (data) {
       Vue.bus.$emit('_apimap_', this.rank - 1, data)

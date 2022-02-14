@@ -1,6 +1,6 @@
 <template>
   <div>
-    <StepBar :data-source="stepNodes" @update="nodeChangeConfirm" />
+    <StepBar :data-source="stepNodes" @update="nodesUpdate" />
     <BuildCollapsePanels :key="current" :data-source="collapsePanels" @update="panelUpdate" />
     <a-collapse
       :bordered="false"
@@ -78,14 +78,19 @@ export default {
   methods: {
     operationUpdate (data) {
       this.operation = data
+      // this.handup(this.operation)
+      this.transferStepNodes()
     },
     logUpdate (data) {
       this.log = data
+      this.handupApimap(this.log)
     },
     panelUpdate (data) {
       this.collapsePanels = data
+      // this.handup(this.collapsePanels)
+      this.transferStepNodes()
     },
-    nodeChangeConfirm (current, stepNodes) {
+    nodesUpdate (current, stepNodes) {
       this.current = current
       this.stepNodes = stepNodes
     },
@@ -94,6 +99,56 @@ export default {
     },
     handup (data) {
       Vue.bus.$emit('_approval_', this.rank - 1, data)
+    },
+    transferStepNodes () {
+      const approvalConfig = this.buildedData['approvalConfig']
+      const tabIndexs = Object.keys(approvalConfig)
+      const model = {
+        // node: {
+        //   panels: {
+        //     p: [{}, {}],
+        //     disp: [{}, {}]
+        //   }
+        // }
+      }
+      const nodeKeys = this.stepNodes.map(i => i.key)
+      tabIndexs.forEach((tabIndex) => {
+        nodeKeys.forEach((nodeKey) => {
+          model[nodeKey] = { panels: {
+            permission: [],
+            dispermission: []
+          } }
+          const tabPanels = approvalConfig[tabIndex]
+          tabPanels.forEach((aPanel) => {
+            if (this.isRight(aPanel, nodeKey)) {
+              const permissionPanel = model[nodeKey]['panels']['permission']
+              const dispermissionPanel = model[nodeKey]['panels']['dispermission']
+              // aPanel.formItems.forEach((formItem) => {
+              //   if (this.isRight(formItem, nodeKey)) {
+              //     const formItemModel = {
+              //       ...formItem
+              //     }
+              //     formItemModel.component
+
+              //   }
+              // })
+              const panelModel = {
+                mode: 'edit',
+                show: true,
+                title: aPanel.title,
+                formItems: aPanel.formItems,
+                component: aPanel.component || 'FormItemRender'
+              }
+              permissionPanel.push(panelModel)
+              dispermissionPanel.push({ ...panelModel, mode: 'readonly' })
+            }
+          })
+        })
+      })
+      console.log(model)
+    },
+    isRight (item, nodeKey) {
+      return item.stepNodes && item.stepNodes.includes(nodeKey)
     }
   }
 }

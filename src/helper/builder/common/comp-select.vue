@@ -15,11 +15,6 @@
 </template>
 
 <script>
-// import {
-//   Button, DatePicker, Avatar, Badge, List, Tabs,
-//   Input, Radio, Tree, TimePicker,
-//   InputNumber, Checkbox
-// } from 'ant-design-vue'
 const antComponents = require('ant-design-vue')
 const context = require.context('../../../components', true, /(\.vue)$/)
 export default {
