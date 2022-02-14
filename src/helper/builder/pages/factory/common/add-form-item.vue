@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    title="搜索项配置"
+    title="表单配置"
     v-model="modal.show"
     width="60%"
     @ok="confirm"

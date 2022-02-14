@@ -22,7 +22,7 @@ export default [
   {
     flag: null,
     icon: 'fas fa-file-chart-line',
-    id: 0,
+    id: 1,
     order: 1,
     parentId: -1,
     title: 'builder',

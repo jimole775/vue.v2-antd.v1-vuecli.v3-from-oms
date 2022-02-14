@@ -570,7 +570,7 @@ export default {
     },
     // 重置
     async resetSearch () {
-      // 充填必填的搜索项，选取默认值
+      // 充填必填的表单，选取默认值
       this.searchor.forEach((searchItem) => {
         if (!searchItem.required) {
           if (searchItem.key) {
