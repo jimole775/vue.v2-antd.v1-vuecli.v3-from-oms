@@ -186,6 +186,7 @@ export default {
             wrapper: values.wrapper
           }
         }
+
         if (this.configType === 'selection') {
           model.component = this.componentInfo.component
           model.originProps = this.componentInfo.originProps

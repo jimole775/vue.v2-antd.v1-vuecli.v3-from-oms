@@ -30,6 +30,7 @@
 </template>
 <script>
 // import utils from '@/utils'
+import { mapGetters } from 'vuex'
 import BuildFormItems from './build-form-items'
 import AddCollapsePanel from './add-collapse-panel'
 export default {
@@ -57,6 +58,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['getStepNodes', 'getTabType']),
     activeKeys () {
       return this.collapsePanels.map((o, i) => o.extend ? `${i}` : null).filter(o => o)
     }
@@ -91,17 +93,11 @@ export default {
     },
     formItemConfirm (panel, formItems) {
       panel.formItems = formItems
-      this.$emit('update', this.collapsePanels)
+      // this.$emit('update', this.collapsePanels)
+      this.panelChangeConfirm(panel)
     },
     panelChangeConfirm (panel) {
-      let insertIndex = null
-      for (let i = 0; i < this.collapsePanels.length; i++) {
-        const item = this.collapsePanels[i]
-        if (item.title === panel.title) {
-          insertIndex = i
-          break
-        }
-      }
+      const insertIndex = this.getInsertIndex(panel)
       if (insertIndex === null) {
         this.collapsePanels.push({
           ...panel,
@@ -112,9 +108,30 @@ export default {
         cPanel.extend = panel.extend
         cPanel.title = panel.title
         cPanel.tips = panel.tips
+        cPanel.stepNodes = panel.stepNodes
       }
+      this.fixedBaeInfoStepNodes()
       this.$emit('update', this.collapsePanels)
       this.$forceUpdate()
+    },
+    // 如果是编辑，就获取需要修改的下标
+    getInsertIndex (panel) {
+      let insertIndex = null
+      for (let i = 0; i < this.collapsePanels.length; i++) {
+        const item = this.collapsePanels[i]
+        if (item.title === panel.title) {
+          insertIndex = i
+          break
+        }
+      }
+      return insertIndex
+    },
+    // 【基础信息】需要固定 stepNodes
+    // 因为【基础信息】不需要编辑
+    fixedBaeInfoStepNodes () {
+      if (this.getTabType === '2') {
+        this.collapsePanels[0]['stepNodes'] = this.getStepNodes
+      }
     }
   }
 }

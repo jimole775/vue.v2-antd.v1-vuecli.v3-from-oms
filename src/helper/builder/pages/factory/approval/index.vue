@@ -19,6 +19,7 @@
 </template>
 <script>
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
 // import utils from '@/utils'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
@@ -71,6 +72,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['getStepNodes', 'getTabType']),
     currentNode () {
       return this.stepNodes[this.current] || {}
     }
@@ -78,8 +80,7 @@ export default {
   methods: {
     operationUpdate (data) {
       this.operation = data
-      // this.handup(this.operation)
-      this.transferStepNodes()
+      this.transfer()
     },
     logUpdate (data) {
       this.log = data
@@ -87,8 +88,7 @@ export default {
     },
     panelUpdate (data) {
       this.collapsePanels = data
-      // this.handup(this.collapsePanels)
-      this.transferStepNodes()
+      this.transfer()
     },
     nodesUpdate (current, stepNodes) {
       this.current = current
@@ -100,9 +100,9 @@ export default {
     handup (data) {
       Vue.bus.$emit('_approval_', this.rank - 1, data)
     },
-    transferStepNodes () {
-      const approvalConfig = this.buildedData['approvalConfig']
-      const tabIndexs = Object.keys(approvalConfig)
+    transfer () {
+      // const approvalConfig = this.buildedData['approvalConfig']
+      // const tabIndexs = Object.keys(approvalConfig)
       const model = {
         // node: {
         //   panels: {
@@ -111,41 +111,40 @@ export default {
         //   }
         // }
       }
-      const nodeKeys = this.stepNodes.map(i => i.key)
-      tabIndexs.forEach((tabIndex) => {
-        nodeKeys.forEach((nodeKey) => {
-          model[nodeKey] = { panels: {
-            permission: [],
-            dispermission: []
-          } }
-          const tabPanels = approvalConfig[tabIndex]
-          tabPanels.forEach((aPanel) => {
-            if (this.isRight(aPanel, nodeKey)) {
-              const permissionPanel = model[nodeKey]['panels']['permission']
-              const dispermissionPanel = model[nodeKey]['panels']['dispermission']
-              // aPanel.formItems.forEach((formItem) => {
-              //   if (this.isRight(formItem, nodeKey)) {
-              //     const formItemModel = {
-              //       ...formItem
-              //     }
-              //     formItemModel.component
+      // tabIndexs.forEach((tabIndex) => {
+      this.getStepNodes.forEach((nodeKey) => {
+        model[nodeKey] = { panels: {
+          permission: [],
+          dispermission: []
+        } }
+        const tabPanels = this.collapsePanels || []
+        tabPanels.forEach((aPanel) => {
+          if (this.isRight(aPanel, nodeKey)) {
+            const permissionPanel = model[nodeKey]['panels']['permission']
+            const dispermissionPanel = model[nodeKey]['panels']['dispermission']
+            // aPanel.formItems.forEach((formItem) => {
+            //   if (this.isRight(formItem, nodeKey)) {
+            //     const formItemModel = {
+            //       ...formItem
+            //     }
+            //     formItemModel.component
 
-              //   }
-              // })
-              const panelModel = {
-                mode: 'edit',
-                show: true,
-                title: aPanel.title,
-                formItems: aPanel.formItems,
-                component: aPanel.component || 'FormItemRender'
-              }
-              permissionPanel.push(panelModel)
-              dispermissionPanel.push({ ...panelModel, mode: 'readonly' })
+            //   }
+            // })
+            const panelModel = {
+              mode: 'edit',
+              show: true,
+              title: aPanel.title,
+              formItems: aPanel.formItems,
+              component: aPanel.component || 'FormItemRender'
             }
-          })
+            permissionPanel.push(panelModel)
+            dispermissionPanel.push({ ...panelModel, mode: 'readonly' })
+          }
         })
       })
-      console.log(model)
+      // })
+      console.log('model:', model)
     },
     isRight (item, nodeKey) {
       return item.stepNodes && item.stepNodes.includes(nodeKey)
