@@ -9,7 +9,7 @@
       <a-row>
         <a-col :span="24">
           <a-form-item label="选项值" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['value', {rules: [{ required: true, message: '请确认选项值' }]}]" />
+            <a-input v-decorator="['checked', {rules: [{ required: true, message: '请确认选项值' }]}]" />
           </a-form-item>
         </a-col>
         <a-col :span="24">
@@ -32,7 +32,7 @@
             </span>
             <a-checkbox-group
               v-decorator="['stepNodes', {rules: [{ required: false }]}]"
-              :options="getStepNodes"
+              :options="stepNodes"
             />
           </a-form-item>
         </a-col>
@@ -56,7 +56,16 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getStepNodes', 'getTabType'])
+    ...mapGetters(['getStepNodes', 'getTabType']),
+    stepNodes () {
+      const res = []
+      this.getStepNodes.forEach((node) => {
+        if (node.value !== 'end') {
+          res.push(node)
+        }
+      })
+      return res
+    }
   },
   watch: {
     modal: {
@@ -65,7 +74,7 @@ export default {
           if (data) {
             this.$nextTick(() => {
               if (data.stepNodes === undefined) {
-                data.stepNodes = this.getStepNodes
+                data.stepNodes = this.stepNodes.map(i => i.value)
               }
               this.form.setFieldsValue(data)
             })

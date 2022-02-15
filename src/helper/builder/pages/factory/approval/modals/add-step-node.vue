@@ -9,12 +9,12 @@
       <a-row>
         <a-col :span="24">
           <a-form-item label="节点名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['key', {rules: [{ required: true, message: '请确认节点名' }]}]" />
+            <a-input v-decorator="['value', {rules: [{ required: true, message: '请确认节点名' }]}]" />
           </a-form-item>
         </a-col>
         <a-col :span="24">
           <a-form-item label="节点标签" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['title', {rules: [{ required: false }]}]" />
+            <a-input v-decorator="['label', {rules: [{ required: false }]}]" />
           </a-form-item>
         </a-col>
         <!-- <a-col :span="24">

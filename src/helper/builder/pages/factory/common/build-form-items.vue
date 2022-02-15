@@ -30,7 +30,7 @@
         </a-col>
       </a-row>
     </a-form>
-    <AddFormItem :modal="modal" @update="formItemConfirm" />
+    <AddFormItem :modal="modal" :config="config" @update="formItemConfirm" />
   </div>
 </template>
 <script>
@@ -49,7 +49,8 @@ export default {
       default: () => ({
         anchorTips: '',
         anchorText: '配置表单',
-        layout: 'h'
+        layout: 'h',
+        operations: [] // 显示operations的radio选项
       })
     }
   },
@@ -125,22 +126,27 @@ export default {
       this.modal.data = item
     },
     formItemConfirm (componentInfo) {
-      let assertIndex = null
-      for (let i = 0; i < this.formItems.length; i++) {
-        const item = this.formItems[i]
-        if (item.key === componentInfo.key) {
-          assertIndex = i
-          break
-        }
-      }
       const copy = utils.clone(componentInfo)
-      if (assertIndex === null) {
+      const insertIndex = this.getInsertIndex(componentInfo)
+      if (insertIndex === null) {
         this.formItems.push(copy)
       } else {
-        this.formItems[assertIndex] = copy
+        this.formItems[insertIndex] = copy
         this.$forceUpdate()
       }
       this.update()
+    },
+    // 如果是编辑，就获取需要修改的下标
+    getInsertIndex (componentInfo) {
+      let insertIndex = null
+      for (let i = 0; i < this.formItems.length; i++) {
+        const item = this.formItems[i]
+        if (item.key === componentInfo.key) {
+          insertIndex = i
+          break
+        }
+      }
+      return insertIndex
     },
     update () {
       this.$emit('update', this.formItems)

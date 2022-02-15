@@ -35,7 +35,7 @@ export default {
     autoWidth () {
       let res = 0
       this.stepNodes.forEach((node) => {
-        res += countNodeWidth(node.title)
+        res += countNodeWidth(node.label)
       })
       return res ? res + 'px' : 'auto'
     }
@@ -52,7 +52,7 @@ export default {
     stepNodes: {
       handler (nodes) {
         if (nodes && nodes.length) {
-          this.setStepNodes(nodes.map((i) => i.key).filter(i => i !== '__addtion__'))
+          this.setStepNodes(nodes.filter(i => i.value !== '__addtion__'))
         }
       },
       immediate: true
@@ -60,10 +60,6 @@ export default {
   },
   methods: {
     ...mapActions(['setStepNodes']),
-    nodeChange (index) {
-      this.current = index
-      this.$emit('update', this.current, this.stepNodes)
-    },
     AddStepNodeConfirm (node) {
       const model = this.stepNodes[0]
       if (utils.isNone(this.modal.index)) {
@@ -71,12 +67,12 @@ export default {
         this.stepNodes.splice(insertIndex, 0, {
           ...utils.clone(model),
           fixed: false,
-          key: node.key,
-          title: node.title
+          value: node.value,
+          label: node.label
         })
       } else {
-        this.stepNodes[this.modal.index].key = node.key
-        this.stepNodes[this.modal.index].title = node.title
+        this.stepNodes[this.modal.index].value = node.value
+        this.stepNodes[this.modal.index].label = node.label
       }
       this.$emit('update', this.current, this.stepNodes)
     },
@@ -86,7 +82,6 @@ export default {
         content: '是否删除？',
         onOk: () => {
           this.stepNodes.splice(index, 1)
-          this.nodeChange(index - 1 ? index - 1 : 0)
         }
       })
     },
@@ -105,33 +100,34 @@ export default {
         padding: '1rem 2%', minWidth: '100%', width: this.autoWidth
       }
     },
-    countNodeClass (index) {
-      return this.current === index ? 'select-node' : 'diselect-node'
-    },
+    // countNodeClass (index) {
+    //   return this.current === index ? 'select-node' : 'diselect-node'
+    // },
     countNodeStyle (node) {
       return {
-        minWidth: countNodeWidth(node.title) + 'px'
+        minWidth: countNodeWidth(node.label) + 'px'
       }
     },
     buildTitle (node, index) {
-      const title = node.key === '__addtion__'
-        ? <span>{ node.title }</span>
-        : <a onClick={() => this.nodeChange(index)} onDblclick={() => node.edit && this.editNode(index, node)}>{ node.title }</a>
+      console.log(node)
+      const label = node.value === '__addtion__'
+        ? <span>{ node.label }</span>
+        : <a onClick={() => node.edit && this.editNode(index, node)}>{ node.label }</a>
       const reduceIcon = !node.fixed && <a style="color:red" onClick={() => this.reduceNode(index)}><a-icon type="minus-circle" /></a>
       return <template slot="title">
-        {reduceIcon}&nbsp;{title}
+        {reduceIcon}&nbsp;{label}
       </template>
     },
     buildIcon (node, index) {
-      if (node.key === '__addtion__') {
+      if (node.value === '__addtion__') {
         return <template slot="icon">
           <a onClick={this.addNode}><a-icon type="plus-circle" /></a>
         </template>
       } else {
-        const checkIcon = this.current === index && <a onClick={() => this.nodeChange(index)}><a-icon type="check-circle" /></a>
-        const decheckIcon = this.current !== index && <a onClick={() => this.nodeChange(index)}><a-icon type="clock-circle" /></a>
+        // const checkIcon = this.current === index && <a><a-icon type="check-circle" /></a>
+        // const decheckIcon = this.current !== index && <a><a-icon type="clock-circle" /></a>
         return <template slot="icon">
-          {checkIcon}{decheckIcon}
+          <a-icon type="check-circle" />
         </template>
       }
     }
@@ -142,9 +138,9 @@ export default {
         {
           this.stepNodes.map((node, index) => {
             return (<a-step
-              key={node.key}
+              key={node.value}
               status={node.status || 'finish'}
-              class={this.countNodeClass(index)}
+              // class={this.countNodeClass(index)}
               style={this.countNodeStyle(node)}
             >
               {this.buildTitle(node, index)}

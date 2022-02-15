@@ -26,7 +26,7 @@ export default {
   props: {
     rank: {
       type: Number,
-      default: 1
+      default: 0
     }
   },
   computed: {
@@ -92,10 +92,10 @@ export default {
       this.handup()
     },
     handup () {
-      Vue.bus.$emit('_list_', this.rank - 1, this.listConfig)
+      Vue.bus.$emit('_list_', this.rank, this.listConfig)
     },
     handupApimap (data) {
-      Vue.bus.$emit('_apimap_', this.rank - 1, data)
+      Vue.bus.$emit('_apimap_', this.rank, data)
     }
   }
 }

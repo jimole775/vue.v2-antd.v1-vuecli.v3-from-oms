@@ -1,7 +1,7 @@
 <template>
   <div>
     <StepBar :data-source="stepNodes" @update="nodesUpdate" />
-    <BuildCollapsePanels :key="current" :data-source="collapsePanels" @update="panelUpdate" />
+    <BuildCollapsePanels :key="current" :data-source="collapsePanels" @update="panelsUpdate" />
     <a-collapse
       :bordered="false"
       :active-key="['101', '102']"
@@ -19,17 +19,13 @@
 </template>
 <script>
 import Vue from 'vue'
+import utils from '@/utils'
 import { mapGetters } from 'vuex'
-// import utils from '@/utils'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
 import BuildCollapsePanels from '@/helper/builder/pages/factory/common/build-collapse-panels'
-// const moduleModel = {
-//   collapsePanels: [],
-//   operation: [],
-//   log: {}
-// }
+
 export default {
   components: {
     LogBar,
@@ -40,7 +36,7 @@ export default {
   props: {
     rank: {
       type: Number,
-      default: 1
+      default: 0
     }
   },
   data () {
@@ -53,20 +49,20 @@ export default {
         {
           fixed: true,
           edit: true,
-          key: 'start',
-          title: '流程开始'
+          value: 'start',
+          label: '流程开始'
         },
         {
           fixed: true,
           edit: false,
-          key: '__addtion__',
-          title: '新增节点'
+          value: '__addtion__',
+          label: '新增节点'
         },
         {
           fixed: true,
           edit: true,
-          key: 'end',
-          title: '流程结束'
+          value: 'end',
+          label: '流程结束'
         }
       ]
     }
@@ -80,77 +76,124 @@ export default {
   methods: {
     operationUpdate (data) {
       this.operation = data
-      this.transfer()
+      this.transferOperation()
     },
     logUpdate (data) {
       this.log = data
       this.handupApimap(this.log)
     },
-    panelUpdate (data) {
+    panelsUpdate (data) {
       this.collapsePanels = data
-      this.transfer()
+      this.transferPanels()
     },
     nodesUpdate (current, stepNodes) {
       this.current = current
       this.stepNodes = stepNodes
     },
     handupApimap (data) {
-      Vue.bus.$emit('_apimap_', this.rank - 1, data)
+      Vue.bus.$emit('_apimap_', this.rank, data)
     },
     handup (data) {
-      Vue.bus.$emit('_approval_', this.rank - 1, data)
+      Vue.bus.$emit('_approval_', this.rank, data)
     },
-    transfer () {
-      // const approvalConfig = this.buildedData['approvalConfig']
-      // const tabIndexs = Object.keys(approvalConfig)
-      const model = {
-        // node: {
-        //   panels: {
-        //     p: [{}, {}],
-        //     disp: [{}, {}]
-        //   }
-        // }
-      }
-      // tabIndexs.forEach((tabIndex) => {
-      this.getStepNodes.forEach((nodeKey) => {
-        model[nodeKey] = { panels: {
-          permission: [],
-          dispermission: []
-        } }
-        const tabPanels = this.collapsePanels || []
+    transferPanels () {
+      const model = {}
+      this.getStepNodes.forEach((node) => {
+        model[node.value] = {
+          panels: {
+            permission: [],
+            dispermission: []
+          }
+        }
+        const tabPanels = utils.clone(this.collapsePanels || [])
+        const permissionPanels = model[node.value]['panels']['permission']
+        const dispermissionPanels = model[node.value]['panels']['dispermission']
         tabPanels.forEach((aPanel) => {
-          if (this.isRight(aPanel, nodeKey)) {
-            const permissionPanel = model[nodeKey]['panels']['permission']
-            const dispermissionPanel = model[nodeKey]['panels']['dispermission']
-            // aPanel.formItems.forEach((formItem) => {
-            //   if (this.isRight(formItem, nodeKey)) {
-            //     const formItemModel = {
-            //       ...formItem
-            //     }
-            //     formItemModel.component
-
-            //   }
-            // })
+          if (this.isRight(aPanel, node.value)) {
             const panelModel = {
               mode: 'edit',
               show: true,
               title: aPanel.title,
-              formItems: aPanel.formItems,
+              formItems: transferFormItems(aPanel.formItems, (item) => isRight(item, node.value)),
               component: aPanel.component || 'FormItemRender'
             }
-            permissionPanel.push(panelModel)
-            dispermissionPanel.push({ ...panelModel, mode: 'readonly' })
+            permissionPanels.push(panelModel)
+            dispermissionPanels.push({ ...panelModel, mode: 'readonly' })
           }
         })
+        permissionPanels.push(/* operation */)
       })
-      // })
-      console.log('model:', model)
+      return model
     },
-    isRight (item, nodeKey) {
-      return item.stepNodes && item.stepNodes.includes(nodeKey)
+    transferOperation () {
+      const panel = {
+        component: 'ApprovalOperation',
+        title: '审批操作',
+        mode: 'edit',
+        show: true,
+        operationItem: {
+          radios: [],
+          inputs: []
+        }
+      }
+      const { radios, inputs } = this.operation
+      const { operationItem: { radios: newRadios, inputs: newInputs } } = panel
+
+      radios.forEach((radio) => {
+        const radioModel = {}
+        radioModel.key = 'approvalResult'
+        radioModel.value = radio.checked
+        radioModel.label = radio.label
+        newRadios.push(radioModel)
+      })
+
+      transferFormItems(inputs).forEach((input) => {
+        const inputModel = {
+          ...input,
+          required: true,
+          show: getRadioValue(radios, input.operations)
+        }
+        delete inputModel.operations
+        newInputs.push(inputModel)
+      })
+
+      console.log(panel)
+      return panel
     }
   }
 }
+
+function transferFormItems (originFormItems, matchFn) {
+  const cFormItems = utils.clone(originFormItems)
+  const formItems = []
+  cFormItems.forEach((formItem) => {
+    if ((matchFn && matchFn(formItem)) || !matchFn) {
+      delete formItem.originProps
+      delete formItem.stepNodes
+      delete formItem.configType
+      delete formItem.formItems
+      if (formItem.props && Object.keys(formItem.props).length === 0) {
+        delete formItem.props
+      }
+      formItems.push(formItem)
+    }
+  })
+  return formItems
+}
+
+function isRight (item, nodeKey) {
+  return item.stepNodes && item.stepNodes.includes(nodeKey)
+}
+
+function getRadioValue (radios, keys) {
+  const res = []
+  keys.forEach(key => {
+    const rightItem = radios.find(i => i.value === key)
+    res.push(rightItem.checked)
+  })
+  return res
+}
+
 </script>
 <style lang="less" scoped>
 .ppproject-footer {

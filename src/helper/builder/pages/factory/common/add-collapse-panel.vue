@@ -72,13 +72,13 @@ export default {
           this.$nextTick(() => {
             if (data) {
               if (data.stepNodes === undefined) {
-                data.stepNodes = this.getStepNodes
+                data.stepNodes = this.getStepNodes.map(i => i.value)
               }
               this.form.setFieldsValue(data)
             } else {
               this.form.setFieldsValue({
                 extend: true,
-                stepNodes: this.getStepNodes
+                stepNodes: this.getStepNodes.map(i => i.value)
               })
             }
           })

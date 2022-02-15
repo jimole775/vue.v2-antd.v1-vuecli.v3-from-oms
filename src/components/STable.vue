@@ -344,9 +344,13 @@ export default {
       })
     },
     fixTextWrapper (h) {
-      return (text, record, index) => {
+      return (text) => {
         if (utils.isString(text)) {
-          return (<SLine len={cellMaxCharLen} value={text} />)
+          // 确认文本长度超过20，才使用SLine组件
+          // 防止每个cell单元格都跑去对文本进行精确的宽度计算，造成卡顿
+          if (text.length > cellMaxCharLen) {
+            return (<SLine len={cellMaxCharLen} value={text} />)
+          } else return text
         } else {
           return text
         }

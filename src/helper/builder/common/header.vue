@@ -162,14 +162,6 @@ export default {
       console.log(this.buildedData['listConfig'])
     })
 
-    // Vue.bus.$on('_listColumns_', (tabIndex, value) => {
-    //   if (!this.buildedData['listConfig'][tabIndex]) {
-    //     this.buildedData['listConfig'][tabIndex] = Object.create(null)
-    //   }
-    //   this.buildedData['listConfig'][tabIndex]['columns'] = value
-    //   console.log(this.buildedData['listConfig'])
-    // })
-
     Vue.bus.$on('_apply_', (tabIndex, value) => {
       this.buildedData['applyConfig'][tabIndex] = value
       console.log(this.buildedData['applyConfig'])
@@ -183,9 +175,7 @@ export default {
   methods: {
     validBuildedData () {
 
-    },
-    getPermission () {},
-    getDispermission () {}
+    }
   }
 }
 </script>

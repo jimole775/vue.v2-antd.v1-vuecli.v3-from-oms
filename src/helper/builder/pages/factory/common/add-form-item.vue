@@ -1,5 +1,6 @@
 <template>
   <a-modal
+    v-if="modal.show"
     title="表单配置"
     v-model="modal.show"
     width="60%"
@@ -48,19 +49,33 @@
         <a-col v-if="getTabType === '2'" :span="24">
           <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <span slot="label">
-              控制节点
+              展示节点
               <a-tooltip title="勾选即显示">
                 <a-icon type="question-circle-o" />
               </a-tooltip>
             </span>
             <a-checkbox-group
               v-decorator="['stepNodes', {rules: [{ required: false }]}]"
-              :options="getStepNodes"
+              :options="stepNodes"
+            />
+          </a-form-item>
+        </a-col>
+        <a-col v-if="config.operations && config.operations.length" :span="24">
+          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <span slot="label">
+              操作项
+              <a-tooltip title="勾选即显示">
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
+            <a-checkbox-group
+              v-decorator="['operations', {rules: [{ required: false }]}]"
+              :options="config.operations"
             />
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label="配置类型" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+          <a-form-item label="组件配置方式" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-radio-group v-model="configType">
               <a-radio value="selection">
                 配选
@@ -73,7 +88,7 @@
         </a-col>
       </a-row>
       <div v-if="configType === 'selection'">
-        <ComponentConfig :key="modal.show" :data-source="componentInfo" @update="componentUpdate" />
+        <ComponentConfig v-model="componentInfo" />
       </div>
       <a-row>
         <div v-if="configType === 'function'">
@@ -103,6 +118,15 @@ export default {
     modal: {
       type: Object,
       default: () => ({})
+    },
+    config: {
+      type: Object,
+      default: () => ({
+        anchorTips: '',
+        anchorText: '配置表单',
+        layout: 'h',
+        operations: [] // 显示operation的radio选项
+      })
     }
   },
   data () {
@@ -114,7 +138,21 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getStepNodes', 'getTabType'])
+    ...mapGetters(['getStepNodes', 'getTabType']),
+    stepNodes () {
+      const res = []
+      const isOperation = this.config.operations && this.config.operations.length
+      this.getStepNodes.forEach((node) => {
+        if (isOperation) {
+          if (node.value !== 'end') {
+            res.push(node)
+          }
+        } else {
+          res.push(node)
+        }
+      })
+      return res
+    }
   },
   watch: {
     modal: {
@@ -128,7 +166,8 @@ export default {
                 span: 6,
                 label: 6,
                 wrapper: 16,
-                stepNodes: this.getStepNodes
+                stepNodes: this.stepNodes.map(i => i.value),
+                operations: this.config.operations.map(i => i.value)
               })
             })
           }
@@ -145,7 +184,8 @@ export default {
       const itemInfo = {
         key: data.key,
         title: data.title,
-        stepNodes: data.stepNodes || this.getStepNodes,
+        stepNodes: data.stepNodes || this.stepNodes.map(i => i.value),
+        operations: data.operations || this.config.operations.map(i => i.value),
         span: data.layout ? data.layout.span : 6,
         label: data.layout ? data.layout.label : 6,
         wrapper: data.layout ? data.layout.wrapper : 16
@@ -179,6 +219,7 @@ export default {
           key: values.key,
           title: values.title,
           stepNodes: values.stepNodes,
+          operations: values.operations,
           configType: this.configType,
           layout: {
             span: values.span,
@@ -186,7 +227,6 @@ export default {
             wrapper: values.wrapper
           }
         }
-
         if (this.configType === 'selection') {
           model.component = this.componentInfo.component
           model.originProps = this.componentInfo.originProps
@@ -196,9 +236,6 @@ export default {
         }
         this.$emit('update', utils.clone(model))
       })
-    },
-    componentUpdate (data) {
-      this.componentInfo = data
     }
   }
 }

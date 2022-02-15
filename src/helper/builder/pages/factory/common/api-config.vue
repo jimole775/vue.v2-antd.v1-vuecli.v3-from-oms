@@ -9,12 +9,12 @@
       <a-row>
         <a-col :span="24">
           <a-form-item label="url" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['url', {rules: [{ required: true, message: '请确认url' }]}]" />
+            <a-input placeholder="/api/xxx/xxx" v-decorator="['url', {rules: [{ required: true, message: '请确认url' }]}]" />
           </a-form-item>
         </a-col>
         <a-col :span="24">
           <a-form-item label="method" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-select v-decorator="['method', {rules: [{ required: true, message: '请确认method' }]}]">
+            <a-select placeholder="请选择" v-decorator="['method', {rules: [{ required: true, message: '请确认method' }]}]">
               <a-select-option value="GET">GET</a-select-option>
               <a-select-option value="POST">POST</a-select-option>
               <a-select-option value="PUT">PUT</a-select-option>
@@ -24,10 +24,10 @@
         </a-col>
         <a-col :span="24">
           <a-form-item label="权限配置" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['permission', {rules: [{ required: false }]}]" />
+            <a-input placeholder="$services.com.oppo.xxx.xxx" v-decorator="['permission', {rules: [{ required: false }]}]" />
           </a-form-item>
         </a-col>
-        <a-col v-if="getTabType === '2'" :span="24">
+        <!-- <a-col v-if="getTabType === '2'" :span="24">
           <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <span slot="label">
               控制节点
@@ -40,7 +40,7 @@
               :options="getStepNodes"
             />
           </a-form-item>
-        </a-col>
+        </a-col> -->
         <a-col :span="24">
           <a-form-item label="自定义参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-row>
@@ -93,9 +93,6 @@ export default {
       handler ({ data, show }) {
         if (show) {
           this.deployParams(data)
-          if (data.stepNodes === undefined) {
-            data.stepNodes = this.getStepNodes
-          }
           this.form.setFieldsValue(data)
         } else {
           this.form.resetFields()

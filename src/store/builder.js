@@ -3,8 +3,8 @@
  */
 export default {
   state: {
-    stepNodes: [],
-    tabType: 0
+    tabType: 0,
+    stepNodes: []
   },
   getters: {
     getStepNodes (state) {

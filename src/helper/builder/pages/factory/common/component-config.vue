@@ -1,165 +1,172 @@
 <template>
-  <a-form>
-    <a-row>
-      <a-col :span="24">
-        <a-form-item label="组件" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-          <CompSelect
-            :value="info.component"
-            @change="componentChange"
-          />
-        </a-form-item>
-      </a-col>
-      <a-col :span="24">
-        <a-form-item label="自定义参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-          <a-row>
-            <a-col v-for="(item, index) in customProps" :key="index">
-              <a-form-item
-                :label-col="{span: 8}"
-                :wrapper-col="{span: 16}"
-              >
-                <template slot="label">
-                  <a-input allow-clear v-model="item.key" />
-                </template>
-                <div class="object-ctrl">
-                  <a-input allow-clear v-model="item.value" />
-                  <a-button @click="() => addProp()">+</a-button>
-                  <a-button @click="() => reduceProp(index)">-</a-button>
-                </div>
-              </a-form-item>
-            </a-col>
-          </a-row>
-        </a-form-item>
-      </a-col>
-      <a-col v-if="defaultPropsList.length" :span="24">
-        <a-form-item label="默认参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-          <a-row>
-            <a-col :span="24" v-for="param in defaultPropsList" :key="param.key">
-              <a-form-item
-                :required="param.required"
-                :label-col="{span: 8}"
-                :wrapper-col="{span: 16}"
-              >
-                <template slot="label">
-                  <span>
-                    {{ param.key }}
-                    <span v-if="$utils.isArray(param.type)" :style="style.selected">
-                      (<template v-for="t in param.type">
-                        <a :key="t" :style="param.typeSelected === t ? style.selected : style.unselect" @click="() => typeChanged(param, t)">
-                          {{ t | type2string }}
-                        </a>
-                      </template>)
-                    </span>
-                    <span v-else-if="$utils.isValuable(param.type)" :style="style.selected">
-                      ({{ param.type | type2string }})
-                    </span>
+  <a-row>
+    <a-col :span="24">
+      <a-form-item label="组件" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+        <CompSelect
+          :value="dataInfo.component"
+          @change="componentChange"
+        />
+      </a-form-item>
+    </a-col>
+    <a-col :span="24">
+      <a-form-item label="自定义参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+        <a-row>
+          <a-col v-for="(item, cpIndex) in customProps" :key="cpIndex">
+            <a-form-item
+              :label-col="{span: 8}"
+              :wrapper-col="{span: 16}"
+            >
+              <template slot="label">
+                <a-input allow-clear v-model="item.key" />
+              </template>
+              <div class="object-ctrl">
+                <a-input allow-clear v-model="item.value" />
+                <a-button @click="() => addProp()">+</a-button>
+                <a-button @click="() => reduceProp(cpIndex)">-</a-button>
+              </div>
+            </a-form-item>
+          </a-col>
+        </a-row>
+      </a-form-item>
+    </a-col>
+    <a-col v-if="defaultPropsList.length" :span="24">
+      <a-form-item label="默认参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+        <a-row>
+          <a-col :span="24" v-for="(param, dpIndex) in defaultPropsList" :key="dpIndex">
+            <a-form-item
+              :required="param.required"
+              :label-col="{span: 8}"
+              :wrapper-col="{span: 16}"
+            >
+              <template slot="label">
+                <span>
+                  {{ param.key }}
+                  <span v-if="$utils.isArray(param.type)" :style="style.selected">
+                    (<template v-for="(t, i) in param.type">
+                      <a :key="i" :style="param.typeSelected === t ? style.selected : style.unselect" @click="() => typeChanged(param, t)">
+                        {{ t | type2string }}
+                      </a>
+                    </template>)
                   </span>
-                </template>
-                <div v-if="$utils.isNone(param.type)">
-                  <a-textarea v-model="param.value" />
-                </div>
-                <div v-else-if="$utils.isArray(param.type)">
-                  <div v-for="(t, i) in param.type" :key="i">
-                    <div v-if="param.typeSelected === t">
-                      <div v-if="$utils.isNumberConstructor(t)">
-                        <a-input-number allow-clear v-model="param.value" />
-                      </div>
-                      <div v-else-if="$utils.isStringConstructor(t)">
-                        <a-input allow-clear v-model="param.value" />
-                      </div>
-                      <div v-else-if="$utils.isBooleanConstructor(t)">
-                        <a-radio-group v-model="param.value">
-                          <a-radio :value="true">
-                            true
-                          </a-radio>
-                          <a-radio :value="false">
-                            false
-                          </a-radio>
-                        </a-radio-group>
-                      </div>
-                      <div class="reference-object" v-else-if="$utils.isObjectConstructor(t)">
-                        <span>{</span>
-                        <a-textarea v-model="param.value" />
-                        <span>}</span>
-                      </div>
-                      <div class="reference-object" v-else-if="$utils.isArrayConstructor(t)">
-                        <span>[</span>
-                        <a-textarea v-model="param.value" />
-                        <span>]</span>
-                      </div>
-                      <div v-else-if="$utils.isFunctionConstructor(t)">
-                        <span>{{ param.value.head }}</span>
-                        <a-textarea v-model="param.value.body" />
-                        <span>{{ param.value.tail }}</span>
-                      </div>
-                      <div v-else>
-                        <a-textarea v-model="param.value" />
-                      </div>
+                  <span v-else-if="$utils.isValuable(param.type)" :style="style.selected">
+                    ({{ param.type | type2string }})
+                  </span>
+                </span>
+              </template>
+              <div v-if="$utils.isNone(param.type)">
+                <a-textarea v-model="param.value" />
+              </div>
+              <div v-else-if="$utils.isArray(param.type)">
+                <div v-for="(t, i) in param.type" :key="i">
+                  <div v-if="param.typeSelected === t">
+                    <div v-if="$utils.isNumberConstructor(t)">
+                      <a-input-number allow-clear v-model="param.value" />
+                    </div>
+                    <div v-else-if="$utils.isStringConstructor(t)">
+                      <a-input allow-clear v-model="param.value" />
+                    </div>
+                    <div v-else-if="$utils.isBooleanConstructor(t)">
+                      <a-radio-group v-model="param.value">
+                        <a-radio :value="true">
+                          true
+                        </a-radio>
+                        <a-radio :value="false">
+                          false
+                        </a-radio>
+                      </a-radio-group>
+                    </div>
+                    <div class="reference-object" v-else-if="$utils.isObjectConstructor(t)">
+                      <span>{</span>
+                      <a-textarea v-model="param.value" />
+                      <span>}</span>
+                    </div>
+                    <div class="reference-object" v-else-if="$utils.isArrayConstructor(t)">
+                      <span>[</span>
+                      <a-textarea v-model="param.value" />
+                      <span>]</span>
+                    </div>
+                    <div v-else-if="$utils.isFunctionConstructor(t)">
+                      <span>{{ param.value.head }}</span>
+                      <a-textarea v-model="param.value.body" />
+                      <span>{{ param.value.tail }}</span>
+                    </div>
+                    <div v-else>
+                      <a-textarea v-model="param.value" />
                     </div>
                   </div>
                 </div>
-                <div v-else>
-                  <div v-if="$utils.isNumberConstructor(param.type)">
-                    <a-input-number allow-clear v-model="param.value" />
-                  </div>
-                  <div v-else-if="$utils.isStringConstructor(param.type)">
-                    <a-input allow-clear v-model="param.value" />
-                  </div>
-                  <div v-else-if="$utils.isBooleanConstructor(param.type)">
-                    <a-radio-group v-model="param.value">
-                      <a-radio :value="true">
-                        true
-                      </a-radio>
-                      <a-radio :value="false">
-                        false
-                      </a-radio>
-                    </a-radio-group>
-                  </div>
-                  <div class="reference-object" v-else-if="$utils.isObjectConstructor(param.type)">
-                    <span>{</span>
-                    <a-textarea v-model="param.value" />
-                    <span>}</span>
-                  </div>
-                  <div class="reference-object" v-else-if="$utils.isArrayConstructor(param.type)">
-                    <span>[</span>
-                    <a-textarea v-model="param.value" />
-                    <span>]</span>
-                  </div>
-                  <div v-else-if="$utils.isFunctionConstructor(param.type)">
-                    <span>{{ param.value.head }}</span>
-                    <a-textarea v-model="param.value.body" />
-                    <span>{{ param.value.tail }}</span>
-                  </div>
-                  <div v-else>
-                    <a-textarea v-model="param.value" />
-                  </div>
+              </div>
+              <div v-else>
+                <div v-if="$utils.isNumberConstructor(param.type)">
+                  <a-input-number allow-clear v-model="param.value" />
                 </div>
-              </a-form-item>
-            </a-col>
-          </a-row>
-        </a-form-item>
-      </a-col>
-    </a-row>
-  </a-form>
+                <div v-else-if="$utils.isStringConstructor(param.type)">
+                  <a-input allow-clear v-model="param.value" />
+                </div>
+                <div v-else-if="$utils.isBooleanConstructor(param.type)">
+                  <a-radio-group v-model="param.value">
+                    <a-radio :value="true">
+                      true
+                    </a-radio>
+                    <a-radio :value="false">
+                      false
+                    </a-radio>
+                  </a-radio-group>
+                </div>
+                <div class="reference-object" v-else-if="$utils.isObjectConstructor(param.type)">
+                  <span>{</span>
+                  <a-textarea v-model="param.value" />
+                  <span>}</span>
+                </div>
+                <div class="reference-object" v-else-if="$utils.isArrayConstructor(param.type)">
+                  <span>[</span>
+                  <a-textarea v-model="param.value" />
+                  <span>]</span>
+                </div>
+                <div v-else-if="$utils.isFunctionConstructor(param.type)">
+                  <span>{{ param.value.head }}</span>
+                  <a-textarea v-model="param.value.body" />
+                  <span>{{ param.value.tail }}</span>
+                </div>
+                <div v-else>
+                  <a-textarea v-model="param.value" />
+                </div>
+              </div>
+            </a-form-item>
+          </a-col>
+        </a-row>
+      </a-form-item>
+    </a-col>
+  </a-row>
 </template>
 <script>
 import utils from '@/utils'
 import CompSelect from '@/helper/builder/common/comp-select.vue'
 export default {
+  name: 'ComponentConfig',
   components: {
     CompSelect
   },
   props: {
-    dataSource: {
+    value: {
       type: Object,
-      default: () => ({})
+      default: () => ({
+        props: {},
+        component: '',
+        originProps: {}
+      })
     }
+  },
+  model: {
+    prop: 'value',
+    event: 'change'
   },
   data () {
     return {
-      info: {
-        component: '',
-        props: {},
-        originProps: {}
+      dataInfo: {
+        props: {}, // 实际的赋值
+        component: '', // 组件名
+        originProps: {} // 组件的默认属性
       },
       customProps: [{ key: '', value: '' }],
       defaultPropsList: [],
@@ -173,7 +180,7 @@ export default {
     type2string
   },
   watch: {
-    dataSource: {
+    value: {
       handler (data) {
         if (data) {
           this.initialize(data)
@@ -182,12 +189,18 @@ export default {
         }
       },
       immediate: true
+    },
+    defaultPropsList: {
+      handler (data) {
+        data && this.update(this.value.component, { props: this.value.originProps })
+      },
+      deep: true
     }
   },
   methods: {
     initialize (data) {
       const props = this.fillProps(data)
-      this.info.component = data.component
+      this.dataInfo.component = data.component
       this.buildDefaultPropsList(props)
     },
     reset () {
@@ -205,11 +218,11 @@ export default {
       })
       return res
     },
-    typeChanged (param, t) {
-      param.typeSelected = t
+    typeChanged (param, type) {
+      param.typeSelected = type
       param.value = adjustDefault({
         ...utils.clone(param),
-        type: t
+        type
       })
     },
     addProp () {
@@ -229,14 +242,14 @@ export default {
       }
     },
     update (val, option) {
-      this.info.props = {
+      this.dataInfo.props = {
         ...getModifyProps(this.defaultPropsList),
         ...array2object(this.customProps)
       }
-      this.info.component = val
+      this.dataInfo.component = val
       // 暂存起来，主要为了在编辑状态的时候，可以用来数据回填
-      this.info.originProps = utils.clone(option.props)
-      this.$emit('update', this.info)
+      this.dataInfo.originProps = utils.clone(option.props)
+      this.$emit('change', this.dataInfo)
     },
     componentChange (val, option) {
       if (utils.isNone(val)) return false

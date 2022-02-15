@@ -12,9 +12,9 @@
       >
         <template slot="tab">
           <div>
-            <span class="tab-title">{{ pane.title + '_' + pane.rank }}</span>
-            <a v-if="pane.rank !== 1" class="tab-item warn" @click.stop="() => reducePane(index)"><a-icon type="minus-circle" /></a>
-            <a v-if="pane.rank === 1" class="tab-item" @click.stop="() => addPane(pane)"><a-icon type="plus-circle" /></a>
+            <span class="tab-title">{{ pane.title + '_' + (pane.rank + 1) }}</span>
+            <a v-if="pane.rank !== 0" class="tab-item warn" @click.stop="() => reducePane(index)"><a-icon type="minus-circle" /></a>
+            <a v-if="pane.rank === 0" class="tab-item" @click.stop="() => addPane(pane)"><a-icon type="plus-circle" /></a>
           </div>
         </template>
         <div>
@@ -42,11 +42,11 @@ export default {
   mixins: [baseMixins, todoMixins],
   data () {
     return {
-      active: '1_0',
+      active: '0_0',
       panes: [
-        { title: '列表', tabId: '1_0', rank: 1, type: '0', component: ProjectList },
-        { title: '申请', tabId: '1_1', rank: 1, type: '1', component: ProjectApply },
-        { title: '审批', tabId: '1_2', rank: 1, type: '2', component: ProjectApproval }
+        { title: '列表', tabId: '0_0', rank: 0, type: '0', component: ProjectList },
+        { title: '申请', tabId: '0_1', rank: 0, type: '1', component: ProjectApply },
+        { title: '审批', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval }
       ]
     }
   },
