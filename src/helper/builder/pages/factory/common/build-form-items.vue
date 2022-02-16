@@ -93,7 +93,7 @@ export default {
   watch: {
     dataSource: {
       handler (data) {
-        if (data) {
+        if (data && data.length) {
           this.formItems = data
         }
       },

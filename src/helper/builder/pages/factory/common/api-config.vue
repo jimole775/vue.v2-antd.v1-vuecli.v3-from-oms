@@ -68,7 +68,7 @@
 </template>
 <script>
 import utils from '@/utils'
-import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
 export default {
   props: {
     modal: {
@@ -85,8 +85,8 @@ export default {
   computed: {
     title () {
       return this.modal.data ? this.modal.data.title : ''
-    },
-    ...mapGetters(['getStepNodes', 'getTabType'])
+    }
+    // ...mapGetters(['getStepNodes', 'getTabType'])
   },
   watch: {
     modal: {

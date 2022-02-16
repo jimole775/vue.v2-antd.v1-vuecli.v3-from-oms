@@ -23,7 +23,7 @@
       </a-row>
       <BuildFormItems
         :data-source="inputs"
-        :config="{ anchorText: '新增审批项', layout: 'v', operations: radios }"
+        :config="{ anchorText: '新增审批内容', layout: 'v', operations: radios }"
         @update="formItemsConfirm"
       />
       <a-row>
@@ -39,6 +39,7 @@
 </template>
 <script>
 // import utils from '@/utils'
+import { mapGetters } from 'vuex'
 import BuildFormItems from '@/helper/builder/pages/factory/common/build-form-items'
 import ApiButton from '@/helper/builder/pages/factory/common/api-button'
 import ConfigRadio from '@/helper/builder/pages/factory/approval/modals/config-radio'
@@ -132,6 +133,18 @@ export default {
       form: this.$form.createForm(this)
     }
   },
+  computed: {
+    ...mapGetters(['getStepNodes', 'getTabType']),
+    stepNodes () {
+      const res = []
+      this.getStepNodes.forEach((node) => {
+        if (node.value !== 'end') {
+          res.push(node)
+        }
+      })
+      return res
+    }
+  },
   watch: {
     dataSource: {
       handler (data) {
@@ -142,7 +155,21 @@ export default {
       immediate: true
     }
   },
+  created () {
+    this.bindStepNodes()
+    // this.radios 和 this.inputs 有默认值
+    // 所以，开始就要update()一次，以更新上层数据
+    this.update()
+  },
   methods: {
+    bindStepNodes () {
+      this.radios.forEach((radio) => {
+        radio.stepNodes = this.stepNodes.map(i => i.value)
+      })
+      this.inputs.forEach((input) => {
+        input.stepNodes = this.stepNodes.map(i => i.value)
+      })
+    },
     showRadioConfig (data, index) {
       this.configRadioModal.show = true
       this.configRadioModal.index = index

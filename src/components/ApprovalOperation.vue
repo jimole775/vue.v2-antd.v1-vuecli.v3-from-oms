@@ -132,8 +132,8 @@ function buildRadios (h) {
                 <a-radio value={radioItem.value}>
                   <span>{ radioItem.label }</span>
                   {
-                    radioItem.title &&
-                    <a-tooltip title={radioItem.title}>
+                    (radioItem.title || radioItem.tips) &&
+                    <a-tooltip title={radioItem.title || radioItem.tips}>
                       <a-icon type="question-circle-o" />
                     </a-tooltip>
                   }

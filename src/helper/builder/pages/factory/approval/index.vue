@@ -42,7 +42,7 @@ export default {
   data () {
     return {
       log: {},
-      operation: [],
+      operation: {},
       collapsePanels: [],
       current: 0,
       stepNodes: [
@@ -76,7 +76,7 @@ export default {
   methods: {
     operationUpdate (data) {
       this.operation = data
-      this.transferOperation()
+      this.transferPanels()
     },
     logUpdate (data) {
       this.log = data
@@ -109,23 +109,26 @@ export default {
         const permissionPanels = model[node.value]['panels']['permission']
         const dispermissionPanels = model[node.value]['panels']['dispermission']
         tabPanels.forEach((aPanel) => {
-          if (this.isRight(aPanel, node.value)) {
+          if (isRightNode(aPanel, node.value)) {
             const panelModel = {
               mode: 'edit',
               show: true,
               title: aPanel.title,
-              formItems: transferFormItems(aPanel.formItems, (item) => isRight(item, node.value)),
+              formItems: transferFormItems(aPanel.formItems, node.value),
               component: aPanel.component || 'FormItemRender'
             }
             permissionPanels.push(panelModel)
             dispermissionPanels.push({ ...panelModel, mode: 'readonly' })
           }
         })
-        permissionPanels.push(/* operation */)
+        if (node.value !== 'end') {
+          const operationPanel = this.transferOperation(node.value)
+          permissionPanels.push(operationPanel)
+        }
       })
-      return model
+      return this.handup(model)
     },
-    transferOperation () {
+    transferOperation (nodeKey) {
       const panel = {
         component: 'ApprovalOperation',
         title: '审批操作',
@@ -136,18 +139,21 @@ export default {
           inputs: []
         }
       }
-      const { radios, inputs } = this.operation
-      const { operationItem: { radios: newRadios, inputs: newInputs } } = panel
 
+      const { radios = [], inputs = [] } = this.operation
+      const newRadios = panel.operationItem.radios
+      const newInputs = panel.operationItem.inputs
       radios.forEach((radio) => {
-        const radioModel = {}
-        radioModel.key = 'approvalResult'
-        radioModel.value = radio.checked
-        radioModel.label = radio.label
-        newRadios.push(radioModel)
+        if (isRightNode(radio, nodeKey)) {
+          const radioModel = {}
+          radioModel.key = 'approvalResult'
+          radioModel.value = radio.checked
+          radioModel.label = radio.label
+          newRadios.push(radioModel)
+        }
       })
 
-      transferFormItems(inputs).forEach((input) => {
+      transferFormItems(inputs, nodeKey).forEach((input) => {
         const inputModel = {
           ...input,
           required: true,
@@ -157,17 +163,16 @@ export default {
         newInputs.push(inputModel)
       })
 
-      console.log(panel)
       return panel
     }
   }
 }
 
-function transferFormItems (originFormItems, matchFn) {
+function transferFormItems (originFormItems, nodeKey) {
   const cFormItems = utils.clone(originFormItems)
   const formItems = []
   cFormItems.forEach((formItem) => {
-    if ((matchFn && matchFn(formItem)) || !matchFn) {
+    if ((nodeKey && isRightNode(formItem, nodeKey)) || !nodeKey) {
       delete formItem.originProps
       delete formItem.stepNodes
       delete formItem.configType
@@ -181,7 +186,7 @@ function transferFormItems (originFormItems, matchFn) {
   return formItems
 }
 
-function isRight (item, nodeKey) {
+function isRightNode (item, nodeKey) {
   return item.stepNodes && item.stepNodes.includes(nodeKey)
 }
 

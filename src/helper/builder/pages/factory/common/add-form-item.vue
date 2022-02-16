@@ -56,7 +56,7 @@
             </span>
             <a-checkbox-group
               v-decorator="['stepNodes', {rules: [{ required: false }]}]"
-              :options="stepNodes"
+              :options="stepNodesOptions"
             />
           </a-form-item>
         </a-col>
@@ -139,10 +139,12 @@ export default {
   },
   computed: {
     ...mapGetters(['getStepNodes', 'getTabType']),
-    stepNodes () {
+    stepNodesOptions () {
       const res = []
-      const isOperation = this.config.operations && this.config.operations.length
+      const isOperation = !!(this.config.operations && this.config.operations.length)
       this.getStepNodes.forEach((node) => {
+        // 如果有审批项，就代表是在编辑【审批内容】
+        // 【审批内容】不需要在结束节点显示
         if (isOperation) {
           if (node.value !== 'end') {
             res.push(node)
@@ -159,17 +161,9 @@ export default {
       handler ({ data, show }) {
         if (show) {
           if (data) {
-            this.initialize(data)
+            this.editInitialize(data)
           } else {
-            this.$nextTick(() => {
-              this.form.setFieldsValue({
-                span: 6,
-                label: 6,
-                wrapper: 16,
-                stepNodes: this.stepNodes.map(i => i.value),
-                operations: this.config.operations.map(i => i.value)
-              })
-            })
+            this.addInitialize()
           }
         } else {
           this.reset()
@@ -180,11 +174,11 @@ export default {
     }
   },
   methods: {
-    initialize (data) {
+    editInitialize (data) {
       const itemInfo = {
         key: data.key,
         title: data.title,
-        stepNodes: data.stepNodes || this.stepNodes.map(i => i.value),
+        stepNodes: data.stepNodes || this.stepNodesOptions.map(i => i.value),
         operations: data.operations || this.config.operations.map(i => i.value),
         span: data.layout ? data.layout.span : 6,
         label: data.layout ? data.layout.label : 6,
@@ -201,6 +195,17 @@ export default {
       }
       this.$nextTick(() => {
         this.form.setFieldsValue(itemInfo)
+      })
+    },
+    addInitialize () {
+      this.$nextTick(() => {
+        this.form.setFieldsValue({
+          span: 6,
+          label: 6,
+          wrapper: 16,
+          stepNodes: this.stepNodesOptions.map(i => i.value),
+          operations: this.config.operations.map(i => i.value)
+        })
       })
     },
     reset () {

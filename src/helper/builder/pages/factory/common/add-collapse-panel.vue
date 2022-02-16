@@ -39,7 +39,7 @@
             </span>
             <a-checkbox-group
               v-decorator="['stepNodes', {rules: [{ required: false }]}]"
-              :options="getStepNodes"
+              :options="stepNodesOptions"
             />
           </a-form-item>
         </a-col>
@@ -63,7 +63,10 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getStepNodes', 'getTabType'])
+    ...mapGetters(['getStepNodes', 'getTabType']),
+    stepNodesOptions () {
+      return this.getStepNodes
+    }
   },
   watch: {
     modal: {
@@ -72,13 +75,13 @@ export default {
           this.$nextTick(() => {
             if (data) {
               if (data.stepNodes === undefined) {
-                data.stepNodes = this.getStepNodes.map(i => i.value)
+                data.stepNodes = this.stepNodesOptions.map(i => i.value)
               }
               this.form.setFieldsValue(data)
             } else {
               this.form.setFieldsValue({
                 extend: true,
-                stepNodes: this.getStepNodes.map(i => i.value)
+                stepNodes: this.stepNodesOptions.map(i => i.value)
               })
             }
           })

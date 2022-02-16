@@ -126,22 +126,17 @@ export default {
       }
       return insertIndex
     },
-    // 【基础信息】需要固定 stepNodes
-    // 因为【基础信息】不需要编辑
+    // 因为【基础信息】每个审批节点都需要显示，
+    // 所以 stepNodes 不需要编辑，直接写死
     fixedBaeInfoStepNodes () {
       if (this.getTabType === '2') {
-        this.collapsePanels[0]['stepNodes'] = this.getStepNodes
+        this.collapsePanels[0]['stepNodes'] = this.getStepNodes.map(i => i.value)
       }
     }
   }
 }
 </script>
 <style lang="less" scoped>
-// .tab-item {
-//   position: absolute;
-//   top: -0.5rem;
-//   height: 1rem;
-// }
 .tab-title {
   padding: 0 0.5rem 0 0;
 }
