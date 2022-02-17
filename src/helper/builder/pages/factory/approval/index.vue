@@ -114,7 +114,7 @@ export default {
               mode: 'edit',
               show: true,
               title: aPanel.title,
-              formItems: transferFormItems(aPanel.formItems, node.value),
+              formItems: transferFormItems(aPanel.formItems, node.value, ['originProps', 'stepNodes', 'configType', 'operations']),
               component: aPanel.component || 'FormItemRender'
             }
             permissionPanels.push(panelModel)
@@ -168,16 +168,15 @@ export default {
   }
 }
 
-function transferFormItems (originFormItems, nodeKey) {
+function transferFormItems (originFormItems, nodeKey, fields = ['originProps', 'stepNodes', 'configType']) {
   const cFormItems = utils.clone(originFormItems)
   const formItems = []
   cFormItems.forEach((formItem) => {
     if ((nodeKey && isRightNode(formItem, nodeKey)) || !nodeKey) {
-      delete formItem.originProps
-      delete formItem.stepNodes
-      delete formItem.configType
-      delete formItem.formItems
-      if (formItem.props && Object.keys(formItem.props).length === 0) {
+      fields.forEach((field) => {
+        delete formItem[field]
+      })
+      if (!formItem.props || (formItem.props && Object.keys(formItem.props).length === 0)) {
         delete formItem.props
       }
       formItems.push(formItem)

@@ -169,7 +169,7 @@ export default {
 
     Vue.bus.$on('_approval_', (tabIndex, value) => {
       this.buildedData['approvalConfig'][tabIndex] = value
-      console.log(this.buildedData['approvalConfig'])
+      console.log('approval: ', JSON.stringify(this.buildedData['approvalConfig'], null, 2))
     })
   },
   methods: {

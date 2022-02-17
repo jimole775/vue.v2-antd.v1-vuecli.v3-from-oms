@@ -284,17 +284,16 @@ function getModifyProps (src = []) {
   src.forEach((item) => {
     if (item.type === Function) {
       if (item.default.body !== item.value.body) {
-        res[item.key] = parseFunctionType(item.value)
+        res[item.key] = function2string(item.value)
       }
     } else {
       if (item.default !== item.value) {
-        // res[item.key] = item.value
         if (item.type === Object) {
-          res[item.key] = parseObjectType(item.value)
+          res[item.key] = string2object(item.value)
         } else if (item.type === Function) {
-          res[item.key] = parseFunctionType(item.value)
+          res[item.key] = function2string(item.value)
         } else if (item.type === Array) {
-          res[item.key] = parseArrayType(item.value)
+          res[item.key] = string2array(item.value)
         } else {
           res[item.key] = item.value
         }
@@ -308,21 +307,21 @@ function adjustDefault (propItem) {
   let def = propItem.hasOwnProperty('default') ? propItem.default : undefined
   let res
   if (propItem.type === Object) {
-    res = deparseObjectType(def)
+    res = object2string(def)
   } else if (propItem.type === Array) {
-    res = deparseArrayType(def)
+    res = array2string(def)
   } else if (propItem.type === Function) { // Function类型，转成 String 方便输入
-    res = deparseFunctionType(def)
+    res = function2object(def)
   } else if (utils.isNone(propItem.type)) { // 如果没有限定类型，那么只能根据def来强制一个类型了
     if (utils.isFunction(def)) {
       propItem.type = Function
-      res = deparseFunctionType(def)
+      res = function2object(def)
     } else if (utils.isObject(def)) {
       propItem.type = Object
-      res = deparseObjectType(def)
+      res = object2string(def)
     } else if (utils.isArray(def)) {
       propItem.type = Array
-      res = deparseArrayType(def)
+      res = array2string(def)
     } else if (utils.isString(def)) {
       propItem.type = String
     } else if (utils.isNumber(def)) {
@@ -338,7 +337,7 @@ function adjustDefault (propItem) {
   return res
 }
 
-function deparseObjectType (def) {
+function object2string (def) {
   let res = `{}`
   // Object的Function类型，先求值，然后转成 [{key:'',value:''}] 方便渲染
   if (utils.isFunction(def)) {
@@ -351,7 +350,7 @@ function deparseObjectType (def) {
   return cuteJSONSide(res)
 }
 
-function parseObjectType (src) {
+function string2object (src) {
   let res = {}
   if (utils.isString(src)) {
     try {
@@ -364,7 +363,7 @@ function parseObjectType (src) {
 }
 
 // 把Array转成字符串
-function deparseArrayType (def) {
+function array2string (def) {
   let res = `[]`
   // Array的Function类型，先求值，然后转成 [] 方便渲染
   if (utils.isFunction(def)) {
@@ -377,7 +376,7 @@ function deparseArrayType (def) {
 }
 
 // 把字符串转成Array
-function parseArrayType (src) {
+function string2array (src) {
   let res = []
   if (utils.isString(src)) {
     try {
@@ -389,22 +388,23 @@ function parseArrayType (src) {
   return res
 }
 
-// 把函数字符串转成函数
-function parseFunctionType (fnObj) {
+// 把函数字符串转成函数实例
+function function2string (fnObj) {
   let res
   if (fnObj.body && fnObj.body.length > 0) {
-    try {
-      const args = fnObj.head.replace(/.*?\((.*?)\).*?{/ig, '$1').split(',')
-      res = new Function(args, fnObj.body)
-    } catch (error) {
-      res = new Function(error.message)
-    }
+    // try {
+    //   const args = fnObj.head.replace(/.*?\((.*?)\).*?{/ig, '$1').split(',')
+    //   res = new Function(args, fnObj.body)
+    // } catch (error) {
+    //   res = new Function(error.message)
+    // }
+    res = `${fnObj.head}\n${fnObj.body}\n${fnObj.tail}`
   }
   return res
 }
 
 // 从函数中获取函数实体
-function deparseFunctionType (def) {
+function function2object (def) {
   let res = {
     head: '',
     body: '',
@@ -412,7 +412,8 @@ function deparseFunctionType (def) {
   }
   if (utils.isFunction(def)) {
     def = def.toString()
-  } else {
+  }
+  if (utils.isNone(def)) {
     def = 'function () {}'
   }
   let regTail = /\}$/

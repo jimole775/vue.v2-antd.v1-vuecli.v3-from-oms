@@ -178,15 +178,16 @@ export default {
       const itemInfo = {
         key: data.key,
         title: data.title,
-        stepNodes: data.stepNodes || this.stepNodesOptions.map(i => i.value),
-        operations: data.operations || this.config.operations.map(i => i.value),
         span: data.layout ? data.layout.span : 6,
         label: data.layout ? data.layout.label : 6,
-        wrapper: data.layout ? data.layout.wrapper : 16
+        wrapper: data.layout ? data.layout.wrapper : 16,
+        stepNodes: data.stepNodes || this.stepNodesOptions.map(i => i.value),
+        operations: data.operations || this.config.operations.map(i => i.value),
+        paramTransfer: data.paramTransfer && getFunctionBody(data.paramTransfer)
       }
       if (data.wrapperCustomRender) {
         this.configType = 'function'
-        itemInfo.wrapperCustomRender = data.wrapperCustomRender
+        itemInfo.wrapperCustomRender = getFunctionBody(data.wrapperCustomRender)
       } else {
         this.configType = 'selection'
         this.componentInfo.props = data.props
@@ -232,18 +233,44 @@ export default {
             wrapper: values.wrapper
           }
         }
+        if (values.paramTransfer) {
+          model.paramTransfer = buildFunction('paramTransfer (params, vm) {', values.paramTransfer)
+        }
         if (this.configType === 'selection') {
           model.component = this.componentInfo.component
           model.originProps = this.componentInfo.originProps
           model.props = this.componentInfo.props
         } else {
-          model.wrapperCustomRender = values.wrapperCustomRender
+          model.wrapperCustomRender = buildFunction('wrapperCustomRender (h, formItem, vm) {', values.wrapperCustomRender)
         }
         this.$emit('update', utils.clone(model))
       })
     }
   }
 }
+
+// 从函数字符串中，获取函数实体
+function getFunctionBody (string) {
+  let regTail = /\}$/
+  // 普通函数
+  let regHead = /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/
+  let head = string.match(regHead)
+  if (!head) {
+    // 箭头函数
+    regHead = /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/
+    head = string.match(regHead)
+  }
+  if (head) {
+    head = head[0]
+  }
+  return string.replace(regHead, '').replace(regTail, '')
+}
+
+// 把函数body构造成函数字符串
+function buildFunction (functionHead, functionBody) {
+  return `${functionHead}\n${functionBody}\n}`
+}
+
 </script>
 <style lang="less" scoped>
 .width-adjust {
