@@ -2,7 +2,7 @@
   <OmsLayout>
     <OmsBreadcrumb />
     <SApprovallor
-      :panes="panes"
+      :tabs="tabs"
       :apimap="apimap"
       :list-config="listConfig"
       :apply-config="applyConfig"
@@ -18,14 +18,14 @@ import apimap from './config/apimap'
 import listConfig from './config/list'
 import applyConfig from './config/apply'
 import approvalConfig from './config/approval'
-import panes from './config/panes'
+import tabs from './config/tabs'
 export default {
   components: {
     SApprovallor
   },
   data () {
     return {
-      panes,
+      tabs,
       apimap,
       listConfig,
       applyConfig,

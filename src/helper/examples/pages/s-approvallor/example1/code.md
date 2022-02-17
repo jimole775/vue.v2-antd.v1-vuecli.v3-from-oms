@@ -6,7 +6,7 @@ export default {
   data () {
     return {
       // “tab”配置项，参数参考 [STabs](./STabs.md) 文档 
-      panes: [
+      tabs: [
         {
           tabName: '关键事件',
           type: 'list',
@@ -149,7 +149,7 @@ export default {
   },
   render (h) {
     return (<SApprovallor
-      panes={ this.panes }
+      tabs={ this.tabs }
       apimap={ this.apimap }
       list-config={ this.listConfig }
       apply-config={ this.applyConfig }

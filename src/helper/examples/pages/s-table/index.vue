@@ -5,7 +5,7 @@ export default {
   data () {
     return {
       tabProxy: {
-        panes: components,
+        tabs: components,
         activeId: components[0].tabId
       }
     }
@@ -15,7 +15,7 @@ export default {
       <div>
         <STabs tab-proxy={this.tabProxy} />
         {
-          this.tabProxy.panes.map((pane) => {
+          this.tabProxy.tabs.map((pane) => {
             if (this.tabProxy.activeId === pane.tabId) {
               return <pane.component />
             } else {

@@ -1,16 +1,16 @@
-import panel1Edit from './form-items-edit/panel1'
-import panel1Read from './form-items-read/panel1'
+import panel1Edit from './permission/panel1'
+import panel1Read from './dispermission/panel1'
 
-import panel2Edit from './form-items-edit/panel2'
-import panel2Read from './form-items-read/panel2'
+import panel2Edit from './permission/panel2'
+import panel2Read from './dispermission/panel2'
 
-import panel3Edit from './form-items-edit/panel3'
-import panel3Read from './form-items-read/panel3'
+import panel3Edit from './permission/panel3'
+import panel3Read from './dispermission/panel3'
 
-import panel4Edit from './form-items-edit/panel4'
-import panel4Read from './form-items-read/panel4'
+import panel4Edit from './permission/panel4'
+import panel4Read from './dispermission/panel4'
 
-import operation from './form-items-edit/operation'
+import operation from './permission/operation'
 
 const panel1EditRender = { component: 'FormItemRender', title: '基本信息', mode: 'edit', show: true, formItems: panel1Edit }
 const panel1ReadViewer = { component: 'FormItemRender', title: '基本信息', mode: 'readonly', show: true, formItems: panel1Read }

@@ -2,7 +2,7 @@
   <Panel :code="code" title="审批样例">
     <template slot="example">
       <SApprovallor
-        :panes="panes"
+        :tabs="tabs"
         :apimap="apimap"
         :list-config="listConfig"
         :apply-config="applyConfig"
@@ -30,7 +30,7 @@ export default {
     return {
       code,
       // “tab”配置项，参数参考 [STabs](./STabs.md) 文档
-      panes: [
+      tabs: [
         {
           tabName: '关键事件',
           type: 'list',

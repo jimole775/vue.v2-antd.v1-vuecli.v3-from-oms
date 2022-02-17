@@ -36,7 +36,7 @@ export default {
       code,
       description,
       tabProxy: {
-        panes: [
+        tabs: [
           {
             tabName: '建设申请',
             // 由于是多tab的原因，需要由list来明确apply和detail的title

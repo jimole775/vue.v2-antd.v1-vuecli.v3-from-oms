@@ -1,7 +1,7 @@
 ``` vue
 <template>
   <SApprovallor
-    :panes="panes"
+    :tabs="tabs"
     :apimap="apimap"
     :list-config="listConfig"
     :before-submit="beforeSubmit"
@@ -160,7 +160,7 @@ export default {
   },
   data () {
     return {
-      panes: [],
+      tabs: [],
       apimap: {
         0: apimodel
       },

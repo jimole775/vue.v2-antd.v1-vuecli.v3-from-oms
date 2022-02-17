@@ -89,7 +89,7 @@ export default {
   data () {
     return {
       scope: this,
-      currentPane: {},
+      currentTab: {},
       basicData: {},
       currentNode: {},
       panels: [],
@@ -125,9 +125,9 @@ export default {
     tabProxy: {
       async handler (tabProxy) {
         if (!tabProxy) return false
-        const activePane = tabProxy.panes.filter((pane) => pane.tabId === tabProxy.activeId)
-        this.currentPane = activePane ? activePane[0] : {}
-        const res = await api[this.apimap.detail](this.currentPane.recordData)
+        const activeTab = tabProxy.tabs.filter((pane) => pane.tabId === tabProxy.activeId)
+        this.currentTab = activeTab ? activeTab[0] : {}
+        const res = await api[this.apimap.detail](this.currentTab.recordData)
         if (res.code === 200) {
           this.basicData = { ...res.data }
         } else {
@@ -139,7 +139,7 @@ export default {
   },
   computed: {
     recordData () {
-      return this.currentPane.recordData || {}
+      return this.currentTab.recordData || {}
     },
     isApprovallor () {
       return this.currentNode &&

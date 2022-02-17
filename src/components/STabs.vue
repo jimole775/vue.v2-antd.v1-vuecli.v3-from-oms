@@ -7,10 +7,10 @@
     @change="tabChangeEvent"
   >
     <a-tab-pane
-      v-for="pane in panesView"
-      :key="pane.tabId"
-      :tab="pane.tabName"
-      :closable="!!pane.closable"
+      v-for="tab in tabsView"
+      :key="tab.tabId"
+      :tab="tab.tabName"
+      :closable="!!tab.closable"
     />
   </a-tabs>
 </template>
@@ -49,20 +49,20 @@ export default {
   },
   computed: {
     // 主要渲染对象
-    panesView () {
-      return this.tabProxy.panes.filter(pane => pane.show)
+    tabsView () {
+      return this.tabProxy.tabs.filter(tab => tab.show)
     }
   },
   watch: {
-    'tabProxy.panes': {
-      handler (panes) {
-        // tabProxy.panes 有时候是后端返回的，属于异步获取
+    'tabProxy.tabs': {
+      handler (tabs) {
+        // tabProxy.tabs 有时候是后端返回的，属于异步获取
         // this.initialize() 中也会对panes进行更改，所以需要用 currentPanesLen 进行预存
         // 防止死循环
-        if (panes && panes.length && panes.length !== this.cachePanesLen) {
+        if (tabs && tabs.length && tabs.length !== this.cachePanesLen) {
           // this.initialize()
           this.activePane(this.tabProxy.activeId)
-          this.cachePanesLen = panes.length
+          this.cachePanesLen = tabs.length
         }
       },
       deep: true,
@@ -116,28 +116,28 @@ export default {
       return Promise.resolve()
     },
     queryPermissionPanes () {
-      const panes = this.tabProxy.panes || []
+      const tabs = this.tabProxy.tabs || []
       const menuButtons = this.$store.state.global.menuButtons || []
-      this.tabProxy.panes = panes.filter(pane => {
-        const permission = pane.permission || {}
+      this.tabProxy.tabs = tabs.filter(tab => {
+        const permission = tab.permission || {}
         // 如果设置了 permission.config，就匹配这个的值
-        return permission.config ? menuButtons.includes(permission.config) : pane.show
+        return permission.config ? menuButtons.includes(permission.config) : tab.show
       })
 
       // 没有权限操作
-      if (!this.tabProxy.panes.length) {
+      if (!this.tabProxy.tabs.length) {
         this.tabProxy.lastListId = this.tabProxy.activeId = null
         return false
       }
 
-      // 把默认的 pane.show 全部设为 true
-      this.tabProxy.panes.forEach(pane => {
-        pane.show = true
+      // 把默认的 tab.show 全部设为 true
+      this.tabProxy.tabs.forEach(tab => {
+        tab.show = true
       })
 
-      // 默认展示第一个 show 为 true 的 pane
+      // 默认展示第一个 show 为 true 的 tab
       if (this.tabProxy.showList) {
-        this.tabProxy.lastListId = this.tabProxy.activeId = this.tabProxy.panes[0].tabId
+        this.tabProxy.lastListId = this.tabProxy.activeId = this.tabProxy.tabs[0].tabId
       }
     },
     activePane (tabId) {
@@ -161,7 +161,7 @@ export default {
         newPanel.lastListId = listPanel.tabId
         newPanel.recordData = recordData
         this.tabProxy.activeId = newPanel.tabId
-        this.tabProxy.panes.push(newPanel)
+        this.tabProxy.tabs.push(newPanel)
       } else {
         // 如果已经渲染的，就直接切换tab就行，不用新增tab
         return this.changeTabByRecordData(recordData)
@@ -178,9 +178,9 @@ export default {
     },
     isUniqueTanpe (recordData = {}) {
       let isUnique = true
-      for (let index = 0; index < this.tabProxy.panes.length; index++) {
-        const pane = this.tabProxy.panes[index]
-        if (pane.recordData && pane.recordData.id === recordData.id) {
+      for (let index = 0; index < this.tabProxy.tabs.length; index++) {
+        const tab = this.tabProxy.tabs[index]
+        if (tab.recordData && tab.recordData.id === recordData.id) {
           isUnique = false
           break
         }
@@ -188,10 +188,10 @@ export default {
       return isUnique
     },
     changeTabByRecordData (recordData = {}) {
-      for (let index = 0; index < this.tabProxy.panes.length; index++) {
-        const pane = this.tabProxy.panes[index]
-        if (pane.recordData && pane.recordData.id === recordData.id) {
-          this.tabProxy.activeId = pane.tabId
+      for (let index = 0; index < this.tabProxy.tabs.length; index++) {
+        const tab = this.tabProxy.tabs[index]
+        if (tab.recordData && tab.recordData.id === recordData.id) {
+          this.tabProxy.activeId = tab.tabId
           break
         }
       }
@@ -238,10 +238,10 @@ export default {
     getLastEditTabId (listId, detailType) {
       // 如果是第一次新增panel，给与默认tabId
       let res = this.spillTabId(listId, detailType, 0)
-      for (let i = this.tabProxy.panes.length - 1; i > 0; i--) {
-        const pane = this.tabProxy.panes[i]
-        if (pane.tabId.length > 1 && this.getDetailTypeFormTabId(pane.tabId) === detailType) {
-          res = pane.tabId
+      for (let i = this.tabProxy.tabs.length - 1; i > 0; i--) {
+        const tab = this.tabProxy.tabs[i]
+        if (tab.tabId.length > 1 && this.getDetailTypeFormTabId(tab.tabId) === detailType) {
+          res = tab.tabId
           break
         }
       }
@@ -258,10 +258,10 @@ export default {
     // 1. 当前只有用户点击【x】操作
     // 2. 审批完毕时，this.$emit('removePane')进行调用
     removePane (tabId) {
-      for (let i = 0; i < this.tabProxy.panes.length; i++) {
-        const pane = this.tabProxy.panes[i]
-        if (pane.tabId === tabId) {
-          this.tabProxy.panes.splice(i, 1)
+      for (let i = 0; i < this.tabProxy.tabs.length; i++) {
+        const tab = this.tabProxy.tabs[i]
+        if (tab.tabId === tabId) {
+          this.tabProxy.tabs.splice(i, 1)
           break
         }
       }
@@ -271,7 +271,7 @@ export default {
       this.activePane(this.tabProxy.activeId)
     },
     getPanelFromTabId (tabId) {
-      let correctPanel = this.tabProxy.panes.filter((pan) => pan.tabId === tabId)
+      let correctPanel = this.tabProxy.tabs.filter((pan) => pan.tabId === tabId)
       correctPanel = correctPanel && correctPanel.length ? correctPanel[0] : {}
       return correctPanel
     },

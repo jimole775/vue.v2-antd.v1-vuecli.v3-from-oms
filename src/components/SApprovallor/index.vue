@@ -94,7 +94,7 @@ export default {
       type: Object,
       default: () => ({})
     },
-    panes: {
+    tabs: {
       type: Array,
       default: () => ([])
     },
@@ -122,7 +122,7 @@ export default {
   data () {
     return {
       tabProxy: {
-        panes: utils.clone(this.panes),
+        tabs: utils.clone(this.tabs),
         showList: true,
         showApply: false,
         showDetail: false,
@@ -134,21 +134,21 @@ export default {
   },
   computed: {
     applyComponents () {
-      return this.tabProxy.panes.filter((pane) => {
-        const live = /\d_1_.+/.test(pane.tabId)
+      return this.tabProxy.tabs.filter((tab) => {
+        const live = /\d_1_.+/.test(tab.tabId)
         if (live) {
-          pane.apimap = utils.clone(this.activeApimap)
-          pane.applyConfig = utils.clone(this.activeApplyConfig)
+          tab.apimap = utils.clone(this.activeApimap)
+          tab.applyConfig = utils.clone(this.activeApplyConfig)
         }
         return live
       })
     },
     approvalComponents () {
-      return this.tabProxy.panes.filter((pane) => {
-        const live = /\d_2_.+/.test(pane.tabId)
+      return this.tabProxy.tabs.filter((tab) => {
+        const live = /\d_2_.+/.test(tab.tabId)
         if (live) {
-          pane.apimap = utils.clone(this.activeApimap)
-          pane.approvalConfig = utils.clone(this.activeApprovalConfig)
+          tab.apimap = utils.clone(this.activeApimap)
+          tab.approvalConfig = utils.clone(this.activeApprovalConfig)
         }
         return live
       })
@@ -167,13 +167,13 @@ export default {
     // this.listComponents 不能用 computed 构造
     // 否则在切换tab的时候，会有性能问题
     // 原因是 STable 比较臃肿，不便于频繁刷新
-    this.listComponents = this.tabProxy.panes.filter((pane) => {
-      const live = pane.type === 'list'
-      const config = this.listConfig[pane.tabId] || {}
-      const apimap = this.apimap[pane.tabId] || {}
+    this.listComponents = this.tabProxy.tabs.filter((tab) => {
+      const live = tab.type === 'list'
+      const config = this.listConfig[tab.tabId] || {}
+      const apimap = this.apimap[tab.tabId] || {}
       if (live && config) {
-        pane.listConfig = utils.clone(config)
-        pane.apimap = utils.clone(apimap)
+        tab.listConfig = utils.clone(config)
+        tab.apimap = utils.clone(apimap)
       }
       return live
     })
