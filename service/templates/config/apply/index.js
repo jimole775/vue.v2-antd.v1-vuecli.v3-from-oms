@@ -1,4 +1,4 @@
-import panels1 from './panels1'
+import tab1 from './tab1'
 export default {
-  0: panels1
+  0: tab1
 }
