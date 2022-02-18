@@ -35,7 +35,8 @@ export default {
         panel1ReadViewer,
         panel2ReadViewer,
         panel3ReadViewer,
-        panel4ReadViewer
+        panel4ReadViewer,
+        approveLogViewer
       ],
       permission: [
         panel1EditRender,

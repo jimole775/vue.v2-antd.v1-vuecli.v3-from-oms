@@ -16,7 +16,7 @@ export default {
   data () {
     return {
       buildedData: {
-        panes: [],
+        tabs: [],
         // 把所有对应的接口都写到 apimap 统一管理
         // 可多不可少
         apimap: {
@@ -137,9 +137,9 @@ export default {
     }
   },
   created () {
-    Vue.bus.$on('_panes_', (tabIndex, value) => {
-      this.buildedData['panes'][tabIndex] = value
-      console.log(this.buildedData['panes'])
+    Vue.bus.$on('_tabs_', (tabIndex, value) => {
+      this.buildedData['tabs'][tabIndex] = value
+      console.log(this.buildedData['tabs'])
     })
 
     Vue.bus.$on('_apimap_', (tabIndex, value) => {

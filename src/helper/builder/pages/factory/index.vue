@@ -6,19 +6,19 @@
       type="editable-card"
     >
       <a-tab-pane
-        v-for="(pane, index) in panes"
-        :key="pane.tabId"
+        v-for="(tab, index) in tabs"
+        :key="tab.tabId"
         :closable="false"
       >
         <template slot="tab">
           <div>
-            <span class="tab-title">{{ pane.title + '_' + (pane.rank + 1) }}</span>
-            <a v-if="pane.rank !== 0" class="tab-item warn" @click.stop="() => reducePane(index)"><a-icon type="minus-circle" /></a>
-            <a v-if="pane.rank === 0" class="tab-item" @click.stop="() => addPane(pane)"><a-icon type="plus-circle" /></a>
+            <span class="tab-title">{{ tab.title + '_' + (tab.rank + 1) }}</span>
+            <a v-if="tab.rank !== 0" class="tab-item warn" @click.stop="() => reducePane(index)"><a-icon type="minus-circle" /></a>
+            <a v-if="tab.rank === 0" class="tab-item" @click.stop="() => addPane(tab)"><a-icon type="plus-circle" /></a>
           </div>
         </template>
         <div>
-          <component :is="pane.component" :rank="pane.rank" @switchTab="switchTab" />
+          <component :is="tab.component" :rank="tab.rank" @switchTab="switchTab" />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -43,7 +43,7 @@ export default {
   data () {
     return {
       active: '0_0',
-      panes: [
+      tabs: [
         { title: '列表', tabId: '0_0', rank: 0, type: '0', component: ProjectList },
         { title: '申请', tabId: '0_1', rank: 0, type: '1', component: ProjectApply },
         { title: '审批', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval }
@@ -64,39 +64,39 @@ export default {
   methods: {
     ...mapActions(['setTabType']),
     rerankPane () {
-      this.panes.sort((a, b) => {
+      this.tabs.sort((a, b) => {
         return a.type - b.type
       })
     },
-    upgradePane (pane) {
-      let maxRank = pane.rank
-      let type = pane.type
-      this.panes.forEach((p) => {
+    upgradePane (tab) {
+      let maxRank = tab.rank
+      let type = tab.type
+      this.tabs.forEach((p) => {
         if (p.type === type) {
           if (maxRank < p.rank) {
             maxRank = p.rank
           }
         }
       })
-      pane.rank = maxRank + 1
-      pane.tabId = pane.rank + '_' + pane.type
-      return pane
+      tab.rank = maxRank + 1
+      tab.tabId = tab.rank + '_' + tab.type
+      return tab
     },
     reducePane (index) {
-      this.panes.splice(index, 1)
+      this.tabs.splice(index, 1)
     },
-    addPane (pane) {
-      const nPane = this.upgradePane(utils.clone(pane))
-      this.panes.push(nPane)
+    addPane (tab) {
+      const nPane = this.upgradePane(utils.clone(tab))
+      this.tabs.push(nPane)
       this.rerankPane()
     },
     switchTab (type) {
-      const pane = utils.clone(this.getCurrentPane())
-      this.active = pane.rank + '_' + type
+      const tab = utils.clone(this.getCurrentPane())
+      this.active = tab.rank + '_' + type
     },
     getCurrentPane () {
       let id = this.active
-      return this.panes.find(i => i.tabId === id)
+      return this.tabs.find(i => i.tabId === id)
     }
   }
 }

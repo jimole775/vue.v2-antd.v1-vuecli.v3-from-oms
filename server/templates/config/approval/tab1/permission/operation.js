@@ -1,4 +1,4 @@
-export const approvalOperationItem = {
+export default {
   radios: [
     {
       label: '通过',
