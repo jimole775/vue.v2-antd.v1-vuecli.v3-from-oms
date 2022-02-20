@@ -5,7 +5,7 @@
   "scripts": {
     "init:commitizen": "npm install -g commitizen && commitizen init cz-conventional-changelog --save --save-exact",
     "init": "npm install && npm run init:commitizen",
-    "serve": "vue-cli-service serve --open",
+    "serve": "vue-cli-service serve --open && npm run builder",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "update:version": "node ./tag.version.js --version && git add package.json && git commit package.json -m \"chore: update project's version\"",
@@ -14,7 +14,8 @@
     "track:CHANGELOG": "git add docs/CHANGELOG.md",
     "handup:CHANGELOG": "git commit docs/CHANGELOG.md -m \"chore: 创建周迭代CHANGELOG\"",
     "version": "npm pull && npm run update:version && npm run make:CHANGELOG && npm run track:CHANGELOG && npm run handup:CHANGELOG",
-    "postversion": "npm run make:tag && git push && git push --tags"
+    "postversion": "npm run make:tag && git push && git push --tags",
+    "builder": "node ./server/main.js"
   },
   "dependencies": {
     "ant-design-vue": "^1.4.4",

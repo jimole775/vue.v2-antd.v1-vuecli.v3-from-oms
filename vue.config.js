@@ -1,10 +1,20 @@
 // const marked = require("marked");
 // const renderer = new marked.Renderer();
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 module.exports = {
+  devServer: {
+    proxy: {
+      '/mock': {
+        target: 'http://localhost:8080'
+      },
+      '/build': {
+        target: 'http://localhost:8888'
+      }
+    }
+  },
   configureWebpack: {
-    devtool: 'source-map',
+    devtool: 'source-map'
     // plugins: [new BundleAnalyzerPlugin({
     //   analyzerHost: 'localhost',
     //   analyzerPort: '8088'

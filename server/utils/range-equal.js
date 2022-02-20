@@ -7,6 +7,6 @@
  * @template rangeEqual(5.5 * 6.6, 5 * 6, 0.2) => false
  * @template rangeEqual(5.5 * 6.6, 5 * 6, 0.3) => true
  */
-module.exports = function rangeEqual(a = 0, b = 0, range = 0) {
+module.exports = function rangeEqual (a = 0, b = 0, range = 0) {
   return (a >= b && a <= b * (1 + range)) || (a <= b && a * (1 + range) >= b)
 }

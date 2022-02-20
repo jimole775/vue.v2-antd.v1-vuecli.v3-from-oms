@@ -1,21 +1,21 @@
 const path = require('path')
-const lodash = require('lodash')
 const mock = require('./mock.json')
-const { writeFileSync } = require('../../utils')
+const { writeFileSync, object2string } = require('../../utils')
 const basePath = 'approval'
 buildTabs(mock)
 
 function buildTabs (tabsTree) {
-  const tabKeys = Object.keys(tabsTree)
-  tabKeys.forEach((key) => {
-    const tabFolder = `${basePath}/tab${(key * 1 + 1)}`
+  const tabIndexs = Object.keys(tabsTree)
+  tabIndexs.forEach((tabIndex) => {
+    const tabFolder = `${basePath}/tab${(tabIndex * 1 + 1)}`
     const permissionFolder = `${tabFolder}/permission`
     const dispermissionFolder = `${tabFolder}/dispermission`
-    const uniPanels = getUniPanels(tabsTree[key])
+    const uniPanels = getUniPanels(tabsTree[tabIndex])
     buildPanels(permissionFolder, uniPanels.permission)
     buildPanels(dispermissionFolder, uniPanels.dispermission)
-    buildPanelsLoadFile(basePath, tabsTree[key], uniPanels)
+    buildPanelsLoadFile(tabFolder, tabsTree[tabIndex], uniPanels)
   })
+  buildTabLoadFile(basePath, tabsTree)
 }
 
 // 略过 nodes，把唯一的panel存进一个数组里，过滤重复项
@@ -50,16 +50,8 @@ function buildPanels (prevDir, panels) {
       fileName = `panel${index + 1}.js`
       data = panel.formItems
     }
-    writeFileSync(path.join(prevDir, fileName), `${exportCode}${JSON.stringify(data, null, 2)}`)
+    writeFileSync(path.join(prevDir, fileName), `${exportCode}${object2string(data)}`)
   })
-}
-
-function buildPanelFile (formItems) {
-  // return `export default ` + JSON.stringify(formItems, null, 2)
-}
-
-function buildOperationFile (formItems) {
-  // return `export default ` + JSON.stringify(formItems, null, 2)
 }
 
 function buildPanelsLoadFile (prevPath, tab, uniPanels) {
@@ -69,15 +61,16 @@ function buildPanelsLoadFile (prevPath, tab, uniPanels) {
 
   const log = buildAndInsertLog(exportModule)
 
-  const data = (
-`${dispermission.loads.map(i => i.code).join('\n')}
+  const fileContent = (
+    `${dispermission.loads.map(i => i.code).join('\n')}
 ${permission.loads.map(i => i.code).join('\n')}
 ${dispermission.modules.map(i => i.code).join('\n')}
 ${permission.modules.map(i => i.code).join('\n')}
 ${log.moduleCode}
-${exportModule.cmd}${JSON.stringify(exportModule.data, null, 2).replace(/"/g, '')}
+${exportModule.cmd}${object2string(exportModule.data)}
 `)
-  writeFileSync(path.join(prevPath, 'index.js'), data)
+
+  writeFileSync(path.join(prevPath, 'index.js'), fileContent)
 }
 
 function buildAndInsertLog (exportModule) {
@@ -101,7 +94,7 @@ function buildExportsModules (tab, permissionModules, dispermissionModules) {
     data: {}
   }
   nodes.forEach((node) => {
-    exportModule['data'][node] = { panels: { dispermission: [], permission: [] }}
+    exportModule['data'][node] = { panels: { dispermission: [], permission: [] } }
     const { dispermission, permission } = exportModule['data'][node]['panels']
     const { dispermission: dataDispermission, permission: dataPermission } = tab[node]['panels']
     dataDispermission.forEach((panel) => {
@@ -182,17 +175,19 @@ function buildLoadsAndModules (uniPanels) {
   }
 }
 
-function buildTabLoadFile (tabs) {
+function buildTabLoadFile (prevPath, tabsTree) {
   let importCmd = ''
-  let exportCmd = 'export default {'
-  tabs.forEach((tab, index) => {
-    const varTab = 'tab' + (index + 1)
+  let exportCmd = 'export default {\n'
+
+  const tabIndexs = Object.keys(tabsTree)
+  tabIndexs.forEach((tabIndex) => {
+    const varTab = 'tab' + (tabIndex * 1 + 1)
     importCmd += `import ${varTab} from './${varTab}'\n`
-    exportCmd += `${index}: './${varTab}'\n`
+    exportCmd += `${tabIndex * 1}: ${varTab}\n`
   })
-  exportCmd += '}'
-  return `
-    ${importCmd}
-    ${exportCmd}
-  `
+  exportCmd += '}\n'
+  writeFileSync(
+    path.join(prevPath, 'index.js'),
+    `${importCmd}
+${exportCmd}`)
 }

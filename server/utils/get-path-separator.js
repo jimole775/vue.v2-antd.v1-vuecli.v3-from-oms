@@ -1,3 +1,3 @@
-module.exports = function getPathSeparator(path) {
+module.exports = function getPathSeparator (path) {
   return path.includes('\/') ? '\/' : path.includes('\\\\') ? '\\\\' : '\\'
 }

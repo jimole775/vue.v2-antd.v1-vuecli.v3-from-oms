@@ -11,6 +11,7 @@
 
 <script>
 import Vue from 'vue'
+import api from '@/api'
 export default {
   name: 'Header',
   data () {
@@ -169,7 +170,8 @@ export default {
 
     Vue.bus.$on('_approval_', (tabIndex, value) => {
       this.buildedData['approvalConfig'][tabIndex] = value
-      console.log('approval: ', JSON.stringify(this.buildedData['approvalConfig'], null, 2))
+      api.postbuild(this.buildedData['approvalConfig'])
+      // console.log('approval: ', JSON.stringify(this.buildedData['approvalConfig'], null, 2))
     })
   },
   methods: {

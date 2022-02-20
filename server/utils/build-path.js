@@ -7,7 +7,7 @@ const getPathSeparator = require('./get-path-separator')
  * @return { String } 返回已创建的目录
  * @template buildPath('xxxxxx/xxxxxx') => 'xxxxxx/xxxxxx'
  */
-module.exports = function buildPath(asbFilePath) {
+module.exports = function buildPath (asbFilePath) {
   const isExist = fs.existsSync(asbFilePath)
   if (isExist) return asbFilePath
   let prevPath = ''

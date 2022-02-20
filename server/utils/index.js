@@ -17,12 +17,12 @@ utilFiles.forEach((file) => {
   }
 })
 
-function isObject(likeObject) {
+function isObject (likeObject) {
   return Object.prototype.toString.call(likeObject) === '[object Object]'
 }
 
-function isFunction(likeFunction) {
-  return Object.prototype.toString.call(likeFunction) === '[object Function]'            
+function isFunction (likeFunction) {
+  return Object.prototype.toString.call(likeFunction) === '[object Function]'
 }
 
 module.exports = res

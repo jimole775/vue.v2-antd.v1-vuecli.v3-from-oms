@@ -5,7 +5,7 @@ const fs = require('fs')
  * @return { Array<String> } 可能返回目录名和文件名的混合类型
  * @template readDirSync('xxx/xxx/') => ['xx.xx', 'xxx.xx', ['xxxx']]
  */
-module.exports = function readDirSync(dir) {
+module.exports = function readDirSync (dir) {
   let folderOrFiles = []
   try {
     const isExist = fs.existsSync(dir)
