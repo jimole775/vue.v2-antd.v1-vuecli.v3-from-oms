@@ -3,16 +3,6 @@
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 module.exports = {
-  devServer: {
-    proxy: {
-      '/mock': {
-        target: 'http://localhost:8080'
-      },
-      '/build': {
-        target: 'http://localhost:8888'
-      }
-    }
-  },
   configureWebpack: {
     devtool: 'source-map'
     // plugins: [new BundleAnalyzerPlugin({

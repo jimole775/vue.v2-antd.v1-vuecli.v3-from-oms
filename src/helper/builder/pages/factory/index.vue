@@ -12,9 +12,9 @@
       >
         <template slot="tab">
           <div>
-            <span class="tab-title">{{ tab.title + '_' + (tab.rank + 1) }}</span>
-            <a v-if="tab.rank !== 0" class="tab-item warn" @click.stop="() => reducePane(index)"><a-icon type="minus-circle" /></a>
-            <a v-if="tab.rank === 0" class="tab-item" @click.stop="() => addPane(tab)"><a-icon type="plus-circle" /></a>
+            <a class="tab-title" @dblclick="() => editTab(tab)">{{ tab.tabName + '_' + (tab.rank + 1) }}</a>
+            <a v-if="tab.rank !== 0" class="tab-item warn" @click.stop="() => reduceTab(index)"><a-icon type="minus-circle" /></a>
+            <a v-if="tab.rank === 0" class="tab-item" @click.stop="() => addTab(tab)"><a-icon type="plus-circle" /></a>
           </div>
         </template>
         <div>
@@ -22,10 +22,16 @@
         </div>
       </a-tab-pane>
     </a-tabs>
+    <a-modal
+     v-model="model"
+     title="编辑"
+    >
+
+    </a-modal>
   </div>
 </template>
 <script>
-// import api from '@/api'
+import Vue from 'vue'
 import utils from '@/utils'
 import baseMixins from '@/mixins/baseMixins'
 import todoMixins from '@/mixins/todoMixins'
@@ -42,11 +48,15 @@ export default {
   mixins: [baseMixins, todoMixins],
   data () {
     return {
+      model: {
+        show: false,
+        data: {}
+      },
       active: '0_0',
       tabs: [
-        { title: '列表', tabId: '0_0', rank: 0, type: '0', component: ProjectList },
-        { title: '申请', tabId: '0_1', rank: 0, type: '1', component: ProjectApply },
-        { title: '审批', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval }
+        { tabName: '列表', tabId: '0_0', rank: 0, type: '0', component: ProjectList },
+        { tabName: '申请', tabId: '0_1', rank: 0, type: '1', component: ProjectApply },
+        { tabName: '审批', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval }
       ]
     }
   },
@@ -59,16 +69,25 @@ export default {
         }
       },
       immediate: true
+    },
+    tabs: {
+      handler (data) {
+        if (data && data.length) {
+          this.handup(this.getTabsData(data))
+        }
+      },
+      deep: true,
+      immediate: true
     }
   },
   methods: {
     ...mapActions(['setTabType']),
-    rerankPane () {
+    rerankTab () {
       this.tabs.sort((a, b) => {
         return a.type - b.type
       })
     },
-    upgradePane (tab) {
+    upgradeTab (tab) {
       let maxRank = tab.rank
       let type = tab.type
       this.tabs.forEach((p) => {
@@ -82,21 +101,57 @@ export default {
       tab.tabId = tab.rank + '_' + tab.type
       return tab
     },
-    reducePane (index) {
+    reduceTab (index) {
       this.tabs.splice(index, 1)
     },
-    addPane (tab) {
-      const nPane = this.upgradePane(utils.clone(tab))
+    editTab (tab) {
+      console.log(tab)
+    },
+    addTab (tab) {
+      const nPane = this.upgradeTab(utils.clone(tab))
       this.tabs.push(nPane)
-      this.rerankPane()
+      this.rerankTab()
     },
     switchTab (type) {
-      const tab = utils.clone(this.getCurrentPane())
+      const tab = utils.clone(this.getCurrentTab())
       this.active = tab.rank + '_' + type
     },
-    getCurrentPane () {
+    getCurrentTab () {
       let id = this.active
       return this.tabs.find(i => i.tabId === id)
+    },
+    handup (data) {
+      Vue.bus.$emit('_tabs_', data)
+    },
+    getTabsData () {
+      // {
+      //   tabName: '关键事件',
+      //   type: 'list',
+      //   tabId: '0',
+      //   permission: {
+      //     roles: [],
+      //     config: null
+      //   }
+      // }
+      const res = []
+      this.tabs.forEach((tab) => {
+        const disabledFields = ['rank', 'component']
+        const typemap = {
+          0: 'list',
+          1: 'apply',
+          2: 'approval'
+        }
+        const cTab = utils.clone(tab)
+        disabledFields.forEach((key) => {
+          delete cTab[key]
+        })
+        cTab.type = typemap[cTab.type]
+        // 只存 list 类型
+        if (cTab.type === 'list') {
+          res.push(cTab)
+        }
+      })
+      return res
     }
   }
 }

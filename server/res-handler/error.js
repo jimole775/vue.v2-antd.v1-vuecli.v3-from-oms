@@ -1,6 +1,6 @@
 module.exports = function errorModel (res, err) {
   return res.send({
-    code: 50000,
+    code: 500,
     message: err,
     data: {}
   })

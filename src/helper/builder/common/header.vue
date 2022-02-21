@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-button>完成配置</a-button>
+    <a-button :disabled="!isCanHandup">完成配置</a-button>
     <div class="pull-right">
       <a-avatar icon="user" class="mr5" :src="user.image" />
       <span class="black" v-text="user.name" />
@@ -11,13 +11,26 @@
 
 <script>
 import Vue from 'vue'
-import api from '@/api'
+// import api from '@/api'
 export default {
   name: 'Header',
   data () {
     return {
       buildedData: {
-        tabs: [],
+        tabs: [
+          // {
+          //   tabName: '关键事件',
+          //   type: 'list',
+          //   tabId: '0',
+          //   closable: false,
+          //   visible: false,
+          //   show: false,
+          //   permission: {
+          //     roles: [],
+          //     config: null
+          //   }
+          // }
+        ],
         // 把所有对应的接口都写到 apimap 统一管理
         // 可多不可少
         apimap: {
@@ -135,12 +148,22 @@ export default {
   computed: {
     user () {
       return this.$store.state.global.user
+    },
+    isCanHandup () {
+      const {
+        tabs: [tabChecked],
+        apimap: { list: apiChecked },
+        listConfig: { 0: listChecked },
+        applyConfig: { 0: applyChecked },
+        approvalConfig: { 0: approvalChecked }
+      } = this.buildedData
+      return tabChecked && apiChecked && listChecked && applyChecked && approvalChecked
     }
   },
   created () {
-    Vue.bus.$on('_tabs_', (tabIndex, value) => {
-      this.buildedData['tabs'][tabIndex] = value
-      console.log(this.buildedData['tabs'])
+    Vue.bus.$on('_tabs_', (value) => {
+      this.buildedData['tabs'] = value
+      console.log('tabs:', this.buildedData['tabs'])
     })
 
     Vue.bus.$on('_apimap_', (tabIndex, value) => {
@@ -152,7 +175,7 @@ export default {
         ...already,
         ...value
       }
-      console.log(this.buildedData['apimap'])
+      console.log('apimap:', this.buildedData['apimap'])
     })
 
     Vue.bus.$on('_list_', (tabIndex, value) => {
@@ -160,18 +183,22 @@ export default {
         this.buildedData['listConfig'][tabIndex] = Object.create(null)
       }
       this.buildedData['listConfig'][tabIndex] = value
-      console.log(this.buildedData['listConfig'])
+      console.log('list:', this.buildedData['listConfig'])
     })
 
     Vue.bus.$on('_apply_', (tabIndex, value) => {
       this.buildedData['applyConfig'][tabIndex] = value
-      console.log(this.buildedData['applyConfig'])
+      console.log('apply:', this.buildedData['applyConfig'])
     })
 
-    Vue.bus.$on('_approval_', (tabIndex, value) => {
+    Vue.bus.$on('_approval_', async (tabIndex, value) => {
       this.buildedData['approvalConfig'][tabIndex] = value
-      api.postbuild(this.buildedData['approvalConfig'])
-      // console.log('approval: ', JSON.stringify(this.buildedData['approvalConfig'], null, 2))
+      // const res = await api.postbuild({ buildConstructs: this.buildedData['approvalConfig'] })
+      // if (res.code === 200) {
+      //   this.$message.success('构建成功！')
+      // } else {
+      //   this.$message.warning('构建失败！')
+      // }
     })
   },
   methods: {
