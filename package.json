@@ -16,7 +16,7 @@
     "version": "npm pull && npm run update:version && npm run make:CHANGELOG && npm run track:CHANGELOG && npm run handup:CHANGELOG",
     "postversion": "npm run make:tag && git push && git push --tags",
     "builder": "node ./server/index.js",
-    "start":"npm-run-all -p builder serve"
+    "start": "npm-run-all -p builder serve"
   },
   "dependencies": {
     "ant-design-vue": "^1.4.4",

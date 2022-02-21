@@ -23,10 +23,29 @@
       </a-tab-pane>
     </a-tabs>
     <a-modal
-     v-model="model"
-     title="编辑"
+      v-model="editModal.show"
+      title="编辑"
+      @ok="editConfirm"
     >
-
+      <a-form :form="form">
+        <a-row>
+          <a-col :span="24">
+            <a-form-item label="页签名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+              <a-input v-decorator="['tabName', {rules: [{ required: true, message: '请确认字段标签' }]}]" />
+            </a-form-item>
+          </a-col>
+          <a-col :span="24">
+            <a-form-item label="角色控制" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+              <a-input v-decorator="['roles', {rules: [{ required: false }]}]" />
+            </a-form-item>
+          </a-col>
+          <a-col :span="24">
+            <a-form-item label="权限控制" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+              <a-input v-decorator="['config', {rules: [{ required: false }]}]" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+      </a-form>
     </a-modal>
   </div>
 </template>
@@ -48,7 +67,8 @@ export default {
   mixins: [baseMixins, todoMixins],
   data () {
     return {
-      model: {
+      form: this.$form.createForm(this),
+      editModal: {
         show: false,
         data: {}
       },
@@ -104,8 +124,11 @@ export default {
     reduceTab (index) {
       this.tabs.splice(index, 1)
     },
+    editConfirm () {
+    },
     editTab (tab) {
-      console.log(tab)
+      this.editModal.data = tab
+      this.editModal.show = true
     },
     addTab (tab) {
       const nPane = this.upgradeTab(utils.clone(tab))
