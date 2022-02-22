@@ -1,4 +1,5 @@
 const buildApproval = require('./approval')
+const buildApply = require('./apply')
 module.exports = function (req, res) {
   const resData = {
     data: '创建成功'
@@ -8,6 +9,8 @@ module.exports = function (req, res) {
     if (!buildConstructs) {
       return resolve('参数不能为空！')
     } else {
+      buildApply(buildConstructs.applyConfig)
+      buildApproval(buildConstructs.approvalConfig)
       return resolve(resData)
     }
   })
