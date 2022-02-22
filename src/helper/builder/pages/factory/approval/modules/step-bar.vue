@@ -109,7 +109,7 @@ export default {
       }
     },
     buildTitle (node, index) {
-      console.log(node)
+      // console.log(node)
       const label = node.value === '__addtion__'
         ? <span>{ node.label }</span>
         : <a onClick={() => node.edit && this.editNode(index, node)}>{ node.label }</a>

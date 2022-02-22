@@ -1,9 +1,7 @@
 const path = require('path')
-// const mock = require('./mock.json')
 const { writeFileSync, object2string } = require('../../utils')
 const basePath = 'approval'
-// buildTabs(mock)
-module.exports = function buildTabs (tabsTree) {
+module.exports = function buildApproval (tabsTree) {
   const tabIndexs = Object.keys(tabsTree)
   tabIndexs.forEach((tabIndex) => {
     const tabFolder = `${basePath}/tab${(tabIndex * 1 + 1)}`

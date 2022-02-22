@@ -23,7 +23,7 @@
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label="查看权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+          <a-form-item label="人员查看权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-radio-group v-decorator="['permission', {rules: [{ required: false }]}]">
               <a-radio value="0">全部</a-radio>
               <a-radio value="1">内部</a-radio>

@@ -23,8 +23,8 @@
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label="权限配置" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input placeholder="$services.com.oppo.xxx.xxx" v-decorator="['permission', {rules: [{ required: false }]}]" />
+          <a-form-item label="后台配置权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input placeholder="$services.com.xxx.xxx" v-decorator="['permission', {rules: [{ required: false }]}]" />
           </a-form-item>
         </a-col>
         <!-- <a-col v-if="getTabType === '2'" :span="24">

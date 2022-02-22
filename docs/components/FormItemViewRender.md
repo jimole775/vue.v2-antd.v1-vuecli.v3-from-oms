@@ -3,7 +3,7 @@
 <template>
   <FormItemViewRender
     ref="FormItemViewRenderRef"
-    :cloumns="cloumns"
+    :columns="columns"
     :data-source="dataSource"
     :before-render="beforeRender"
   />
@@ -18,7 +18,7 @@ export default {
   data () {
     return {
       dataSource: {}, // 一般当作默认值填入表单中
-      cloumns: [
+      columns: [
         {
           layout: {
             span: 12,

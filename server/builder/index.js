@@ -1,4 +1,4 @@
-const buildTabs = require('./approval')
+const buildApproval = require('./approval')
 module.exports = function (req, res) {
   const resData = {
     data: '创建成功'

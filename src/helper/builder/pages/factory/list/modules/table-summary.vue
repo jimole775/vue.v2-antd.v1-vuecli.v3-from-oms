@@ -20,13 +20,6 @@ export default {
         wrapperCol: { span: 16 }
       },
       summaryObject: {
-        list: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
-          key: 'list',
-          label: '列表'
-        },
         approval: {
           url: undefined,
           method: undefined,

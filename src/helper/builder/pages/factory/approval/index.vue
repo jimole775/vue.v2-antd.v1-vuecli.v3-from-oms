@@ -91,10 +91,10 @@ export default {
       this.stepNodes = stepNodes
     },
     handupApimap (data) {
-      Vue.bus.$emit('_apimap_', this.rank, data)
+      Vue.bus.$emit('__apimap__', this.rank, data)
     },
     handup (data) {
-      Vue.bus.$emit('_approval_', this.rank, data)
+      Vue.bus.$emit('__approval__', this.rank, data)
     },
     transferPanels () {
       const model = {}
@@ -176,13 +176,26 @@ function transferFormItems (originFormItems, nodeKey, fields = ['originProps', '
       fields.forEach((field) => {
         delete formItem[field]
       })
-      if (!formItem.props || (formItem.props && Object.keys(formItem.props).length === 0)) {
-        delete formItem.props
-      }
+      deleteNoneFields(formItem)
       formItems.push(formItem)
     }
   })
   return formItems
+}
+
+// 清掉空值的字段
+function deleteNoneFields (formItem) {
+  const fields = ['props', 'operations', 'component']
+  fields.forEach((field) => {
+    const val = formItem[field]
+    if (
+      val === undefined ||
+      (utils.isObject(val) && Object.keys(val).length === 0) ||
+      (utils.isArray(val) && val.length === 0)
+    ) {
+      delete formItem[field]
+    }
+  })
 }
 
 function isRightNode (item, nodeKey) {

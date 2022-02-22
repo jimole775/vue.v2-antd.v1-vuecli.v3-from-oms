@@ -12,7 +12,8 @@
       >
         <template slot="tab">
           <div>
-            <a class="tab-title" @dblclick="() => editTab(tab)">{{ tab.tabName + '_' + (tab.rank + 1) }}</a>
+            <span class="tab-title">{{ tab.tabName }}</span>
+            <a class="tab-item tab-edit" @click.stop="() => editTab(tab)"><a-icon type="edit" /></a>
             <a v-if="tab.rank !== 0" class="tab-item warn" @click.stop="() => reduceTab(index)"><a-icon type="minus-circle" /></a>
             <a v-if="tab.rank === 0" class="tab-item" @click.stop="() => addTab(tab)"><a-icon type="plus-circle" /></a>
           </div>
@@ -31,17 +32,21 @@
         <a-row>
           <a-col :span="24">
             <a-form-item label="页签名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-input v-decorator="['tabName', {rules: [{ required: true, message: '请确认字段标签' }]}]" />
+              <a-input v-decorator="['tabName', {rules: [{ required: true, message: '请确认页签名' }]}]" />
             </a-form-item>
           </a-col>
           <a-col :span="24">
-            <a-form-item label="角色控制" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-input v-decorator="['roles', {rules: [{ required: false }]}]" />
+            <a-form-item label="角色查看权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+              <a-radio-group v-decorator="['roles', {rules: [{ required: false }]}]">
+                <a-radio value="0">全部</a-radio>
+                <a-radio value="1">内部</a-radio>
+                <a-radio value="2">外部</a-radio>
+              </a-radio-group>
             </a-form-item>
           </a-col>
           <a-col :span="24">
-            <a-form-item label="权限控制" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-input v-decorator="['config', {rules: [{ required: false }]}]" />
+            <a-form-item label="后台配置权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+              <a-input placeholder="$services.com.xxx.xxx" v-decorator="['config', {rules: [{ required: false }]}]" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -74,9 +79,9 @@ export default {
       },
       active: '0_0',
       tabs: [
-        { tabName: '列表', tabId: '0_0', rank: 0, type: '0', component: ProjectList },
-        { tabName: '申请', tabId: '0_1', rank: 0, type: '1', component: ProjectApply },
-        { tabName: '审批', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval }
+        { tabName: '列表', tabId: '0_0', rank: 0, type: '0', component: ProjectList, permission: { roles: [], config: '' } },
+        { tabName: '申请', tabId: '0_1', rank: 0, type: '1', component: ProjectApply, permission: { roles: [], config: '' } },
+        { tabName: '审批', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval, permission: { roles: [], config: '' } }
       ]
     }
   },
@@ -125,10 +130,28 @@ export default {
       this.tabs.splice(index, 1)
     },
     editConfirm () {
+      this.form.validateFields((err, values) => {
+        if (err) return false
+        this.editModal.data.tabName = values.tabName
+        if (!this.editModal.data.permission) {
+          this.editModal.data.permission = {}
+        }
+        this.editModal.data.permission.roles = values.roles
+        this.editModal.data.permission.config = values.config
+        this.editModal.show = false
+      })
     },
     editTab (tab) {
+      const { roles, config } = tab.permission || {}
       this.editModal.data = tab
       this.editModal.show = true
+      setTimeout(() => {
+        this.form.setFieldsValue({
+          tabName: tab.tabName,
+          roles: roles,
+          config: config
+        })
+      })
     },
     addTab (tab) {
       const nPane = this.upgradeTab(utils.clone(tab))
@@ -143,38 +166,49 @@ export default {
       let id = this.active
       return this.tabs.find(i => i.tabId === id)
     },
-    handup (data) {
-      Vue.bus.$emit('_tabs_', data)
-    },
     getTabsData () {
-      // {
-      //   tabName: '关键事件',
-      //   type: 'list',
-      //   tabId: '0',
-      //   permission: {
-      //     roles: [],
-      //     config: null
-      //   }
-      // }
-      const res = []
+      const lists = []
+      const applies = []
+      const approvals = []
       this.tabs.forEach((tab) => {
-        const disabledFields = ['rank', 'component']
-        const typemap = {
-          0: 'list',
-          1: 'apply',
-          2: 'approval'
-        }
         const cTab = utils.clone(tab)
+        const disabledFields = ['component']
         disabledFields.forEach((key) => {
-          delete cTab[key]
+          delete cTab[key] // 删掉 component
         })
-        cTab.type = typemap[cTab.type]
-        // 只存 list 类型
+        cTab.type = { 0: 'list', 1: 'apply', 2: 'detail' }[cTab.type]
         if (cTab.type === 'list') {
-          res.push(cTab)
+          lists.push(cTab)
+        }
+        if (cTab.type === 'apply') {
+          applies.push(cTab)
+        }
+        if (cTab.type === 'detail') {
+          approvals.push(cTab)
         }
       })
-      return res
+
+      // 把"申请"和"审批"的标签名绑到 list.proxyName
+      lists.forEach((list) => {
+        applies.forEach((apply) => {
+          if (list.rank === apply.rank) {
+            if (!list.proxyName) list.proxyName = { apply: '', detail: '' }
+            list.proxyName.apply = apply.tabName
+          }
+        })
+        approvals.forEach((approval) => {
+          if (list.rank === approval.rank) {
+            if (!list.proxyName) list.proxyName = { apply: '', detail: '' }
+            list.proxyName.detail = approval.tabName
+          }
+        })
+      })
+
+      // 只返回 list 类型
+      return lists
+    },
+    handup (data) {
+      Vue.bus.$emit('__tabs__', data)
     }
   }
 }
@@ -185,8 +219,11 @@ export default {
   top: -0.5rem;
   height: 1rem;
 }
+.tab-edit {
+  top: 0.5rem;
+}
 .tab-title {
-  padding: 0 0.3rem 0 0;
+  padding: 0 0.8rem 0 0;
 }
 .warn {
   color: red;

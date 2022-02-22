@@ -175,14 +175,16 @@ export default {
   },
   methods: {
     editInitialize (data) {
+      const operations = this.config.operations || []
+      const stepNodesOptions = this.stepNodesOptions || []
       const itemInfo = {
         key: data.key,
         title: data.title,
         span: data.layout ? data.layout.span : 6,
         label: data.layout ? data.layout.label : 6,
         wrapper: data.layout ? data.layout.wrapper : 16,
-        stepNodes: data.stepNodes || this.stepNodesOptions.map(i => i.value),
-        operations: data.operations || this.config.operations.map(i => i.value),
+        operations: data.operations || operations.map(i => i.value),
+        stepNodes: data.stepNodes || stepNodesOptions.map(i => i.value),
         paramTransfer: data.paramTransfer && getFunctionBody(data.paramTransfer)
       }
       if (data.wrapperCustomRender) {
@@ -199,13 +201,15 @@ export default {
       })
     },
     addInitialize () {
+      const operations = this.config.operations || []
+      const stepNodesOptions = this.stepNodesOptions || []
       this.$nextTick(() => {
         this.form.setFieldsValue({
           span: 6,
           label: 6,
           wrapper: 16,
-          stepNodes: this.stepNodesOptions.map(i => i.value),
-          operations: this.config.operations.map(i => i.value)
+          operations: operations.map(i => i.value),
+          stepNodes: stepNodesOptions.map(i => i.value)
         })
       })
     },
