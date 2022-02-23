@@ -1,7 +1,9 @@
 const path = require('path')
-const { writeFileSync, object2string } = require('../../utils')
+const { writeFileSync, object2file, stringMark } = require('../../utils')
 const basePath = 'apply'
-module.exports = function buildApply (tabsTree) {
+const mock = require('./mock.json')
+buildApply(mock)
+function buildApply (tabsTree) {
   const tabIndexs = Object.keys(tabsTree)
   tabIndexs.forEach((tabIndex) => {
     const tabFolder = `${basePath}/tab${(tabIndex * 1 + 1)}`
@@ -29,20 +31,18 @@ function buildPanels (prevDir, panels) {
   panels.forEach((panel, index) => {
     let fileName = ''
     fileName = `panel${index + 1}.js`
-    writeFileSync(path.join(prevDir, fileName), `${exportCode}${object2string(panel.formItems)}`)
+    writeFileSync(path.join(prevDir, fileName), `${exportCode}${object2file(panel.formItems)}`)
   })
 }
 
 function buildPanelsLoadFile (prevPath, tab, uniPanels) {
   const permission = buildLoadsAndModules(uniPanels)
-
   const exportModule = buildExportsModules(tab, permission.modules)
   const code1 = permission.loads.map(i => i.code).join('\n')
   const code2 = permission.modules.map(i => i.code).join('\n')
   const code3 = exportModule.cmd
-  const code4 = object2string(exportModule.data)
-  const fileContent = `${code1}${code2}${code3}${code4}`
-  console.log(code1, code2, code3, code4)
+  const code4 = object2file(exportModule.data)
+  const fileContent = `${code1}\n${code2}\n${code3} ${code4}\n`
   writeFileSync(path.join(prevPath, 'index.js'), fileContent)
 }
 
@@ -51,14 +51,14 @@ function buildExportsModules (tab, permissionModules) {
     cmd: `export default `,
     data: {}
   }
-  exportModule['data'] = { panels: { permission: [] } }
-  const { permission } = exportModule['data']['panels']
+  exportModule['data'] = { panels: [] }
+  const permission = exportModule['data']['panels']
   const dataPermission = tab['panels']
   dataPermission.forEach((panel) => {
     const module = permissionModules.find(i => i.title === panel.title)
     // “结束节点”不需要【审批操作】模块
     if (module) {
-      permission.push(module.var)
+      permission.push(stringMark.noQuotation(module.var))
     }
   })
   return exportModule
@@ -96,11 +96,11 @@ function buildTabLoadFile (prevPath, tabsTree) {
   tabIndexs.forEach((tabIndex) => {
     const varTab = 'tab' + (tabIndex * 1 + 1)
     importCmd += `import ${varTab} from './${varTab}'\n`
-    exportCmd += `${tabIndex * 1}: ${varTab}\n`
+    exportCmd += `  ${tabIndex * 1}: ${varTab}\n`
   })
   exportCmd += '}\n'
   writeFileSync(
     path.join(prevPath, 'index.js'),
-    `${importCmd}
-${exportCmd}`)
+    `${importCmd}\n${exportCmd}`
+  )
 }

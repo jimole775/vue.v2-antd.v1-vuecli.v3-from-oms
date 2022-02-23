@@ -1,5 +1,6 @@
 const buildApproval = require('./approval')
 const buildApply = require('./apply')
+const buildList = require('./list')
 module.exports = function (req, res) {
   const resData = {
     data: '创建成功'
