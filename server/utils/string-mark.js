@@ -25,10 +25,10 @@ module.exports = {
       return `-|${string}$|-`
     },
     queryNoQuotation (string) {
-      return string.replace(/(("_\|)|(\|_"))/g, '')
+      return string.replace(/((["']_\|)|(\|_["']))/g, '')
     },
     querySingleQuotation (string) {
-      return string.replace(/(("-\|)|(\|-"))/g, '\'')
+      return string.replace(/((["']-\|)|(\|-["']))/g, '\'')
     }
   }
 }
