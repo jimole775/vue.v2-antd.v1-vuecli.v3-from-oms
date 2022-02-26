@@ -19,8 +19,8 @@ import Vue from 'vue'
 import utils from '@/utils'
 import http from '@/utils/http'
 import TableSummary from './modules/table-summary'
-import BuildFormItems from '@/helper/builder/pages/factory/common/build-form-items'
-import ApiButton from '@/helper/builder/pages/factory/common/api-button'
+import BuildFormItems from '@/helper/builder/factory/common/build-form-items'
+import ApiButton from '@/helper/builder/factory/common/api-button'
 import TableColumns from './modules/table-columns'
 export default {
   components: {

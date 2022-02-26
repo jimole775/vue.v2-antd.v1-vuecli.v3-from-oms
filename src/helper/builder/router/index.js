@@ -8,7 +8,7 @@ export default [
       {
         path: '/helper/builder/factory',
         name: 'builderFactory',
-        component: () => import('@/helper/builder/pages/factory/index.vue')
+        component: () => import('@/helper/builder/factory/index.vue')
       }
     ]
   }

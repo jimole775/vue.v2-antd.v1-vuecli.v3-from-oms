@@ -11,7 +11,7 @@
   </span>
 </template>
 <script>
-import ApiConfig from '@/helper/builder/pages/factory/common/api-config.vue'
+import ApiConfig from '@/helper/builder/factory/common/api-config.vue'
 export default {
   components: {
     ApiConfig
