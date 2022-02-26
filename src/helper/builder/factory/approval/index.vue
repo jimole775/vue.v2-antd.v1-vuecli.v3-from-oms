@@ -24,7 +24,7 @@ import { mapGetters } from 'vuex'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
-import BuildCollapsePanels from '@/helper/builder/factory/common/build-collapse-panels'
+import BuildCollapsePanels from '@/helper/builder/factory/config-modules/build-collapse-panels'
 
 export default {
   components: {

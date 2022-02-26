@@ -8,7 +8,7 @@
   </div>
 </template>
 <script>
-import ApiButton from '@/helper/builder/factory/common/api-button'
+import ApiButton from '@/helper/builder/factory/config-modules/api-button'
 export default {
   components: {
     ApiButton
