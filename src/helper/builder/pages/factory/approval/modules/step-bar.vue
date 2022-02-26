@@ -52,7 +52,7 @@ export default {
     stepNodes: {
       handler (nodes) {
         if (nodes && nodes.length) {
-          this.setStepNodes(nodes.filter(i => i.value !== '__addtion__'))
+          this.setStepNodes(nodes.filter(i => i.value !== '__addition__'))
         }
       },
       immediate: true
@@ -110,7 +110,7 @@ export default {
     },
     buildTitle (node, index) {
       // console.log(node)
-      const label = node.value === '__addtion__'
+      const label = node.value === '__addition__'
         ? <span>{ node.label }</span>
         : <a onClick={() => node.edit && this.editNode(index, node)}>{ node.label }</a>
       const reduceIcon = !node.fixed && <a style="color:red" onClick={() => this.reduceNode(index)}><a-icon type="minus-circle" /></a>
@@ -119,7 +119,7 @@ export default {
       </template>
     },
     buildIcon (node, index) {
-      if (node.value === '__addtion__') {
+      if (node.value === '__addition__') {
         return <template slot="icon">
           <a onClick={this.addNode}><a-icon type="plus-circle" /></a>
         </template>

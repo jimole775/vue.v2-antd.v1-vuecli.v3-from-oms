@@ -1,36 +1,32 @@
 <template>
   <div>
     <a-button @click="handup">完成配置</a-button>
+    <a-button @click="showPreview">预览</a-button>
     <div class="pull-right">
       <a-avatar icon="user" class="mr5" :src="user.image" />
       <span class="black" v-text="user.name" />
       (<span style="margin: 0 0.2rem;font-size: 12px;" v-text="user.employeeNumber" />)
     </div>
+    <Preview :modal="previewModal" />
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import api from '@/api'
+import utils from '@/utils'
+import Preview from './preview.vue'
 export default {
+  components: { Preview },
   name: 'Header',
   data () {
     return {
+      previewModal: {
+        show: false,
+        data: {}
+      },
       buildData: {
-        tabs: [
-          // {
-          //   tabName: '关键事件',
-          //   type: 'list',
-          //   tabId: '0',
-          //   closable: false,
-          //   visible: false,
-          //   show: false,
-          //   permission: {
-          //     roles: [],
-          //     config: null
-          //   }
-          // }
-        ],
+        tabs: [],
         // 把所有对应的接口都写到 apimap 统一管理
         // 可多不可少
         apimap: {
@@ -57,91 +53,12 @@ export default {
           // }
         },
         // “数据列表”配置项，参数参考 [STable](./STable.md) 文档
-        listConfig: {
-          // 0: {
-          //   columns: [],
-          //   searchor: []
-          // }
-        },
+        listConfig: {},
         // “申请页面” 配置项
-        applyConfig: {
-          // 0: {
-          // panels: [{
-          //   component: 'FormItemRender',
-          //   title: '基本信息',
-          //   mode: 'edit',
-          //   show: true,
-          //   formItems: [
-          //     {
-          //       label: '交付形式',
-          //       key: 'deliveryTypeCode',
-          //       component: 'AInput'
-          //     }
-          //   ]
-          // }]
-          // }
-        },
+        applyConfig: {},
         // “审批详情” 配置项
-        approvalConfig: {
-          // 0: {
-          // 节点名“start”
-          // start: {
-          //   panels: {
-          //     // 没权限审批的，只能看“只读”内容
-          //     dispermission: [{
-          //       component: 'FormItemRender',
-          //       title: '基本信息',
-          //       mode: 'readonly',
-          //       show: true,
-          //       formItems: [
-          //         {
-          //           label: '交付形式',
-          //           key: 'deliveryTypeCode'
-          //         }
-          //       ]
-          //     }],
-          //     // 有权限进行审批的
-          //     permission: [{
-          //         component: 'FormItemRender',
-          //         title: '基本信息',
-          //         mode: 'edit',
-          //         show: true,
-          //         formItems: [
-          //           {
-          //             label: '交付形式',
-          //             key: 'deliveryTypeCode',
-          //             component: 'AInput'
-          //           }
-          //         ]
-          //       },
-          //       {
-          //         component: 'ApprovalOperation',
-          //         title: '审批操作',
-          //         mode: 'edit',
-          //         show: true,
-          //         operationItem: {
-          //           // 提交的选项
-          //           radios: [
-          //             { label: '通过', value: '1', key: 'approvalResult', title: '', component: 'ARadio', event (val, options, vm) {} },
-          //             { label: '驳回', value: '2', key: 'approvalResult', title: '', component: 'ARadio', event (val, options, vm) {} },
-          //             { label: '不通过', value: '3', key: 'approvalResult', title: '', component: 'ARadio', event (val, options, vm) {} }
-          //           ],
-          //           // 必填项
-          //           inputs: [
-          //             {
-          //               label: '审批意见',
-          //               key: 'approvalContent',
-          //               component: 'ATextarea',
-          //               permissions: ['1', '2', '3'],
-          //               required: true
-          //             }
-          //           ]
-          //         }
-          //       }]
-          //     }
-          //   }
-          // }
-        }
+        approvalConfig: {},
+        routerConfig: {}
       }
     }
   },
@@ -171,7 +88,6 @@ export default {
       if (!this.buildData['listConfig'][tabIndex]) {
         this.buildData['listConfig'][tabIndex] = Object.create(null)
       }
-      console.log('list:', value)
       this.$set(this.buildData['listConfig'], tabIndex, value)
     })
 
@@ -182,8 +98,16 @@ export default {
     Vue.bus.$on('__approval__', async (tabIndex, value) => {
       this.$set(this.buildData['approvalConfig'], tabIndex, value)
     })
+
+    Vue.bus.$on('__router__', async (value) => {
+      this.$set(this.buildData['routerConfig'], value)
+    })
   },
   methods: {
+    showPreview () {
+      this.previewModal.show = true
+      this.previewModal.data = utils.clone(this.buildData)
+    },
     validBuildedData () {
       // 根据api来判断是否需要提交相关的tab数据
       // 比如：发起API没有填写，那么即使有formItems数据，也不需要提交
@@ -192,7 +116,8 @@ export default {
         apimap,
         listConfig,
         applyConfig,
-        approvalConfig
+        approvalConfig,
+        routerConfig
       } = this.buildData
       const err = []
       tabs.forEach((tab, index) => {
@@ -200,6 +125,9 @@ export default {
         const list = listConfig[index]
         const apply = applyConfig[index]
         const approval = approvalConfig[index]
+        if (!routerConfig || !routerConfig.name || !routerConfig.path) {
+          err.push('请先在左侧菜单栏配置【路由】地址！')
+        }
         if (!api || !api.list || !(api.list && api.list.url && api.list.method)) {
           err.push('请先配置【列表】的访问地址！')
         }

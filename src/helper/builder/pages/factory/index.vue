@@ -7,7 +7,7 @@
     >
       <a-tab-pane
         v-for="(tab, index) in tabs"
-        :key="tab.tabId"
+        :key="tab.key"
         :closable="false"
       >
         <template slot="tab">
@@ -79,9 +79,13 @@ export default {
       },
       active: '0_0',
       tabs: [
-        { tabName: '列表', tabId: '0_0', rank: 0, type: '0', component: ProjectList, permission: { roles: [], config: '' } },
-        { tabName: '申请', tabId: '0_1', rank: 0, type: '1', component: ProjectApply, permission: { roles: [], config: '' } },
-        { tabName: '审批', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval, permission: { roles: [], config: '' } }
+        // key: 用来切换tab
+        // tabId: 输出给SApproval组件
+        // rank: 用来标记是第几套审批流程，一套审批流程有['列表', '申请', '审批']三个tab
+        // type: 用来标记 list, apply, approval
+        { tabName: '列表', key: '0_0', tabId: '0', rank: 0, type: '0', component: ProjectList, permission: { roles: [], config: '' } },
+        { tabName: '申请', key: '0_1', tabId: '0_1', rank: 0, type: '1', component: ProjectApply, permission: { roles: [], config: '' } },
+        { tabName: '审批', key: '0_2', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval, permission: { roles: [], config: '' } }
       ]
     }
   },
@@ -123,7 +127,11 @@ export default {
         }
       })
       tab.rank = maxRank + 1
-      tab.tabId = tab.rank + '_' + tab.type
+      if (tab.type === '0') {
+        tab.tabId = tab.rank + ''
+      } else {
+        tab.tabId = tab.rank + '_' + tab.type
+      }
       return tab
     },
     reduceTab (index) {
@@ -164,7 +172,7 @@ export default {
     },
     getCurrentTab () {
       let id = this.active
-      return this.tabs.find(i => i.tabId === id)
+      return this.tabs.find(i => i.key === id)
     },
     getTabsData () {
       const lists = []

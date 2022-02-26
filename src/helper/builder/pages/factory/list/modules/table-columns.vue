@@ -36,7 +36,7 @@ export default {
     defaultColumns (row) {
       this.columns = [{
         width: 100,
-        dataIndex: '__addtion__',
+        dataIndex: '__addition__',
         slots: { title: '__addtion__Title' }
       },
       ...Object.keys(row).map((key) => ({
@@ -55,7 +55,7 @@ export default {
     },
     defaultList (row) {
       this.dataList = [{
-        __addtion__: '新增操作',
+        __addition__: '新增操作',
         ...row
       }]
     },
@@ -113,13 +113,13 @@ export default {
           <template slot={item.slots && item.slots.title}>
             <div>
               {
-                item.dataIndex === '__addtion__'
+                item.dataIndex === '__addition__'
                   ? ''
                   : (<a style="color: red;" onClick={() => this.reduceColumnsItem(index)}><a-icon type="minus-circle" /></a>)
               }
               <span style="padding: 0 0.3rem;">{ item.slotsRender ? this.callSlotsRender(item) : item.title }</span>
               {
-                item.dataIndex === '__addtion__'
+                item.dataIndex === '__addition__'
                   ? (<a-button ghost type="primary" onClick={() => this.addColumnsItem()}>+</a-button>)
                   : (<a onClick={() => this.editColumnsItem(item)}><a-icon type="edit" /></a>)
               }

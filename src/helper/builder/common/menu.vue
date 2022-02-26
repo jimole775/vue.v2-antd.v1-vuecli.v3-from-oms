@@ -17,41 +17,40 @@
       class="menu"
     >
       <a-menu-item>
-        <span style="color: #333;">顶层菜单</span>
+        <a style="color: #333;" @click="() => showConfigRouteModal('views')">顶层菜单</a>
       </a-menu-item>
       <template v-for="item in menus">
-        <a-menu-item v-if="item.children" :key="item.id">
-          <!-- <span slot="title"> -->
-          <!-- <i v-if="item.icon" :class="['far', item.icon]" /> -->
-          <!-- <span>{{ item.title }}</span>
-          </span> -->
-          <span style="color: #333;">{{ item.title }}</span>
-          <!-- <router-link :to="item.path">
-          <i v-if="item.icon" :class="['far', item.icon]" />
-          <span>{{ item.title }}</span>
-          </router-link> -->
+        <a-menu-item :key="item">
+          <a style="color: #333;" @click="() => showConfigRouteModal(item)">{{ item }}</a>
         </a-menu-item>
-        <!-- <sub-menu
-          v-else
-          :menu-info="item"
-          :key="item.id"
-        /> -->
       </template>
     </a-menu>
+    <ConfigRoute :modal="configRouteModal" @update="configRouteConfirm" />
   </div>
 </template>
 
 <script>
 import { mapActions } from 'vuex'
-// import SubMenu from '@/components/SubMenu'
+import ConfigRoute from './config-route'
+const modules = require.context('../../../views', true, /(\.vue)$/)
 export default {
   name: 'Menu',
-  // components: {
-  // 'sub-menu': SubMenu
-  // },
+  components: {
+    ConfigRoute
+  },
+  data () {
+    return {
+      configRouteModal: {
+        show: false,
+        data: {}
+      }
+    }
+  },
   computed: {
     menus () {
-      return this.$store.state.global.menus
+      const vues = modules.keys()
+      const menus = vues.map(i => i.split('/')[1])
+      return menus
     }
   },
   created: function () {
@@ -59,7 +58,14 @@ export default {
     this.loadDictList()
   },
   methods: {
-    ...mapActions(['loadMenus', 'loadDictList'])
+    ...mapActions(['loadMenus', 'loadDictList']),
+    showConfigRouteModal (menuItem) {
+      this.configRouteModal.show = true
+      this.configRouteModal.data.parent = menuItem || ''
+    },
+    configRouteConfirm (data) {
+      this.configRouteModal.data = data
+    }
   }
 }
 </script>
@@ -76,5 +82,4 @@ export default {
 .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
   background: linear-gradient(90deg, #F4F9F5 0%, #E5FAE9 100%);
 }
-
 </style>

@@ -55,7 +55,7 @@ export default {
         {
           fixed: true,
           edit: false,
-          value: '__addtion__',
+          value: '__addition__',
           label: '新增节点'
         },
         {
