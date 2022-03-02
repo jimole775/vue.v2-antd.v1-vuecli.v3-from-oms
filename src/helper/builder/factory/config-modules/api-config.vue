@@ -27,20 +27,7 @@
             <a-input placeholder="$services.com.xxx.xxx" v-decorator="['permission', {rules: [{ required: false }]}]" />
           </a-form-item>
         </a-col>
-        <!-- <a-col v-if="getTabType === '2'" :span="24">
-          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <span slot="label">
-              控制节点
-              <a-tooltip title="勾选即显示">
-                <a-icon type="question-circle-o" />
-              </a-tooltip>
-            </span>
-            <a-checkbox-group
-              v-decorator="['stepNodes', {rules: [{ required: false }]}]"
-              :options="getStepNodes"
-            />
-          </a-form-item>
-        </a-col> -->
+        <slot name="custom" />
         <a-col :span="24">
           <a-form-item label="自定义参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-row>

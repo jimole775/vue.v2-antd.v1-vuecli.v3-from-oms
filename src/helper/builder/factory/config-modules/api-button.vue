@@ -7,7 +7,9 @@
     >
       {{ modal.data.label }}
     </a-button>
-    <ApiConfig :modal="modal" @update="update" />
+    <ApiConfig :modal="modal" @update="update">
+      <slot name="custom" slot="custom" />
+    </ApiConfig>
   </span>
 </template>
 <script>

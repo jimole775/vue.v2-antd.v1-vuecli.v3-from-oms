@@ -28,30 +28,33 @@ export default {
         const row = data[0] || {}
         this.defaultList(row)
         this.defaultColumns(row)
+        this.$emit('update', this.columns)
       },
       immediate: true
     }
   },
   methods: {
     defaultColumns (row) {
-      this.columns = [{
-        width: 100,
-        dataIndex: '__addition__',
-        slots: { title: '__addtion__Title' }
-      },
-      ...Object.keys(row).map((key) => ({
-        width: 100,
-        dataIndex: key,
-        slots: { title: key + 'Title' },
-        slotsRender (h, vm) {
-          return key
-        },
-        props: {
+      this.columns = [
+        {
           width: 100,
-          title: key,
-          dataIndex: key
-        }
-      }))]
+          dataIndex: '__addition__',
+          slots: { title: '__addtion__Title' }
+        },
+        ...Object.keys(row).map((key) => ({
+          width: 100,
+          dataIndex: key,
+          slots: { title: key + 'Title' },
+          slotsRender (h, vm) {
+            return key
+          },
+          props: {
+            width: 100,
+            title: key,
+            dataIndex: key
+          }
+        }))
+      ]
     },
     defaultList (row) {
       this.dataList = [{
@@ -109,19 +112,23 @@ export default {
     },
     buildTHead () {
       return this.columns.map((item, index) => {
+        const titleNode = {
+          __addition__: (<a-button ghost type="primary" onClick={() => this.addColumnsItem()}>+</a-button>),
+          __columns__: (<a onClick={() => this.editColumnsItem(item)}><a-icon type="edit" /></a>)
+        }
+        const reduceNode = {
+          __addition__: ' ',
+          __columns__: (<a style="color: red;" onClick={() => this.reduceColumnsItem(index)}><a-icon type="minus-circle" /></a>)
+        }
         return (
           <template slot={item.slots && item.slots.title}>
             <div>
               {
-                item.dataIndex === '__addition__'
-                  ? ''
-                  : (<a style="color: red;" onClick={() => this.reduceColumnsItem(index)}><a-icon type="minus-circle" /></a>)
+                reduceNode[item.dataIndex] ? reduceNode[item.dataIndex] : reduceNode['__columns__']
               }
               <span style="padding: 0 0.3rem;">{ item.slotsRender ? this.callSlotsRender(item) : item.title }</span>
               {
-                item.dataIndex === '__addition__'
-                  ? (<a-button ghost type="primary" onClick={() => this.addColumnsItem()}>+</a-button>)
-                  : (<a onClick={() => this.editColumnsItem(item)}><a-icon type="edit" /></a>)
+                titleNode[item.dataIndex] ? titleNode[item.dataIndex] : titleNode['__columns__']
               }
             </div>
           </template>

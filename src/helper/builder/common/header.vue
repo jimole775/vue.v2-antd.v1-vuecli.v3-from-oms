@@ -15,6 +15,7 @@
 import Vue from 'vue'
 import api from '@/api'
 import utils from '@/utils'
+import http from '@/utils/http'
 import Preview from './preview.vue'
 export default {
   components: { Preview },
@@ -68,45 +69,73 @@ export default {
     }
   },
   created () {
-    Vue.bus.$on('__tabs__', (value) => {
-      this.buildData['tabs'] = value
-    })
-
-    Vue.bus.$on('__apimap__', (tabIndex, value) => {
-      if (!this.buildData['apimap'][tabIndex]) {
-        this.buildData['apimap'][tabIndex] = Object.create(null)
-      }
-
-      const already = this.buildData['apimap'][tabIndex]
-      this.buildData['apimap'][tabIndex] = {
-        ...already,
-        ...value
-      }
-    })
-
-    Vue.bus.$on('__list__', (tabIndex, value) => {
-      if (!this.buildData['listConfig'][tabIndex]) {
-        this.buildData['listConfig'][tabIndex] = Object.create(null)
-      }
-      this.$set(this.buildData['listConfig'], tabIndex, value)
-    })
-
-    Vue.bus.$on('__apply__', (tabIndex, value) => {
-      this.$set(this.buildData['applyConfig'], tabIndex, value)
-    })
-
-    Vue.bus.$on('__approval__', async (tabIndex, value) => {
-      this.$set(this.buildData['approvalConfig'], tabIndex, value)
-    })
-
-    Vue.bus.$on('__router__', async (value) => {
-      this.$set(this.buildData['routerConfig'], value)
-    })
+    this.createListener(0)
   },
   methods: {
+    createListener () {
+      Vue.bus.$on('__tabs__', (value) => {
+        this.buildData['tabs'] = value
+      })
+
+      Vue.bus.$on('__apimap__', (tabIndex, value) => {
+        if (!this.buildData['apimap'][tabIndex]) {
+          this.buildData['apimap'][tabIndex] = Object.create(null)
+        }
+
+        const already = this.buildData['apimap'][tabIndex]
+        this.buildData['apimap'][tabIndex] = {
+          ...already,
+          ...value
+        }
+      })
+
+      Vue.bus.$on('__list__', (tabIndex, value) => {
+        if (!this.buildData['listConfig'][tabIndex]) {
+          this.buildData['listConfig'][tabIndex] = Object.create(null)
+        }
+        this.$set(this.buildData['listConfig'], tabIndex, value)
+      })
+
+      Vue.bus.$on('__apply__', (tabIndex, value) => {
+        this.$set(this.buildData['applyConfig'], tabIndex, value)
+      })
+
+      Vue.bus.$on('__approval__', async (tabIndex, value) => {
+        this.$set(this.buildData['approvalConfig'], tabIndex, value)
+      })
+
+      Vue.bus.$on('__router__', async (value) => {
+        this.$set(this.buildData['routerConfig'], value)
+      })
+    },
     showPreview () {
       this.previewModal.show = true
-      this.previewModal.data = utils.clone(this.buildData)
+      this.previewModal.data = this.diggingApiUrl(utils.clone(this.buildData))
+    },
+    diggingApiUrl (data) {
+      const tabIndexs = Object.keys(data.apimap)
+      tabIndexs.forEach((tabIndex) => {
+        const apimapItem = data.apimap[tabIndex]
+        const apiNames = Object.keys(apimapItem)
+        apiNames.forEach((apiName) => {
+          const apiItem = apimapItem[apiName]
+          data.apimap[tabIndex][apiName] = this.packageApi(apiItem)
+        })
+      })
+      return data
+    },
+    // 尝试获取样例数据
+    packageApi (apiItem) {
+      if (apiItem.url) {
+        const fn = http[apiItem.method.toLocaleLowerCase()] || function () {}
+        const injectParams = apiItem.method === 'GET' ? { params: apiItem.params } : apiItem.params
+        return (params) => {
+          return fn.apply(http, [apiItem.url, {
+            ...params,
+            ...injectParams
+          }])
+        }
+      }
     },
     validBuildedData () {
       // 根据api来判断是否需要提交相关的tab数据

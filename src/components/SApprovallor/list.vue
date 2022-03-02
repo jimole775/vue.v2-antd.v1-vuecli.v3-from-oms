@@ -122,7 +122,7 @@ export default {
           columns={this.columns}
           searchor={this.searchor}
           row-key={stableRowKey}
-          data-dict={'records'}
+          data-dict={apimap.dataDict === undefined ? 'records' : apimap.dataDict}
           data-api={apimap.list}
           export-api={apimap.export}
           pass-api={this.hasCatalogButton(apimap.passable) ? apimap.pass : ''}

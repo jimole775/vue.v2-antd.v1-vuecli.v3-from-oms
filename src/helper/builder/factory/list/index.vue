@@ -10,7 +10,6 @@
       <TableColumns :data-source="listData" @projectApproval="projectApproval" @update="updateColumns" />
     </div>
     <div v-else class="panel-content btn-wrap">
-      <ApiButton v-model="listApi" />
     </div>
   </div>
 </template>
@@ -20,11 +19,9 @@ import utils from '@/utils'
 import http from '@/utils/http'
 import TableSummary from './modules/table-summary'
 import BuildFormItems from '@/helper/builder/factory/config-modules/build-form-items'
-import ApiButton from '@/helper/builder/factory/config-modules/api-button'
 import TableColumns from './modules/table-columns'
 export default {
   components: {
-    ApiButton,
     TableSummary,
     TableColumns,
     BuildFormItems
@@ -37,7 +34,8 @@ export default {
   },
   computed: {
     isShowTable () {
-      return !!this.listApi.url
+      const list = this.summaryObject.list || {}
+      return !!list.url
     }
   },
   data () {
@@ -47,30 +45,16 @@ export default {
       listConfig: {
         columns: [],
         searchor: []
-      },
-      listApi: {
-        key: 'list',
-        label: '列表',
-        url: undefined,
-        method: undefined,
-        params: undefined
       }
     }
   },
-  watch: {
-    listApi: {
-      handler (api) {
-        this.handupApimap({ list: api })
-        this.testFetch(api)
-      },
-      deep: true,
-      immediate: true
-    }
-  },
   methods: {
-    async updateSummary (data) {
+    updateSummary (data) {
       this.summaryObject = data
       this.handupApimap(this.summaryObject)
+      if (this.summaryObject.list) {
+        this.testFetch(this.summaryObject.list)
+      }
     },
     projectApproval () {
       this.$emit('switchTab', '2')
@@ -116,12 +100,12 @@ function transferColumns (originColumns) {
     delete propsObject['anchor']
     delete propsObject['titleTips']
     delete propsObject['originTitle']
-    // permission 为 0, 代表为全部，可以删除这个字段
-    if (propsObject['permission'] === '0') {
-      delete propsObject['permission']
-    } else {
+    // 当前只支持 "0":内部 "1":外部, 其他的情况，就把字段删除
+    if (propsObject['permission'] === '0' || propsObject['permission'] === '1') {
       const permission = propsObject['permission']
       propsObject['permission'] = [permission]
+    } else {
+      delete propsObject['permission']
     }
     // 拼装 slotsRender 函数
     if (propsObject['slotsRender']) {
