@@ -2,13 +2,14 @@
   <div class="moveBox">
     <STabs :ref="'STabsRef'" :tab-proxy="tabProxy" />
     <div v-show="tabProxy.showList">
-      <template v-for="c in listComponents">
+      <template v-for="listPane in listPanes">
         <ProjectList
-          v-show="c.tabId === tabProxy.activeId"
-          :key="c.tabId"
-          :apimap="c.apimap"
-          :list-config="c.listConfig"
-          :ref="'ProjectList' + c.tabId"
+          v-show="listPane.tabId === tabProxy.activeId"
+          :key="listPane.tabId"
+          :apimap="listPane.apimap"
+          :data-dir="listPane.apimap.dataDir || dataDir"
+          :list-config="listPane.listConfig"
+          :ref="'ProjectList' + listPane.tabId"
           :transfer-searchor="transferSearchor"
           :stable-row-key="stableRowKey"
           :apply-anchor-text="applyAnchorText"
@@ -21,13 +22,13 @@
       </template>
     </div>
     <div v-show="tabProxy.showApply">
-      <template v-for="c in applyComponents">
+      <template v-for="applyPane in applyPanes">
         <ProjectApply
-          v-show="c.tabId === tabProxy.activeId"
-          :key="c.tabId"
-          :apimap="c.apimap"
-          :apply-config="c.applyConfig"
-          :ref="'ProjectApply' + c.tabId"
+          v-show="applyPane.tabId === tabProxy.activeId"
+          :key="applyPane.tabId"
+          :apimap="applyPane.apimap"
+          :apply-config="applyPane.applyConfig"
+          :ref="'ProjectApply' + applyPane.tabId"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
@@ -37,13 +38,13 @@
       </template>
     </div>
     <div v-show="tabProxy.showDetail">
-      <template v-for="c in approvalComponents">
+      <template v-for="approvalPane in approvalPanes">
         <ProjectApproval
-          v-show="c.tabId === tabProxy.activeId"
-          :key="c.tabId"
-          :apimap="c.apimap"
-          :approval-config="c.approvalConfig"
-          :ref="'ProjectApproval' + c.tabId"
+          v-show="approvalPane.tabId === tabProxy.activeId"
+          :key="approvalPane.tabId"
+          :apimap="approvalPane.apimap"
+          :approval-config="approvalPane.approvalConfig"
+          :ref="'ProjectApproval' + approvalPane.tabId"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
@@ -77,6 +78,10 @@ export default {
     stableRowKey: {
       type: String,
       default: 'id'
+    },
+    dataDir: {
+      type: String,
+      default: 'records'
     },
     listConfig: {
       type: Object,
@@ -129,11 +134,11 @@ export default {
         activeId: '0',
         lastListId: '0'
       },
-      listComponents: []
+      listPanes: []
     }
   },
   computed: {
-    applyComponents () {
+    applyPanes () {
       return this.tabProxy.tabs.filter((tab) => {
         const live = /\d_1_.+/.test(tab.tabId)
         if (live) {
@@ -143,7 +148,7 @@ export default {
         return live
       })
     },
-    approvalComponents () {
+    approvalPanes () {
       return this.tabProxy.tabs.filter((tab) => {
         const live = /\d_2_.+/.test(tab.tabId)
         if (live) {
@@ -164,10 +169,10 @@ export default {
     }
   },
   mounted () {
-    // this.listComponents 不能用 computed 构造
+    // this.listPanes 不能用 computed 构造
     // 否则在切换tab的时候，会有性能问题
     // 原因是 STable 比较臃肿，不便于频繁刷新
-    this.listComponents = this.tabProxy.tabs.filter((tab) => {
+    this.listPanes = this.tabProxy.tabs.filter((tab) => {
       const live = tab.type === 'list'
       const config = this.listConfig[tab.tabId] || {}
       const apimap = this.apimap[tab.tabId] || {}

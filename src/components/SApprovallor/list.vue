@@ -30,6 +30,10 @@ export default {
       type: Function,
       required: true
     },
+    dataDir: {
+      type: String,
+      default: 'records'
+    },
     bridge: {
       type: Object,
       default: () => ({})
@@ -108,7 +112,7 @@ export default {
   },
   render (h) {
     const summarySlots = getSummarySlots.call(this, h)
-    const { apimap, stableRowKey } = this.$props
+    const { apimap, stableRowKey, dataDir } = this.$props
     return (
       <div>
         <STable
@@ -122,7 +126,7 @@ export default {
           columns={this.columns}
           searchor={this.searchor}
           row-key={stableRowKey}
-          data-dict={apimap.dataDict === undefined ? 'records' : apimap.dataDict}
+          data-dir={dataDir}
           data-api={apimap.list}
           export-api={apimap.export}
           pass-api={this.hasCatalogButton(apimap.passable) ? apimap.pass : ''}

@@ -110,6 +110,7 @@ export default {
     },
     showPreview () {
       this.previewModal.show = true
+      console.log('asdasdasd:', this.diggingApiUrl(utils.clone(this.buildData)))
       this.previewModal.data = this.diggingApiUrl(utils.clone(this.buildData))
     },
     diggingApiUrl (data) {

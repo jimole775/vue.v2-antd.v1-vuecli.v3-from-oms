@@ -128,9 +128,9 @@ export default {
       })
       tab.rank = maxRank + 1
       if (tab.type === '0') {
-        tab.tabId = tab.rank + ''
+        tab.key = tab.tabId = tab.rank + ''
       } else {
-        tab.tabId = tab.rank + '_' + tab.type
+        tab.key = tab.tabId = tab.rank + '_' + tab.type
       }
       return tab
     },

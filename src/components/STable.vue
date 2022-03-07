@@ -23,7 +23,7 @@ export default {
       type: Object,
       default: null
     },
-    dataDict: { // 由于数据接口的不统一，使用这个来确定列表数据在接口中的位置
+    dataDir: { // 由于数据接口的不统一，使用这个来确定列表数据在接口中的位置
       type: String,
       default: null
     },
@@ -770,9 +770,9 @@ export default {
     },
     evalHandle (data) {
       let res = {}
-      if (this.$props.dataDict &&
-        utils.isString(this.$props.dataDict)) {
-        res = eval('data' + '.' + this.$props.dataDict)
+      if (this.$props.dataDir &&
+        utils.isString(this.$props.dataDir)) {
+        res = eval('data' + '.' + this.$props.dataDir)
       } else {
         res = data
       }
@@ -780,12 +780,12 @@ export default {
     },
     detectTotal (data) {
       let pageObj = data
-      if (this.$props.dataDict &&
-        utils.isString(this.$props.dataDict)) {
+      if (this.$props.dataDir &&
+        utils.isString(this.$props.dataDir)) {
         // 一般后端的模型，都把分页数据放在了实例数据的同一层结构
         // 比如：res.data.pageinfo.records
         // 那么：res.data.pageinfo.total
-        const dicts = this.$props.dataDict.split('.')
+        const dicts = this.$props.dataDir.split('.')
         if (dicts && dicts.length > 1) {
           dicts.pop()
           pageObj = eval('data' + '.' + dicts.join())

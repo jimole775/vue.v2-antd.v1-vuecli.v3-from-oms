@@ -15,7 +15,7 @@
                     <span>数据路径 <a-icon type="question-circle-o" /></span>
                   </a-tooltip>
                 </template>
-                <a-input v-decorator="['dataDict', {initialValue: '', rules: [{ required: false }]}]" />
+                <a-input v-decorator="['dataDir', {initialValue: '', rules: [{ required: false }]}]" />
               </a-form-item>
             </a-col>
           </template>

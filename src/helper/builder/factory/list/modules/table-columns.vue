@@ -39,7 +39,7 @@ export default {
         {
           width: 100,
           dataIndex: '__addition__',
-          slots: { title: '__addtion__Title' }
+          slots: { title: '__addition__Title' }
         },
         ...Object.keys(row).map((key) => ({
           width: 100,

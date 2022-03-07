@@ -5,7 +5,7 @@
     :columns="columns" /** 表单列配置 */
     :searchor="searchor" /** 查询头配置 */
     :row-key="'id'" /** 行标记 */
-    :data-dict="'xxx'" /** 由于接口不一定都统一，需要在必要时，加一个dataDict路径，帮助获取接口数据 */
+    :data-dir="'xxx'" /** 由于接口不一定都统一，需要在必要时，加一个dataDict路径，帮助获取接口数据 */
     :data-api="'apiNameOrFunction'" /** 绑定表格数据接口 */
     :expand-api="'apiNameOrFunction'" /** 绑定表格数据接口 */
     :import-api="'apiNameOrFunction'" /** 绑定【导入】接口，并开启对应功能按钮，如果为空值就不显示按钮 */
