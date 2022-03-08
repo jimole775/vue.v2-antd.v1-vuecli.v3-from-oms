@@ -114,7 +114,7 @@ export default {
   },
   data () {
     return {
-      queryObj: {},
+      queryParams: {},
       dataList: [],
       fileList: [],
       isLoading: false,
@@ -329,6 +329,13 @@ export default {
     },
     flattenColumns (columns, columnSlots, columnScopedSlots) {
       columns && columns.forEach(col => {
+        // 支持用 anchor属性 的方式增加详情页的锚点
+        if (col.anchor) {
+          const projectApproval = this.bridge.projectApproval
+          col.customRender = function (text, record) {
+            return <a onClick={() => projectApproval(record)}>{ text }</a>
+          }
+        }
         if (col.slots || col.slotsRender) {
           columnSlots.push(col)
         }
@@ -429,11 +436,11 @@ export default {
       this.searchor.forEach((searchItem) => {
         this.searchorGroups.push(searchItem)
         if (searchItem.beforeRender) {
-          searchItem.beforeRender(this.queryObj, searchItem, this.scope)
+          searchItem.beforeRender(this.queryParams, searchItem, this.scope)
         }
         const defvalue = utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default
         if (searchItem.key) {
-          this.$set(this.queryObj, searchItem.key, defvalue)
+          this.$set(this.queryParams, searchItem.key, defvalue)
           if (defvalue) {
             this.simpleSelectEvent(defvalue, null, searchItem)
           }
@@ -450,15 +457,15 @@ export default {
       this.cacheDefaultView(searchItem, value)
       // 重置操作
       if (utils.isNone(value) || utils.isEmptyArray(value) || utils.isEmptyObject(value)) {
-        this.queryObj[searchItem.key] = null
-        return this.queryObj
+        this.queryParams[searchItem.key] = null
+        return this.queryParams
       }
 
       if (isLabelOption(value)) {
         const userOption = value.length ? JSON.parse(value[0].key) : null
-        this.queryObj[searchItem.key] = userOption ? userOption['key'] : null
+        this.queryParams[searchItem.key] = userOption ? userOption['key'] : null
       } else {
-        this.queryObj[searchItem.key] = value
+        this.queryParams[searchItem.key] = value
       }
       function isLabelOption (value) {
         return (utils.isArray(value) && value.length && value[0].label && value[0].key)
@@ -474,7 +481,7 @@ export default {
       // 重置操作
       if (utils.isNone(value) || utils.isEmptyArray(value) || utils.isEmptyObject(value)) {
         return searchItem.keys.forEach((key, index) => {
-          this.queryObj[key] = null
+          this.queryParams[key] = null
         })
       }
 
@@ -484,7 +491,7 @@ export default {
         const userOption = value.length ? JSON.parse(value[0].key) : null
         searchItem.keys.forEach((key, index) => {
           const optionKey = searchItem.optionKeys[index]
-          this.queryObj[key] = userOption ? userOption[optionKey] : null
+          this.queryParams[key] = userOption ? userOption[optionKey] : null
         })
       }
 
@@ -492,21 +499,21 @@ export default {
       if (searchItem.componentName === 'DepatmentSelect') {
         searchItem.keys.forEach((key, index) => {
           const optionKey = searchItem.optionKeys[index]
-          this.queryObj[key] = optionItem ? optionItem[optionKey] : null
+          this.queryParams[key] = optionItem ? optionItem[optionKey] : null
         })
       }
 
       // value = 'Array', optionItem = 'Array' => Select multi, RangPicker
       if (utils.isArray(value) && utils.isArray(optionItem)) {
         searchItem.keys.forEach((key, index) => {
-          this.queryObj[key] = optionItem[index] || null
+          this.queryParams[key] = optionItem[index] || null
         })
       }
     },
     async expandEvent (opr, record) {
       if (opr && this.expandApi) {
         this.expandedRowKeys.push(record[this.rowKey])
-        const res = await this.getApiFunction(this.expandApi)(this.formatQueryObj({ ...record }))
+        const res = await this.getApiFunction(this.expandApi)(this.formatQueryParams({ ...record }))
         if (res.code === 200) {
           if (res.data) {
             const children = this.evalHandle(res.data)
@@ -578,11 +585,11 @@ export default {
       this.searchor.forEach((searchItem) => {
         if (!searchItem.required) {
           if (searchItem.key) {
-            this.resetByFieldType(this.queryObj, searchItem.key)
+            this.resetByFieldType(this.queryParams, searchItem.key)
           }
           if (searchItem.keys) {
             searchItem.keys.forEach((key) => {
-              this.resetByFieldType(this.queryObj, key)
+              this.resetByFieldType(this.queryParams, key)
             })
           }
           // 置空 default，避免重新渲染的时候会进行默认赋值
@@ -667,8 +674,8 @@ export default {
     reload () {
       this.fetchData()
     },
-    formatQueryObj (injectparams) {
-      const queryParams = JSON.parse(JSON.stringify({ ...this.queryObj }))
+    formatQueryParams (injectparams) {
+      const queryParams = JSON.parse(JSON.stringify({ ...this.queryParams }))
       // 处理 UserSelect 组件的取值
       // UserSelect 有两种用法
       // 1. searchItem.key 只获取一个值，选中项是个数据，需要format处理，默认只获取code
@@ -746,8 +753,7 @@ export default {
         })
         // ids = ids.substring(0, ids.length - 1)
       }
-      return this.formatQueryObj({ selectedRows: this.selectedRows, ids })
-      // this.getApiFunction(this.exportApi)(this.formatQueryObj({ selectedRows: this.selectedRows, ids }))
+      return this.formatQueryParams({ selectedRows: this.selectedRows, ids })
     },
     // 导入模板下载
     downLoadTemplate () {
@@ -800,7 +806,7 @@ export default {
       this.isLoading = true
       this.selectedRows = []
       this.selectedRowKeys = []
-      const res = await this.getApiFunction(this.dataApi)(this.formatQueryObj(injectparams))
+      const res = await this.getApiFunction(this.dataApi)(this.formatQueryParams(injectparams))
       this.isLoading = false
       if (res.code === 200) {
         if (res.data) {
@@ -1056,23 +1062,29 @@ function buildSearchorGroup (h) {
     }
   }
   function createFormItem (searchItem) {
-    return <searchItem.component
-      props={searchItem.props}
-      attrs={searchItem.attrs}
-      dom-attrs={searchItem.domAttrs}
-      allow-clear={!searchItem.required}
-      value={utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default}
-      ref={this.spillComponentRef(searchItem)}
-      depend={this.queryObj[searchItem.dependKey]}
-      onKeyup={(e) => /13/.test(e.keyCode) && this.fetchData()}
-      onChange={
-        (value, optionItem) => {
-          searchItem.key
-            ? this.simpleSelectEvent(value, optionItem, searchItem)
-            : this.multiSelectEvent(value, optionItem, searchItem)
+    if (searchItem.component) {
+      return <searchItem.component
+        props={searchItem.props}
+        attrs={searchItem.attrs}
+        dom-attrs={searchItem.domAttrs}
+        allow-clear={!searchItem.required}
+        value={utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default}
+        ref={this.spillComponentRef(searchItem)}
+        depend={this.queryParams[searchItem.dependKey]}
+        onKeyup={(e) => /13/.test(e.keyCode) && this.fetchData()}
+        onChange={
+          (value, optionItem) => {
+            searchItem.key
+              ? this.simpleSelectEvent(value, optionItem, searchItem)
+              : this.multiSelectEvent(value, optionItem, searchItem)
+          }
         }
-      }
-    />
+      />
+    } else if (searchItem.customRender) {
+      return searchItem.customRender(this.$createElement, this.queryParams, this.scope)
+    } else {
+      return ''
+    }
   }
 
   function buildSearchButton () {

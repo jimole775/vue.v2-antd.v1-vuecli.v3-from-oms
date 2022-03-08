@@ -7,7 +7,7 @@
           v-show="listPane.tabId === tabProxy.activeId"
           :key="listPane.tabId"
           :apimap="listPane.apimap"
-          :data-dir="listPane.apimap.dataDir || dataDir"
+          :list-data-dir="listPane.apimap.listDataDir || listDataDir"
           :list-config="listPane.listConfig"
           :ref="'ProjectList' + listPane.tabId"
           :transfer-searchor="transferSearchor"
@@ -79,9 +79,9 @@ export default {
       type: String,
       default: 'id'
     },
-    dataDir: {
+    listDataDir: {
       type: String,
-      default: 'records'
+      default: null
     },
     listConfig: {
       type: Object,

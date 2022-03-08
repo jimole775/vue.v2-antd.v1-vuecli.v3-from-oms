@@ -19,7 +19,7 @@
 </template>
 <script>
 import api from '@/api'
-function countNodeWidth (str) {
+function countNodeWidth (str = '') {
   // 40: icon宽度
   // 14：字体大小
   // 16：字体 margin
@@ -31,8 +31,10 @@ export default {
   name: 'ApprovalStepBar',
   props: {
     id: {
-      type: [String, Number],
-      required: true
+      type: [String, Number]
+    },
+    nodes: {
+      type: Array
     }
   },
   data () {
@@ -41,8 +43,21 @@ export default {
     }
   },
   watch: {
-    id (val) {
-      this.fetchData(val)
+    id: {
+      handler (id) {
+        if (id) {
+          this.fetchData(id)
+        }
+      },
+      immediate: true
+    },
+    nodes: {
+      handler (nodes) {
+        if (nodes && nodes.length) {
+          this.stepOption = nodes
+        }
+      },
+      immediate: true
     },
     current: {
       handler (val) {
@@ -60,8 +75,7 @@ export default {
           this.$emit('update', currentNode)
         }
       },
-      immediate: true,
-      deep: true
+      immediate: true
     }
   },
   computed: {

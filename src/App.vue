@@ -9,9 +9,6 @@ import watermark from 'watermark-dom'
 import { getOMSJump, removeOMSJump } from '@/utils/auth'
 import jumper from '@/utils/jumper'
 import utils from '@/utils'
-// /^[a-z]([a-zA-Z-_]*)$/
-const context = require.context('./views', true, /(\.vue)$/)
-console.log('app:', context.keys())
 export default {
   data () {
     return {

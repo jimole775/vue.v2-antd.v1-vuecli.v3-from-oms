@@ -1362,6 +1362,51 @@ const utils = {
       m = 12
     }
     return moment(`${y}-${m}-${d}`)
+  },
+  /**
+   * 函数转字符串
+   * @param {Function} func
+   * @returns String
+   * @template func2string(function(){}) => 'function(){}'
+   */
+  func2string (func) {
+    if (!func) return ''
+    return func.toString()
+  },
+  /**
+   * 字符串转函数，并且结构头，身，尾，赋值到函数的属性上
+   * @param {String} string
+   * @returns Function
+   * @template string2func('function(){}') => function anonymous (){}
+   * @template string2func('() => {}') => () => {}
+   * @template string2func('') => () => {}
+   */
+  string2func (string) {
+    if (!string) return () => {}
+    let head = ''
+    let body = ''
+    let tail = ''
+    let args = []
+    let func = null
+    let regArgs = /\((.+)\)/
+    let regTail = /\n?\s*?\}$/
+    let regHead = /=>/.test(string)
+      ? /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/ // 箭头函数
+      : /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/ // 普通函数
+    head = string.match(regHead)
+    tail = string.match(regTail)
+    args = string.match(regArgs)
+    body = string.replace(regHead, '').replace(regTail, '')
+    // function () {} 这种类型的转换，需要增加一个函数名
+    if (/function \(/.test(string)) {
+      string = string.replace(/function \(/, 'function anonymous \(')
+    }
+    func = eval(string)
+    func.head = head ? head[0] : ''
+    func.tail = tail ? tail[0] : ''
+    func.body = body || ''
+    func.args = args ? args[0].replace(regArgs, '$1').split(',') : []
+    return func
   }
 }
 

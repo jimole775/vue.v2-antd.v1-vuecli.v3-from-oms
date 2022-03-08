@@ -392,12 +392,6 @@ function string2array (src) {
 function function2string (fnObj) {
   let res
   if (fnObj.body && fnObj.body.length > 0) {
-    // try {
-    //   const args = fnObj.head.replace(/.*?\((.*?)\).*?{/ig, '$1').split(',')
-    //   res = new Function(args, fnObj.body)
-    // } catch (error) {
-    //   res = new Function(error.message)
-    // }
     res = `${fnObj.head}\n${fnObj.body}\n${fnObj.tail}`
   }
   return res
@@ -405,31 +399,31 @@ function function2string (fnObj) {
 
 // 从函数中获取函数实体
 function function2object (def) {
-  let res = {
-    head: '',
-    body: '',
-    tail: '}'
-  }
   if (utils.isFunction(def)) {
     def = def.toString()
   }
   if (utils.isNone(def)) {
     def = 'function () {}'
   }
-  let regTail = /\}$/
-  // 普通函数
-  let regHead = /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/
-  res.head = def.match(regHead)
-  if (!res.head) {
-    // 箭头函数
-    regHead = /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/
-    res.head = def.match(regHead)
+  // let regTail = /\}$/
+  // // 普通函数
+  // let regHead = /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/
+  // res.head = def.match(regHead)
+  // if (!res.head) {
+  //   // 箭头函数
+  //   regHead = /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/
+  //   res.head = def.match(regHead)
+  // }
+  // if (res.head) {
+  //   res.head = res.head[0]
+  // }
+  // res.body = def.replace(regHead, '').replace(regTail, '')
+  const func = utils.string2func(def)
+  return {
+    head: func.head,
+    body: func.body,
+    tail: func.tail
   }
-  if (res.head) {
-    res.head = res.head[0]
-  }
-  res.body = def.replace(regHead, '').replace(regTail, '')
-  return res
 }
 
 function array2object (src = []) {

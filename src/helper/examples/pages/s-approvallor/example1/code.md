@@ -42,6 +42,7 @@ export default {
           closable: 'basicdata.key-events-close', // 是否有权限批量关闭
           revokable: 'basicdata.key-events-revoke', // 是否有权限批量撤回
           rejectable: '', // 是否有权限批量驳回
+          listDataDir: '$listDataDir',
           logType: 'key_events_flow' // 日志的type
         }
       },

@@ -1,7 +1,7 @@
 <script>
+import utils from '@/utils'
 import { mapState } from 'vuex'
 import STable from '@/components/STable'
-import utils from '@/utils'
 import baseMixins from '@/mixins/baseMixins.js'
 
 export default {
@@ -30,9 +30,9 @@ export default {
       type: Function,
       required: true
     },
-    dataDir: {
+    listDataDir: {
       type: String,
-      default: 'records'
+      default: null
     },
     bridge: {
       type: Object,
@@ -112,7 +112,7 @@ export default {
   },
   render (h) {
     const summarySlots = getSummarySlots.call(this, h)
-    const { apimap, stableRowKey, dataDir } = this.$props
+    const { apimap, stableRowKey, listDataDir } = this.$props
     return (
       <div>
         <STable
@@ -126,7 +126,7 @@ export default {
           columns={this.columns}
           searchor={this.searchor}
           row-key={stableRowKey}
-          data-dir={dataDir}
+          data-dir={listDataDir}
           data-api={apimap.list}
           export-api={apimap.export}
           pass-api={this.hasCatalogButton(apimap.passable) ? apimap.pass : ''}

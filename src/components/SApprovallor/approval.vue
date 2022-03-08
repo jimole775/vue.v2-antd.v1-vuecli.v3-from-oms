@@ -2,6 +2,7 @@
   <div>
     <ApprovalStepBar
       :id="recordData.flowInstanceId"
+      :nodes="$utils.isFunction(apimap.stepNodes) ? apimap.stepNodes(scope) : apimap.stepNodes"
       @update="updateCurrentNode"
     />
     <a-collapse
@@ -19,9 +20,9 @@
             :ref="`${panel.panelName}_${index}`"
             :is="panel.component"
             :mode="panel.mode"
+            :panel="panel"
             :panels="panels"
             :form-items="panel.formItems"
-            :panel="panel"
             :operation-item="panel.operationItem"
             :data-source="basicData"
             :tab-proxy="tabProxy"
