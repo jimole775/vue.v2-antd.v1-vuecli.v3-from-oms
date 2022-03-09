@@ -166,7 +166,7 @@ export default {
           }
           model.props.scopedSlotsRender = `return (
             <a onClick={() => vm.bridge.projectApproval(record)}>
-              { record[${params.dataIndex}] }
+              { record['${params.dataIndex}'] }
             </a>
           )`
         }

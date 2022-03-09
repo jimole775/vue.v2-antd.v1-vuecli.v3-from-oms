@@ -985,7 +985,7 @@ function buildMainTable (h) {
   /* 表头渲染 */
   this.columnSlots.map((columnSlot, index) => {
     const slotName = (columnSlot.slots && columnSlot.slots.title) || ''
-    if (columnSlot.slotsRender) {
+    if (columnSlot.slotsRender && utils.isFunction(columnSlot.slotsRender)) {
       slots.push(<span slot={slotName}>{columnSlot.slotsRender(h, scope)}</span>)
     } else {
       slots.push(<span slot={slotName}>...</span>)
@@ -995,7 +995,7 @@ function buildMainTable (h) {
   this.columnScopedSlots.map(columnSlot => {
     const slotName = (columnSlot.scopedSlots && columnSlot.scopedSlots.customRender) || columnSlot.dataIndex || columnSlot.key
     scopedSlots[slotName] = function (text, record, index) {
-      if (columnSlot.scopedSlotsRender) {
+      if (columnSlot.scopedSlotsRender && utils.isFunction(columnSlot.scopedSlotsRender)) {
         return columnSlot.scopedSlotsRender(h, record, scope)
       } else {
         return text

@@ -16,6 +16,7 @@ import Vue from 'vue'
 import api from '@/api'
 import utils from '@/utils'
 import http from '@/utils/http'
+import jsx2vue from '@/utils/jsx2vue'
 import Preview from './preview.vue'
 export default {
   components: { Preview },
@@ -112,7 +113,7 @@ export default {
       this.previewModal.show = true
       const data = utils.clone(this.buildData)
       data.apimap = this.diggingApiUrl(data.apimap)
-      // console.log(this.transferFunction(data))
+      console.log(this.transferFunction(data))
       this.previewModal.data = data
     },
     diggingApiUrl (apimap) {
@@ -173,8 +174,8 @@ export default {
       allFormItems.forEach((formItem) => {
         const keys = Object.keys(formItem)
         keys.forEach((key) => {
-          if (isFuncStr(formItem[key])) {
-            formItem[key] = utils.string2func(formItem[key])
+          if (isFuncStr(formItem[key]) && isNodeRender(formItem[key])) {
+            console.log(jsx2vue(formItem[key]))
           }
         })
       })
@@ -269,6 +270,15 @@ function packageApi (apiItem) {
         ...injectParams
       }])
     }
+  }
+}
+
+function isNodeRender (string) {
+  if (!string) return false
+  if (/</.test(string) || /\/>/.test(string)) {
+    return true
+  } else {
+    return false
   }
 }
 

@@ -1364,6 +1364,33 @@ const utils = {
     return moment(`${y}-${m}-${d}`)
   },
   /**
+   * 获取函数的参数名
+   * @param {Function | String} src
+   * @returns Array
+   * @template getFuncParamNames('(a, b) =>') => ['a', 'b']
+   * @template getFuncParamNames('function (a, b)') => ['a', 'b']
+   * @template getFuncParamNames((a, b) => {}) => ['a', 'b']
+   */
+  getFuncParamNames (src) {
+    if (this.isFunction(src) || this.isString(src)) {
+      src = src.toString()
+    } else {
+      return []
+    }
+    let res = []
+    const funcReg = /function ?\((.+)\)/
+    const arrowReg = /\((.+)\) ?=>/
+    const funcMatched = src.match(funcReg)
+    const arrowMatched = src.match(arrowReg)
+    if (funcMatched && funcMatched[1]) {
+      res = funcMatched[1].split(',')
+    }
+    if (arrowMatched && arrowMatched[1]) {
+      res = arrowMatched[1].split(',')
+    }
+    return res
+  },
+  /**
    * 函数转字符串
    * @param {Function} func
    * @returns String
@@ -1386,16 +1413,13 @@ const utils = {
     let head = ''
     let body = ''
     let tail = ''
-    let args = []
     let func = null
-    let regArgs = /\((.+)\)/
     let regTail = /\n?\s*?\}$/
     let regHead = /=>/.test(string)
       ? /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/ // 箭头函数
       : /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/ // 普通函数
     head = string.match(regHead)
     tail = string.match(regTail)
-    args = string.match(regArgs)
     body = string.replace(regHead, '').replace(regTail, '')
     // function () {} 这种类型的转换，需要增加一个函数名
     if (/function \(/.test(string)) {
@@ -1405,7 +1429,7 @@ const utils = {
     func.head = head ? head[0] : ''
     func.tail = tail ? tail[0] : ''
     func.body = body || ''
-    func.args = args ? args[0].replace(regArgs, '$1').split(',') : []
+    func.args = this.getFuncParamNames(string)
     return func
   }
 }

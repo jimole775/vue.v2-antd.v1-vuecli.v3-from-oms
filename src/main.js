@@ -6,7 +6,6 @@ import './config/load.modules'
 import './config/load.styles'
 import './config/conf.dev'
 import './config/conf.vue'
-
 new Vue({
   router,
   store,
