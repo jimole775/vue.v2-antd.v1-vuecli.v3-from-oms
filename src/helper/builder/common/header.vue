@@ -175,7 +175,8 @@ export default {
         const keys = Object.keys(formItem)
         keys.forEach((key) => {
           if (isFuncStr(formItem[key]) && isNodeRender(formItem[key])) {
-            console.log(jsx2vue(formItem[key]))
+            formItem[key] = utils.string2func(jsx2vue(formItem[key]))
+            console.log(formItem[key].toString())
           }
         })
       })

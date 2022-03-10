@@ -22,21 +22,26 @@ const transfer = (input) => {
   //     }
   //   })
   // ]
-  funcAsts.forEach((ast)=> {
+  funcAsts.forEach((ast) => {
     if (utils.isObject(ast)) {
       const childrenAst = {
         code: hasChildren(ast) ? '[\n' : '',
         level: 1
       }
+
       transferChildren(h, ast.children, childrenAst)
+
+      childrenAst.code += hasChildren(ast) ? `\n${makeSpace(childrenAst.level)}]` : ''
+
       vueString +=
         `${h}(` +
-        `  ${ast.tagType},` +
-        `  ${ast.props},` +
-        `  ${childrenAst.code}` +
-        `)`
+        `'${ast.type}',\n` +
+        `${utils.object2file(ast.props, makeSpace(1))}${childrenAst.code ? ',' : ''}\n` +
+        `${childrenAst.code}\n` +
+        `)\n`
     } else {
-      vueString += ast
+      debugger
+      vueString += transferJSXCall(ast)
     }
   })
 
@@ -45,28 +50,43 @@ const transfer = (input) => {
 
 function transferChildren (h, children, childrenAst) {
   children.forEach((codeFragment) => {
-    const jsxAsts = parser(tokenizer(codeFragment))
-    jsxAsts.forEach((ast) => {
-      if (utils.isObject(ast)) {
-        const space = makeSpace(childrenAst.level)
-        childrenAst.code +=
-          `${makeSpace(childrenAst.level)}${h}(\n` +
-          `${makeSpace(childrenAst.level + 1)}${ast.tagType},\n` +
-          `${makeSpace(childrenAst.level + 1)}${ast.props},\n` +
-          `${makeSpace(childrenAst.level + 1)}${transferChildren(h, ast.children, childrenAst)}\n` +
-          `${makeSpace(childrenAst.level)})\n`
-        if (hasChildren(ast)) {
-          childrenAst.level += 1
-          return transferChildren(h, children, childrenAst)
+    const jsxAst = parser(tokenizer(codeFragment))
+    if (utils.isObject(jsxAst)) {
+      anlizeAstObject(h, jsxAst, childrenAst)
+    }
+    if (utils.isString(jsxAst)) {
+      childrenAst.code += transferJSXCall(`${makeSpace(childrenAst.level)}${jsxAst}`)
+    }
+    if (utils.isArray(jsxAst)) {
+      jsxAst.forEach((ast) => {
+        if (utils.isObject(ast)) {
+          anlizeAstObject(h, ast, childrenAst)
         }
-      } else {
-        if ('{}') {
-
+        if (utils.isString(ast)) {
+          childrenAst.code += transferJSXCall(`${makeSpace(childrenAst.level)}${ast}`)
         }
-      }
-    })
+      })
+    }
   })
-  childrenAst.level = childrenAst.level - 1
+}
+
+function anlizeAstObject (h, ast, childrenAst) {
+  const space0 = makeSpace(childrenAst.level - 1)
+  const space1 = makeSpace(childrenAst.level)
+  const space2 = makeSpace(childrenAst.level + 1)
+  childrenAst.code +=
+    `${space1}${h}(\n` +
+    `${space2}${ast.type},\n` +
+    `${space2}${utils.object2file(ast.props)},\n`
+
+  if (hasChildren(ast)) {
+    childrenAst.level += 1
+    childrenAst.code += `${space2}[\n`
+    transferChildren(h, ast.children, childrenAst)
+    childrenAst.level -= 1
+    childrenAst.code += `${space1}]\n`
+  }
+  childrenAst.code += `${space1})\n`
 }
 
 // 获取函数的第一个参数名，默认渲染函数的第一个参数是 vm.$createElement
@@ -98,6 +118,13 @@ function makeSpace (level) {
     res += '  '
   }
   return res
+}
+
+// { xxx.xxx } 这种调用语法，转成js语法
+function transferJSXCall (string) {
+  const reg = /\{\s?\n?(.+)\s?\n?\}/i
+  const matched = string.match(reg)
+  return matched ? matched[1] : string
 }
 
 export default transfer

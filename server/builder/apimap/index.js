@@ -33,7 +33,6 @@ function buildApimapFile (tabFolder, curApimap) {
   )
 }
 
-
 function buildApiFuncFile (tabApimap) {
   const tabIndexs = Object.keys(tabApimap)
   const inportCode1 = `import http from '@/utils/http'\n`

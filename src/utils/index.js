@@ -1425,12 +1425,34 @@ const utils = {
     if (/function \(/.test(string)) {
       string = string.replace(/function \(/, 'function anonymous \(')
     }
-    func = eval(string)
+    func = eval(`(${string})`)
     func.head = head ? head[0] : ''
     func.tail = tail ? tail[0] : ''
     func.body = body || ''
     func.args = this.getFuncParamNames(string)
     return func
+  },
+  object2file (json, leftMargin = '', space = 2) {
+    const queryNoQuotation = (string) => {
+      return string.replace(/((["']_\|)|(\|_["']))/g, '')
+    }
+    const querySingleQuotation = (string) => {
+      return string.replace(/((["']-\|)|(\|-["']))/g, '\'')
+    }
+    let string = JSON.stringify(json, null, space)
+    string = string.replace(/ {2}"(.*?)": /g, '  $1: ') // 去掉“键”的双引号
+    string = string.replace(/: "(.*?)"(,?)/g, ': \'$1\'$2') // 把值的双引号改成单引号
+    string = string.replace(/: ['"](function)/g, ': $1') // 去掉function的前面的双引号
+    string = string.replace(/}['"](,?)/g, '}$1') // 去掉function的后面的双引号
+    string = string.replace(/: ['"](\(.*\)\s?\=>\s?\(?\{?\w[\w\d\._\(\)]*?\}?\)?)['"]/g, ': $1') // 去掉 () => dasd 的双引号
+    string = string.replace(/\\n/g, '\n') // 把 \\n 改成 \n
+    string = queryNoQuotation(string)
+    string = querySingleQuotation(string)
+    // 向每行的左侧添加空格
+    if (leftMargin) {
+      string = string.split('\n').map(i => leftMargin + i).join('\n')
+    }
+    return string
   }
 }
 
