@@ -24,7 +24,7 @@ import { mapGetters } from 'vuex'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
-import BuildCollapsePanels from '@/helper/builder/factory/config-modules/build-collapse-panels'
+import BuildCollapsePanels from '@/helper/builder/common/config-modules/build-collapse-panels.vue'
 
 export default {
   components: {
@@ -84,6 +84,15 @@ export default {
     },
     panelsUpdate (data) {
       this.collapsePanels = data
+      // 从基础信息配置的信息，获取detail的接口
+      const baseItem = this.collapsePanels[0]
+      this.handupApimap({
+        detail: {
+          url: baseItem.url,
+          method: baseItem.method,
+          params: {}
+        }
+      })
       this.transferPanels()
     },
     nodesUpdate (current, stepNodes) {

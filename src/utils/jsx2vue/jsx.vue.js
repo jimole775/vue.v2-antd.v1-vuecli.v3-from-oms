@@ -6,10 +6,6 @@ const transfer = (input) => {
   // 需要确保 input 是一个函数字符串
   const h = getCreateElementChar(funcAsts[0])
   let vueString = ''
-  // {
-  //   // (详情见下一节)
-  // },
-
   // // {String | Array}
   // // 子级虚拟节点 (VNodes)，由 `createElement()` 构建而成，
   // // 也可以使用字符串来生成“文本虚拟节点”。可选。
@@ -36,11 +32,10 @@ const transfer = (input) => {
       vueString +=
         `${h}(` +
         `'${ast.type}',\n` +
-        `${utils.object2file(ast.props, makeSpace(1))}${childrenAst.code ? ',' : ''}\n` +
+        `${utils.object2file(parseProps(ast.props), makeSpace(1))}${childrenAst.code ? ',' : ''}\n` +
         `${childrenAst.code}\n` +
         `)\n`
     } else {
-      debugger
       vueString += transferJSXCall(ast)
     }
   })
@@ -71,13 +66,13 @@ function transferChildren (h, children, childrenAst) {
 }
 
 function anlizeAstObject (h, ast, childrenAst) {
-  const space0 = makeSpace(childrenAst.level - 1)
+  // const space0 = makeSpace(childrenAst.level - 1)
   const space1 = makeSpace(childrenAst.level)
   const space2 = makeSpace(childrenAst.level + 1)
   childrenAst.code +=
     `${space1}${h}(\n` +
     `${space2}${ast.type},\n` +
-    `${space2}${utils.object2file(ast.props)},\n`
+    `${space2}${utils.object2file(parseProps(ast.props))},\n`
 
   if (hasChildren(ast)) {
     childrenAst.level += 1
@@ -125,6 +120,24 @@ function transferJSXCall (string) {
   const reg = /\{\s?\n?(.+)\s?\n?\}/i
   const matched = string.match(reg)
   return matched ? matched[1] : string
+}
+
+// 把jsx的props转成createElement的props
+function parseProps (props) {
+  const onEvents = {}
+  Object.keys(props).forEach(key => {
+    const matched = key.match(/^on([A-Z][a-zA-Z]+)/)
+    if (matched && matched[1]) {
+      const event = matched[1].toLocaleLowerCase()
+      onEvents[event] = props[key]
+      delete props[key]
+    }
+  })
+  return {
+    ...props,
+    props: { ...props },
+    on: onEvents
+  }
 }
 
 export default transfer

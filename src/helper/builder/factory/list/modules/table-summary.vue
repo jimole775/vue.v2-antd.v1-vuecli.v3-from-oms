@@ -6,26 +6,13 @@
           :key="key"
           :value="summaryObject[key]"
           @update="summaryItemConfirm"
-        >
-          <template v-if="key === 'list'" slot="custom">
-            <a-col :span="24">
-              <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
-                <template slot="label">
-                  <a-tooltip title="接口返回的数据的路径，比如：data.records.list，就可以设置为'records.list'">
-                    <span>数据路径 <a-icon type="question-circle-o" /></span>
-                  </a-tooltip>
-                </template>
-                <a-input v-decorator="['dataDir', {initialValue: '', rules: [{ required: false }]}]" />
-              </a-form-item>
-            </a-col>
-          </template>
-        </ApiButton>
+        />
       </template>
     </div>
   </div>
 </template>
 <script>
-import ApiButton from '@/helper/builder/factory/config-modules/api-button'
+import ApiButton from '@/helper/builder/common/config-modules/api-button'
 export default {
   components: {
     ApiButton
@@ -37,13 +24,6 @@ export default {
         wrapperCol: { span: 16 }
       },
       summaryObject: {
-        list: {
-          key: 'list',
-          label: '列表',
-          url: undefined,
-          method: undefined,
-          params: undefined
-        },
         approval: {
           url: undefined,
           method: undefined,

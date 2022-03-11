@@ -7,16 +7,22 @@
     >
       {{ modal.data.label }}
     </a-button>
-    <ApiConfig :modal="modal" @update="update">
-      <slot name="custom" slot="custom" />
-    </ApiConfig>
+    <ConfigApi :modal="modal" @update="update">
+      <slot name="custom" slot="custom">
+        <a-col :span="24">
+          <a-form-item label="后台配置权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input placeholder="$services.com.xxx.xxx" v-decorator="['permission']" />
+          </a-form-item>
+        </a-col>
+      </slot>
+    </ConfigApi>
   </span>
 </template>
 <script>
-import ApiConfig from '@/helper/builder/factory/config-modules/api-config.vue'
+import ConfigApi from '../config-modals/config-api.vue'
 export default {
   components: {
-    ApiConfig
+    ConfigApi
   },
   props: {
     value: {

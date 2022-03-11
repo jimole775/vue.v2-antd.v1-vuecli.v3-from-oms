@@ -3,11 +3,11 @@ export default {
   message: 'success',
   data: {
     currentRole: {
-      createdBy: '12345678',
+      createdBy: '123456789',
       creationDate: 1561691744000,
       description: '测试员',
       id: 28,
-      lastUpdateBy: '12345678',
+      lastUpdateBy: '123456789',
       lastUpdateDate: 1619687230000,
       roleName: '测试员',
       status: '1',
@@ -19,7 +19,7 @@ export default {
     creationDate: null,
     deptCodeList: null,
     email: null,
-    employeeNumber: '12345678',
+    employeeNumber: '123456789',
     employeeNumberList: null,
     id: 15,
     ids: null,

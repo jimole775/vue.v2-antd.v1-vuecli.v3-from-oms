@@ -32,7 +32,7 @@
 <script>
 import { mapActions } from 'vuex'
 import ConfigRoute from './config-route'
-const modules = require.context('../../../views', true, /(\.vue)$/)
+const modules = require.context('../../../../views', true, /(\.vue)$/)
 export default {
   name: 'Menu',
   components: {

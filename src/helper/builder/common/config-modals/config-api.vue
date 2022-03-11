@@ -22,41 +22,19 @@
             </a-select>
           </a-form-item>
         </a-col>
-        <a-col :span="24">
-          <a-form-item label="后台配置权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input placeholder="$services.com.xxx.xxx" v-decorator="['permission', {rules: [{ required: false }]}]" />
-          </a-form-item>
-        </a-col>
         <slot name="custom" />
-        <a-col :span="24">
-          <a-form-item label="自定义参数" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-row>
-              <a-col v-for="(item, index) in customParams" :key="index">
-                <a-form-item
-                  :label-col="{span: 8}"
-                  :wrapper-col="{span: 16}"
-                >
-                  <template slot="label">
-                    <a-input allow-clear v-model="item.key" />
-                  </template>
-                  <div class="object-ctrl">
-                    <a-input allow-clear v-model="item.value" />
-                    <a-button @click="() => addProp()">+</a-button>
-                    <a-button @click="() => reduceProp(index)">-</a-button>
-                  </div>
-                </a-form-item>
-              </a-col>
-            </a-row>
-          </a-form-item>
-        </a-col>
       </a-row>
+      <CustomParams v-model="customParams" />
     </a-form>
   </a-modal>
 </template>
 <script>
 import utils from '@/utils'
-// import { mapGetters } from 'vuex'
+import CustomParams from '../config-modules/custom-params.vue'
 export default {
+  components: {
+    CustomParams
+  },
   props: {
     modal: {
       type: Object,
@@ -66,26 +44,21 @@ export default {
   data () {
     return {
       form: this.$form.createForm(this),
-      customParams: [{ key: '', value: '' }]
+      customParams: {}
     }
   },
   computed: {
     title () {
       return this.modal.data ? this.modal.data.title : ''
     }
-    // ...mapGetters(['getStepNodes', 'getTabType'])
   },
   watch: {
     modal: {
       handler ({ data, show }) {
         if (show) {
-          this.deployParams(data)
           this.form.setFieldsValue(data)
         } else {
           this.form.resetFields()
-        }
-        if (!this.customParams.length) {
-          this.customParams = [{ key: '', value: '' }]
         }
       },
       deep: true,
@@ -93,22 +66,6 @@ export default {
     }
   },
   methods: {
-    deployParams (data) {
-      this.customParams = []
-      const params = data.params || {}
-      Object.keys(params).forEach((key) => {
-        const value = params[key]
-        this.customParams.push({ key, value })
-      })
-    },
-    addProp () {
-      this.customParams.push({ key: '', value: '' })
-    },
-    reduceProp (i) {
-      if (this.customParams && this.customParams.length > 1) {
-        this.customParams.splice(i, 1)
-      }
-    },
     confirm () {
       this.form.validateFields((err, values) => {
         if (err) {
@@ -120,7 +77,7 @@ export default {
           url: values.url,
           method: values.method,
           permission: values.permission,
-          params: array2object(this.customParams)
+          params: this.customParams
         }
         this.$emit('update', utils.clone(model))
       })
@@ -128,15 +85,6 @@ export default {
   }
 }
 
-function array2object (src = []) {
-  const res = Object.create(null)
-  src.forEach((item) => {
-    if (utils.isValuable(item.key)) {
-      res[item.key] = item.value
-    }
-  })
-  return res
-}
 </script>
 <style lang="less" scoped>
 .object-ctrl {

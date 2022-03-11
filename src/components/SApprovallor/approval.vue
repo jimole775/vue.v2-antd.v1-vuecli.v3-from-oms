@@ -128,7 +128,13 @@ export default {
         if (!tabProxy) return false
         const activeTab = tabProxy.tabs.filter((pane) => pane.tabId === tabProxy.activeId)
         this.currentTab = activeTab ? activeTab[0] : {}
-        const res = await api[this.apimap.detail](this.currentTab.recordData)
+        let func
+        if (utils.isFunction(this.apimap.detail)) {
+          func = this.apimap.detail
+        } else {
+          func = api[this.apimap.detail]
+        }
+        const res = await func(this.currentTab.recordData)
         if (res.code === 200) {
           this.basicData = { ...res.data }
         } else {
@@ -228,8 +234,14 @@ export default {
     },
     // 发起审批
     async startApprove (params) {
-      const cparams = this.$props.beforeSubmit(params, this.scope)
-      const res = await api[this.apimap.approval](cparams)
+      const finalParams = this.$props.beforeSubmit(params, this.scope)
+      let func
+      if (utils.isFunction(this.apimap.approval)) {
+        func = this.apimap.approval
+      } else {
+        func = api[this.apimap.approval]
+      }
+      const res = await func(finalParams)
       if (res.code === 200) {
         this.$message.success('操作成功')
         this.$emit('close')

@@ -18,7 +18,7 @@ import Vue from 'vue'
 import utils from '@/utils'
 import http from '@/utils/http'
 import TableSummary from './modules/table-summary'
-import BuildFormItems from '@/helper/builder/factory/config-modules/build-form-items'
+import BuildFormItems from '@/helper/builder/common/config-modules/build-form-items'
 import TableColumns from './modules/table-columns'
 export default {
   components: {

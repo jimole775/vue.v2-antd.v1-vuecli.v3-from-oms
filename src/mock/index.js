@@ -13,6 +13,11 @@ context.keys().forEach((item) => {
   })
 })
 
+// 使用 /dync 接口来支持把拿到的数据当作请求数据
+mock.mock(/\/dync/, options => {
+  return getParams(options)
+})
+
 function getParams (options) {
   let res = null
   if (options.type === 'GET' && utils.hasQueryString(options.url)) {

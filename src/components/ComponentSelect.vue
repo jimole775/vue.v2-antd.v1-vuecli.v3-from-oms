@@ -16,9 +16,9 @@
 
 <script>
 const antComponents = require('ant-design-vue')
-const context = require.context('../../../components', true, /(\.vue)$/)
+const context = require.context('./', true, /(\.vue)$/)
 export default {
-  name: 'CompSelect',
+  name: 'ComponentSelect',
   props: {
     placeholder: {
       type: String,
@@ -42,7 +42,7 @@ export default {
     this.list = []
     context.keys().forEach((item) => {
       const fileName = item.split('./').pop()
-      const comp = require('../../../components/' + fileName)
+      const comp = require('./' + fileName)
       const component = comp.default || comp
       if (component.forBuilder) {
         this.list.push({

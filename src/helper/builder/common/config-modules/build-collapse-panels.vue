@@ -25,18 +25,18 @@
         <BuildFormItems :data-source="panel.formItems" @update="(formItems) => formItemConfirm(panel, formItems)" />
       </a-collapse-panel>
     </a-collapse>
-    <AddCollapsePanel :modal="modal" @update="panelChangeConfirm" />
+    <ConfigCollapsePanel :modal="modal" @update="panelChangeConfirm" />
   </div>
 </template>
 <script>
 // import utils from '@/utils'
 import { mapGetters } from 'vuex'
 import BuildFormItems from './build-form-items'
-import AddCollapsePanel from './add-collapse-panel'
+import ConfigCollapsePanel from '../config-modals/config-collapse-panel'
 export default {
   components: {
     BuildFormItems,
-    AddCollapsePanel
+    ConfigCollapsePanel
   },
   props: {
     dataSource: {
@@ -98,17 +98,20 @@ export default {
     },
     panelChangeConfirm (panel) {
       const insertIndex = this.getInsertIndex(panel)
+      // insertIndex为空，则表示新增
       if (insertIndex === null) {
         this.collapsePanels.push({
           ...panel,
           formItems: []
         })
       } else {
-        const cPanel = this.collapsePanels[insertIndex]
-        cPanel.extend = panel.extend
-        cPanel.title = panel.title
-        cPanel.tips = panel.tips
-        cPanel.stepNodes = panel.stepNodes
+        const editPanel = this.collapsePanels[insertIndex]
+        editPanel.extend = panel.extend
+        editPanel.title = panel.title
+        editPanel.tips = panel.tips
+        editPanel.url = panel.url
+        editPanel.method = panel.method
+        editPanel.stepNodes = panel.stepNodes
       }
       this.fixedBaeInfoStepNodes()
       this.$emit('update', this.collapsePanels)

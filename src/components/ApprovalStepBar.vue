@@ -111,7 +111,7 @@ export default {
       return { minWidth: countNodeWidth(node.nodeName) + 'px' }
     },
     async fetchData (id) {
-      const res = await api.ppprojectprocessnodes(id)
+      const res = await api.getprocessnodes(id)
       if (res && res instanceof Array) {
         this.stepOption = res
       }

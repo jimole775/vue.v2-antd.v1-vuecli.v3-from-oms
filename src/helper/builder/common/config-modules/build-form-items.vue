@@ -30,15 +30,15 @@
         </a-col>
       </a-row>
     </a-form>
-    <AddFormItem :modal="modal" :config="config" @update="formItemConfirm" />
+    <ConfigFormItem :modal="modal" :config="config" @update="formItemConfirm" />
   </div>
 </template>
 <script>
 import utils from '@/utils'
-import AddFormItem from './add-form-item.vue'
+import ConfigFormItem from '../config-modals/config-form-item.vue'
 export default {
   components: {
-    AddFormItem
+    ConfigFormItem
   },
   props: {
     dataSource: {

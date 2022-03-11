@@ -109,7 +109,7 @@
 <script>
 import utils from '@/utils'
 import { mapGetters } from 'vuex'
-import ComponentConfig from './component-config'
+import ComponentConfig from '../config-modules/component-config'
 export default {
   components: {
     ComponentConfig

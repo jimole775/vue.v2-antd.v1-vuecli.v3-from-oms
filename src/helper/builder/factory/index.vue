@@ -24,32 +24,62 @@
       </a-tab-pane>
     </a-tabs>
     <a-modal
+      v-if="editModal.show"
       v-model="editModal.show"
       title="编辑"
+      width="60%"
       @ok="editConfirm"
     >
-      <a-form :form="form">
+      <a-form>
         <a-row>
           <a-col :span="24">
             <a-form-item label="页签名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-input v-decorator="['tabName', {rules: [{ required: true, message: '请确认页签名' }]}]" />
+              <a-input v-model="editModal.data.tabName" />
             </a-form-item>
           </a-col>
-          <a-col :span="24">
+          <a-col v-if="editModal.data.type === '0'" :span="24">
             <a-form-item label="角色查看权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-radio-group v-decorator="['roles', {rules: [{ required: false }]}]">
+              <a-radio-group v-model="editModal.data.permission.roles">
                 <a-radio value="0">全部</a-radio>
                 <a-radio value="1">内部</a-radio>
                 <a-radio value="2">外部</a-radio>
               </a-radio-group>
             </a-form-item>
           </a-col>
-          <a-col :span="24">
-            <a-form-item label="后台配置权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-input placeholder="$services.com.xxx.xxx" v-decorator="['config', {rules: [{ required: false }]}]" />
+        </a-row>
+        <a-row :span="24">
+          <a-col>
+            <a-form-item :label="editModal.data.type === '0' ? '列表接口' : '详情数据接口'" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+              <a-row>
+                <a-col :span="18">
+                  <a-input placeholder="/api/xxx/xxx" v-model="editModal.data.api.url" />
+                </a-col>
+                <a-col :span="6">
+                  <a-select placeholder="请选择" v-model="editModal.data.api.method">
+                    <a-select-option value="GET">GET</a-select-option>
+                    <a-select-option value="POST">POST</a-select-option>
+                    <a-select-option value="PUT">PUT</a-select-option>
+                    <a-select-option value="DELETE">DELETE</a-select-option>
+                  </a-select>
+                </a-col>
+              </a-row>
             </a-form-item>
           </a-col>
         </a-row>
+        <a-row v-if="editModal.data.type === '0'">
+          <a-col :span="24">
+            <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
+              <template slot="label">
+                数据路径
+                <a-tooltip title="接口返回的数据的路径，比如：data.records.list，就可以设置为'records.list'">
+                  <span><a-icon type="question-circle-o" /></span>
+                </a-tooltip>
+              </template>
+              <a-input v-model="editModal.data.api.dataDir" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <CustomParams v-model="editModal.data.api.customParams" />
       </a-form>
     </a-modal>
   </div>
@@ -63,8 +93,12 @@ import ProjectList from './list'
 import ProjectApply from './apply'
 import ProjectApproval from './approval'
 import { mapActions } from 'vuex'
+import ApiButton from '@/helper/builder/common/config-modules/api-button'
+import CustomParams from '@/helper/builder/common/config-modules/custom-params'
 export default {
   components: {
+    ApiButton,
+    CustomParams,
     ProjectList,
     ProjectApply,
     ProjectApproval
@@ -72,20 +106,20 @@ export default {
   mixins: [baseMixins, todoMixins],
   data () {
     return {
-      form: this.$form.createForm(this),
       editModal: {
         show: false,
         data: {}
       },
       active: '0_0',
+      curEditType: '0',
       tabs: [
         // key: 用来切换tab
         // tabId: 输出给SApproval组件
         // rank: 用来标记是第几套审批流程，一套审批流程有['列表', '申请', '审批']三个tab
         // type: 用来标记 list, apply, approval
-        { tabName: '列表', key: '0_0', tabId: '0', rank: 0, type: '0', component: ProjectList, permission: { roles: [], config: '' } },
-        { tabName: '申请', key: '0_1', tabId: '0_1', rank: 0, type: '1', component: ProjectApply, permission: { roles: [], config: '' } },
-        { tabName: '审批', key: '0_2', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval, permission: { roles: [], config: '' } }
+        { tabName: '列表', key: '0_0', tabId: '0', rank: 0, type: '0', component: ProjectList, api: {}, permission: { roles: [], config: '' } },
+        { tabName: '申请', key: '0_1', tabId: '0_1', rank: 0, type: '1', component: ProjectApply, api: {} },
+        { tabName: '审批', key: '0_2', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval, api: {} }
       ]
     }
   },
@@ -138,16 +172,23 @@ export default {
       this.tabs.splice(index, 1)
     },
     editConfirm () {
-      this.form.validateFields((err, values) => {
-        if (err) return false
-        this.editModal.data.tabName = values.tabName
-        if (!this.editModal.data.permission) {
-          this.editModal.data.permission = {}
-        }
-        this.editModal.data.permission.roles = values.roles
-        this.editModal.data.permission.config = values.config
-        this.editModal.show = false
-      })
+      // this.form.validateFields((err, values) => {
+      //   if (err) return false
+      //   this.editModal.data.tabName = values.tabName
+      //   if (!this.editModal.data.permission) {
+      //     this.editModal.data.permission = {}
+      //   }
+      //   this.editModal.data.permission.roles = values.roles
+      //   this.editModal.data.permission.config = values.config
+      // })
+      const { api, type, rank } = this.editModal.data
+      if (type === '0' && api.url) {
+        this.handupApimap(rank, {
+          url: api.url,
+          method: api.method
+        })
+      }
+      this.editModal.show = false
     },
     editTab (tab) {
       const { roles, config } = tab.permission || {}
@@ -214,6 +255,9 @@ export default {
 
       // 只返回 list 类型
       return lists
+    },
+    handupApimap (rank, data) {
+      Vue.bus.$emit('__apimap__', rank, data)
     },
     handup (data) {
       Vue.bus.$emit('__tabs__', data)
