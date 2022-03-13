@@ -77,7 +77,6 @@ export default {
               if (data.stepNodes === undefined) {
                 data.stepNodes = this.stepNodesOptions.map(i => i.value)
               }
-              debugger
               this.form.setFieldsValue(data)
             } else {
               this.form.setFieldsValue({

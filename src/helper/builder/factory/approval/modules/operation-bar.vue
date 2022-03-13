@@ -42,7 +42,7 @@
 import { mapGetters } from 'vuex'
 import BuildFormItems from '@/helper/builder/common/config-modules/build-form-items'
 import ApiButton from '@/helper/builder/common/config-modules/api-button'
-import ConfigRadio from '@/helper/builder/approval/modals/config-radio'
+import ConfigRadio from '../modals/config-radio'
 export default {
   components: {
     ApiButton,

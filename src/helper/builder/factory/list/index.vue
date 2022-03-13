@@ -6,7 +6,7 @@
     <div class="panel-content">
       <TableSummary @update="updateSummary" />
     </div>
-    <div v-if="isShowTable" class="panel-content">
+    <div v-if="canShowTable" class="panel-content">
       <TableColumns :data-source="listData" @projectApproval="projectApproval" @update="updateColumns" />
     </div>
     <div v-else class="panel-content btn-wrap">
@@ -30,12 +30,18 @@ export default {
     rank: {
       type: Number,
       default: 0
+    },
+    tab: {
+      type: Object,
+      default: () => ({})
     }
   },
   computed: {
-    isShowTable () {
-      const list = this.summaryObject.list || {}
-      return !!list.url
+    canShowTable () {
+      return this.tab.type === '0' && this.tab.api && this.tab.api.url
+    },
+    isListTab () {
+      return this.tab.type === '0'
     }
   },
   data () {
@@ -48,13 +54,22 @@ export default {
       }
     }
   },
+  watch: {
+    tab: {
+      handler (tab) {
+        debugger
+        if (this.canShowTable) {
+          this.testFetch(tab.api)
+        }
+      },
+      deep: true,
+      immediate: true
+    }
+  },
   methods: {
     updateSummary (data) {
       this.summaryObject = data
       this.handupApimap(this.summaryObject)
-      if (this.summaryObject.list) {
-        this.testFetch(this.summaryObject.list)
-      }
     },
     projectApproval () {
       this.$emit('switchTab', '2')

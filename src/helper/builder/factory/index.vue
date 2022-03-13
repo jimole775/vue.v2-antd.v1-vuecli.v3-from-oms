@@ -19,69 +19,16 @@
           </div>
         </template>
         <div>
-          <component :is="tab.component" :rank="tab.rank" @switchTab="switchTab" />
+          <component
+            :tab="tab"
+            :rank="tab.rank"
+            :is="tab.component"
+            @switchTab="switchTab"
+          />
         </div>
       </a-tab-pane>
     </a-tabs>
-    <a-modal
-      v-if="editModal.show"
-      v-model="editModal.show"
-      title="编辑"
-      width="60%"
-      @ok="editConfirm"
-    >
-      <a-form>
-        <a-row>
-          <a-col :span="24">
-            <a-form-item label="页签名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-input v-model="editModal.data.tabName" />
-            </a-form-item>
-          </a-col>
-          <a-col v-if="editModal.data.type === '0'" :span="24">
-            <a-form-item label="角色查看权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-radio-group v-model="editModal.data.permission.roles">
-                <a-radio value="0">全部</a-radio>
-                <a-radio value="1">内部</a-radio>
-                <a-radio value="2">外部</a-radio>
-              </a-radio-group>
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row :span="24">
-          <a-col>
-            <a-form-item :label="editModal.data.type === '0' ? '列表接口' : '详情数据接口'" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <a-row>
-                <a-col :span="18">
-                  <a-input placeholder="/api/xxx/xxx" v-model="editModal.data.api.url" />
-                </a-col>
-                <a-col :span="6">
-                  <a-select placeholder="请选择" v-model="editModal.data.api.method">
-                    <a-select-option value="GET">GET</a-select-option>
-                    <a-select-option value="POST">POST</a-select-option>
-                    <a-select-option value="PUT">PUT</a-select-option>
-                    <a-select-option value="DELETE">DELETE</a-select-option>
-                  </a-select>
-                </a-col>
-              </a-row>
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row v-if="editModal.data.type === '0'">
-          <a-col :span="24">
-            <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <template slot="label">
-                数据路径
-                <a-tooltip title="接口返回的数据的路径，比如：data.records.list，就可以设置为'records.list'">
-                  <span><a-icon type="question-circle-o" /></span>
-                </a-tooltip>
-              </template>
-              <a-input v-model="editModal.data.api.dataDir" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <CustomParams v-model="editModal.data.api.customParams" />
-      </a-form>
-    </a-modal>
+    <ConfigTab :modal="editModal" @update="updateTab" />
   </div>
 </template>
 <script>
@@ -95,9 +42,11 @@ import ProjectApproval from './approval'
 import { mapActions } from 'vuex'
 import ApiButton from '@/helper/builder/common/config-modules/api-button'
 import CustomParams from '@/helper/builder/common/config-modules/custom-params'
+import ConfigTab from '@/helper/builder/common/config-modals/config-tab'
 export default {
   components: {
     ApiButton,
+    ConfigTab,
     CustomParams,
     ProjectList,
     ProjectApply,
@@ -171,36 +120,17 @@ export default {
     reduceTab (index) {
       this.tabs.splice(index, 1)
     },
-    editConfirm () {
-      // this.form.validateFields((err, values) => {
-      //   if (err) return false
-      //   this.editModal.data.tabName = values.tabName
-      //   if (!this.editModal.data.permission) {
-      //     this.editModal.data.permission = {}
-      //   }
-      //   this.editModal.data.permission.roles = values.roles
-      //   this.editModal.data.permission.config = values.config
-      // })
-      const { api, type, rank } = this.editModal.data
-      if (type === '0' && api.url) {
-        this.handupApimap(rank, {
-          url: api.url,
-          method: api.method
-        })
-      }
-      this.editModal.show = false
-    },
     editTab (tab) {
-      const { roles, config } = tab.permission || {}
-      this.editModal.data = tab
+      // const { roles, config } = tab.permission || {}
+      this.editModal.data = utils.clone(tab)
       this.editModal.show = true
-      setTimeout(() => {
-        this.form.setFieldsValue({
-          tabName: tab.tabName,
-          roles: roles,
-          config: config
-        })
-      })
+      // setTimeout(() => {
+      //   this.form.setFieldsValue({
+      //     tabName: tab.tabName,
+      //     roles: roles,
+      //     config: config
+      //   })
+      // })
     },
     addTab (tab) {
       const nPane = this.upgradeTab(utils.clone(tab))
@@ -210,6 +140,13 @@ export default {
     switchTab (type) {
       const tab = utils.clone(this.getCurrentTab())
       this.active = tab.rank + '_' + type
+    },
+    updateTab (tab) {
+      this.tabs.forEach((tabItem, index) => {
+        if (tab.key === tabItem.key) {
+          this.$set(this.tabs, index, tab)
+        }
+      })
     },
     getCurrentTab () {
       let id = this.active

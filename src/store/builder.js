@@ -4,6 +4,7 @@
 export default {
   state: {
     tabType: 0,
+    buildData: {},
     stepNodes: []
   },
   getters: {
@@ -12,24 +13,31 @@ export default {
     },
     getTabType (state) {
       return state.tabType
+    },
+    getBuildData (state) {
+      return state.buildData
     }
   },
   mutations: {
     commitStepNodes (state, nodes) {
-      state.stepNodes = nodes || {}
+      state.stepNodes = nodes || []
     },
     commitTabType (state, type) {
       state.tabType = type
+    },
+    commitBuildData (state, data) {
+      state.buildData = data
     }
   },
   actions: {
     setStepNodes ({ commit, state }, nodes) {
-      state.stepNodes = nodes || []
-      commit('commitStepNodes', state.stepNodes)
+      commit('commitStepNodes', nodes)
     },
     setTabType ({ commit, state }, type) {
-      state.tabType = type
-      commit('commitTabType', state.tabType)
+      commit('commitTabType', type)
+    },
+    setBuildData ({ commit, state }, data) {
+      commit('commitBuildData', data)
     }
   }
 }

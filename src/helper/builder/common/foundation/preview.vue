@@ -44,6 +44,7 @@ export default {
     modal: {
       async handler (modal) {
         const { data, show } = modal
+        debugger
         if (data && show) {
           console.log(this.transferFunction(data))
           this.tabs = data.tabs
