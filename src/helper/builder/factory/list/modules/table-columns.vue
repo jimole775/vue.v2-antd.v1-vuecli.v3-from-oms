@@ -175,7 +175,7 @@ function adjustColumn (column) {
   // 使可以填充 【edit】按钮
   if (!res.slots) {
     res.slots = { title: res.dataIndex + 'Title' }
-    res.slotsRender = function (h, vm) {
+    res.slotsRender = (h, vm) => {
       return res.originTitle
     }
   }

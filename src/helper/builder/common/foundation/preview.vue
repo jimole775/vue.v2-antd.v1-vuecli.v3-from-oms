@@ -18,8 +18,9 @@
 <script>
 import utils from '@/utils'
 import http from '@/utils/http'
-import jsx2vue from '@/utils/jsx2vue'
 import SApprovallor from '@/components/SApprovallor'
+import babel from '@babel/standalone/babel.min.js'
+import jsx from 'babel-plugin-transform-vue-jsx'
 export default {
   name: 'Preview',
   components: {
@@ -44,14 +45,14 @@ export default {
     modal: {
       async handler (modal) {
         const { data, show } = modal
-        debugger
         if (data && show) {
-          console.log(this.transferFunction(data))
-          this.tabs = data.tabs
-          this.apimap = this.diggingApiUrl(data.apimap)
-          this.listConfig = data.listConfig
-          this.applyConfig = data.applyConfig
-          this.approvalConfig = data.approvalConfig
+          const scopeData = utils.clone(data)
+          this.transferFunction(scopeData)
+          this.tabs = scopeData.tabs
+          this.apimap = this.diggingApiUrl(scopeData.apimap)
+          this.listConfig = scopeData.listConfig
+          this.applyConfig = scopeData.applyConfig
+          this.approvalConfig = scopeData.approvalConfig
         }
       },
       deep: true,
@@ -71,6 +72,8 @@ export default {
       })
       return apimap
     },
+    // 把jsx类型的render函数字符串转成vue类型的render
+    // 使eval执行不会报错
     transferFunction (data) {
       // listConfig: {},
       // // “申请页面” 配置项
@@ -118,8 +121,15 @@ export default {
         const keys = Object.keys(formItem)
         keys.forEach((key) => {
           if (isFuncStr(formItem[key]) && isNodeRender(formItem[key])) {
-            formItem[key] = utils.string2func(jsx2vue(formItem[key]))
-            console.log(formItem[key].toString())
+            const sourceCode = signName(formItem[key])
+            const js = babel.transform(
+              sourceCode,
+              {
+                presets: [babel.availablePresets['es2015']],
+                plugins: [jsx]
+              }
+            )
+            formItem[key] = eval(js.code)
           }
         })
       })
@@ -127,6 +137,11 @@ export default {
     }
   }
 }
+
+function signName (src) {
+  return src.replace(/function \(/, 'function anymous (')
+}
+
 function isNodeRender (string) {
   if (!string) return false
   if (/</.test(string) || /\/>/.test(string)) {
@@ -148,8 +163,9 @@ function isFuncStr (string) {
 function packageApi (apiItem) {
   if (apiItem.url) {
     const fn = http[apiItem.method.toLocaleLowerCase()] || function () {}
-    const injectParams = apiItem.method === 'GET' ? { params: apiItem.params } : apiItem.params
-    return (params) => {
+    const defaultParams = apiItem.params || {}
+    const injectParams = apiItem.method === 'GET' ? { params: defaultParams } : defaultParams
+    return (params = {}) => {
       return fn.apply(http, [apiItem.url, {
         ...params,
         ...injectParams

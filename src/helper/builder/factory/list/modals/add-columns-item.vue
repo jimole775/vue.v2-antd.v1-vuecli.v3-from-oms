@@ -52,7 +52,7 @@
                 <a-icon type="question-circle-o" />
               </a-tooltip>
             </template>
-            <span>function (h, vm) {</span>
+            <span>(h, vm) => {</span>
             <a-textarea v-decorator="['slotsRender', {rules: [{ required: false }]}]" />
             <span>}</span>
           </a-form-item>
@@ -65,7 +65,7 @@
                 <a-icon type="question-circle-o" />
               </a-tooltip>
             </template>
-            <span>function (h, record, vm) {</span>
+            <span>(h, record, vm) => {</span>
             <a-textarea v-decorator="['scopedSlotsRender', {rules: [{ required: false }]}]" />
             <span>}</span>
           </a-form-item>

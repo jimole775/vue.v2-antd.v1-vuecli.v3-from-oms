@@ -57,7 +57,6 @@ export default {
   watch: {
     tab: {
       handler (tab) {
-        debugger
         if (this.canShowTable) {
           this.testFetch(tab.api)
         }

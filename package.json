@@ -19,9 +19,11 @@
     "start": "npm-run-all -p builder serve"
   },
   "dependencies": {
+    "@babel/standalone": "^7.17.6",
     "ant-design-vue": "^1.4.4",
     "axios": "^0.18.0",
     "axios-mock-adapter": "^1.16.0",
+    "babel-plugin-transform-vue-jsx": "github:vuejs/babel-plugin-transform-vue-jsx",
     "core-js": "^2.6.5",
     "dayjs": "^1.8.14",
     "echarts": "^4.2.1",
