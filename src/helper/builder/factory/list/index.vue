@@ -124,12 +124,12 @@ function transferColumns (originColumns) {
     // 拼装 slotsRender 函数
     if (propsObject['slotsRender']) {
       const fnInstance = propsObject['slotsRender']
-      propsObject['slotsRender'] = `function (h, vm) {\n${fnInstance}\n}\n`
+      propsObject['slotsRender'] = `(h, vm) => {\n${fnInstance}\n}\n`
     }
     // 拼装 scopedSlotsRender 函数
     if (propsObject['scopedSlotsRender']) {
       const fnInstance = propsObject['scopedSlotsRender']
-      propsObject['scopedSlotsRender'] = `function (h, record, vm) {\n${fnInstance}\n}\n`
+      propsObject['scopedSlotsRender'] = `(h, record, vm) => {\n${fnInstance}\n}\n`
     }
     columns.push(propsObject)
   })

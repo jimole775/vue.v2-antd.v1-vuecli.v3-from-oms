@@ -18,9 +18,8 @@
 <script>
 import utils from '@/utils'
 import http from '@/utils/http'
+import { jsx2vue } from '../utils'
 import SApprovallor from '@/components/SApprovallor'
-import babel from '@babel/standalone/babel.min.js'
-import jsx from 'babel-plugin-transform-vue-jsx'
 export default {
   name: 'Preview',
   components: {
@@ -121,25 +120,13 @@ export default {
         const keys = Object.keys(formItem)
         keys.forEach((key) => {
           if (isFuncStr(formItem[key]) && isNodeRender(formItem[key])) {
-            const sourceCode = signName(formItem[key])
-            const js = babel.transform(
-              sourceCode,
-              {
-                presets: [babel.availablePresets['es2015']],
-                plugins: [jsx]
-              }
-            )
-            formItem[key] = eval(js.code)
+            formItem[key] = utils.string2func(jsx2vue(formItem[key]))
           }
         })
       })
       return data
     }
   }
-}
-
-function signName (src) {
-  return src.replace(/function \(/, 'function anymous (')
 }
 
 function isNodeRender (string) {
@@ -173,4 +160,5 @@ function packageApi (apiItem) {
     }
   }
 }
+
 </script>
