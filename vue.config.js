@@ -1,9 +1,17 @@
 // const marked = require("marked");
 // const renderer = new marked.Renderer();
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-
+const path = require('path')
+function resolve (dir) {
+  return path.join(__dirname, dir)
+}
 module.exports = {
   configureWebpack: {
+    resolve: {
+      alias: {
+        '@builder': resolve('./src/helper/builder')
+      }
+    },
     devtool: 'source-map'
     // plugins: [new BundleAnalyzerPlugin({
     //   analyzerHost: 'localhost',

@@ -8,16 +8,16 @@
     <a-form :form="form">
       <a-row>
         <a-col :span="24">
-          <a-form-item label="父级目录" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+          <a-form-item label="父级目录名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-input :disabled="true" v-decorator="['parent']" />
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label="目录名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+          <a-form-item label="文件存放目录名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-input
               v-decorator="['name', {
                 rules: [
-                  { required: true, message: '请确认目录名' },
+                  { required: true, message: '请确认文件存放目录' },
                   { pattern: /^[a-z]([a-z-]*)$/g, message: '只支持小写字母、-'}
                 ]
               }]"
@@ -25,8 +25,8 @@
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label="路由地址" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input placeholder="/xxx/xxx/xxx" v-decorator="['path', {rules: [{ required: true, message: '请确认路由地址' }]}]" />
+          <a-form-item label="URL访问地址" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input placeholder="/xxx/xxx/xxx" v-decorator="['path', {rules: [{ required: true, message: '请确认URL访问地址' }]}]" />
           </a-form-item>
         </a-col>
       </a-row>

@@ -62,7 +62,7 @@
 <script>
 import Vue from 'vue'
 // import utils from '@/utils'
-import CustomParams from '@/helper/builder/common/config-modules/custom-params'
+import CustomParams from '@builder/config-modules/custom-params'
 export default {
   components: {
     CustomParams

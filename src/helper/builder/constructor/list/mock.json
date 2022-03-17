@@ -1,0 +1,22 @@
+{
+  "0": {
+    "columns": [
+      {
+        "title": "66666",
+        "width": 100,
+        "dataIndex": "sdasdaw213123"
+      }
+    ],
+    "searchor": [
+      {
+        "key": "dadw",
+        "title": "dddddddd223123",
+        "layout": {
+          "span": 6,
+          "label": 6,
+          "wrapper": 16
+        }
+      }
+    ]
+  }
+}

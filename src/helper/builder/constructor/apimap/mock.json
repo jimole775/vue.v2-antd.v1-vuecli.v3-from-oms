@@ -1,0 +1,46 @@
+{
+  "0": {
+    "list": {
+      "key": "list",
+      "label": "列表",
+      "url": "adwd/dwdddww/dadadsw",
+      "method": "GET",
+      "params": {
+        "test": 123,
+        "dddd": "dawdawd"
+      }
+    },
+    "export": {
+      "key": "export",
+      "label": "导出",
+      "url": "adwd/dwdddww",
+      "method": "POST",
+      "params": {
+        "test": 123,
+        "dddd": "dawdawd"
+      }
+    }
+  },
+  "1": {
+    "list": {
+      "key": "list",
+      "label": "列表",
+      "url": "adwd/dwdddww/dadadsw",
+      "method": "GET",
+      "params": {
+        "test": 123,
+        "dddd": "dawdawd"
+      }
+    },
+    "export": {
+      "key": "export",
+      "label": "导出",
+      "url": "adwd/dwdddww",
+      "method": "GET",
+      "params": {
+        "test": 123,
+        "dddd": "dawdawd"
+      }
+    }
+  }
+}

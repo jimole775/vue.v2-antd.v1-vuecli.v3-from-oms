@@ -7,7 +7,7 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
-import Layout from './common/foundation/layout.vue'
+import Layout from './foundation/layout.vue'
 export default {
   components: {
     Layout

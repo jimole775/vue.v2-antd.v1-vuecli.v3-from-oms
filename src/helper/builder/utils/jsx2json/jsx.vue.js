@@ -1,6 +1,6 @@
 import tokenizer from './jsx.tokenizer.js'
 import parser from './jsx.parser.js'
-import utils from '../index.js'
+import utils from '@/utils'
 const transfer = (input) => {
   const funcAsts = parser(tokenizer(input))
   // 需要确保 input 是一个函数字符串

@@ -4,7 +4,7 @@
   </div>
 </template>
 <script>
-import ApiButton from '@/helper/builder/common/config-modules/api-button'
+import ApiButton from '@builder/config-modules/api-button'
 export default {
   components: {
     ApiButton

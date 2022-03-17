@@ -13,9 +13,10 @@
 
 <script>
 import Vue from 'vue'
-import api from '@/api'
+// import api from '@/api'
 import utils from '@/utils'
 import Preview from './preview.vue'
+import buildConstructs from '../constructor/index.js'
 export default {
   components: { Preview },
   name: 'Header',
@@ -73,16 +74,16 @@ export default {
   methods: {
     createListener () {
       Vue.bus.$on('__tabs__', (value) => {
-        this.buildData['tabs'] = value
+        this.buildData['tabsConfig'] = value
       })
 
       Vue.bus.$on('__apimap__', (tabIndex, value) => {
-        if (!this.buildData['apimap'][tabIndex]) {
-          this.buildData['apimap'][tabIndex] = Object.create(null)
+        if (!this.buildData['apimapConfig'][tabIndex]) {
+          this.buildData['apimapConfig'][tabIndex] = Object.create(null)
         }
 
-        const already = this.buildData['apimap'][tabIndex]
-        this.buildData['apimap'][tabIndex] = {
+        const already = this.buildData['apimapConfig'][tabIndex]
+        this.buildData['apimapConfig'][tabIndex] = {
           ...already,
           ...value
         }
@@ -99,12 +100,12 @@ export default {
         this.$set(this.buildData['applyConfig'], tabIndex, value)
       })
 
-      Vue.bus.$on('__approval__', async (tabIndex, value) => {
+      Vue.bus.$on('__approval__', (tabIndex, value) => {
         this.$set(this.buildData['approvalConfig'], tabIndex, value)
       })
 
-      Vue.bus.$on('__router__', async (value) => {
-        this.$set(this.buildData['routerConfig'], value)
+      Vue.bus.$on('__router__', (data) => {
+        this.$set(this.buildData['routerConfig'], data)
       })
     },
     showPreview () {
@@ -172,18 +173,19 @@ export default {
           content: err[0]
         })
       } else {
-        this.$modal.confirm({
-          title: '提示',
-          content: '是否提交？',
-          onOk: async () => {
-            const res = await api.postbuild({ buildConstructs: this.buildData })
-            if (res.code === 200) {
-              this.$message.success('提交并构建成功！')
-            } else {
-              this.$message.warning('构建失败！')
-            }
-          }
-        })
+        buildConstructs(this.buildData)
+        // this.$modal.confirm({
+        //   title: '提示',
+        //   content: '是否提交？',
+        //   onOk: async () => {
+        //     const res = await api.postbuild({ buildConstructs: this.buildData })
+        //     if (res.code === 200) {
+        //       this.$message.success('提交并构建成功！')
+        //     } else {
+        //       this.$message.warning('构建失败！')
+        //     }
+        //   }
+        // })
       }
     }
   }

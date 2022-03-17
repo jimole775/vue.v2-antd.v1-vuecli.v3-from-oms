@@ -40,8 +40,8 @@
 <script>
 // import utils from '@/utils'
 import { mapGetters } from 'vuex'
-import BuildFormItems from '@/helper/builder/common/config-modules/build-form-items'
-import ApiButton from '@/helper/builder/common/config-modules/api-button'
+import BuildFormItems from '@builder/config-modules/build-form-items'
+import ApiButton from '@builder/config-modules/api-button'
 import ConfigRadio from '../modals/config-radio'
 export default {
   components: {

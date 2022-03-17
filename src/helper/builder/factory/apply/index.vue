@@ -10,7 +10,7 @@
 import Vue from 'vue'
 import utils from '@/utils'
 // import ApprovalNodesMap from '@/components/ApprovalNodesMap'
-import BuildCollapsePanels from '@/helper/builder/common/config-modules/build-collapse-panels'
+import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels'
 import SubmitBar from './submit-bar.vue'
 export default {
   components: {

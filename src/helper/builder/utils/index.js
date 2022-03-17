@@ -58,3 +58,42 @@ export const jsx2vue = (jsxCode) => {
 
   return vueAst.code
 }
+
+export const stringMark = {
+  /**
+   * 如果一个字符串需要在写入文件的时候【去掉双引号】，那么使用这个方法进行标记
+   * @param {String} string
+   * @returns {String}
+   * @template noQuotation('测试') => '_|测试|_'
+   */
+  noQuotation (string) {
+    return `_|${string}|_`
+  },
+  /**
+   * 如果一个字符串需要在写入文件的时候，把【双引号改成单引号】，那么使用这个方法进行标记
+   * @param {String} string
+   * @returns {String}
+   * @template noQuotation('测试') => '-|测试|-'
+   */
+  singleQuotation (string) {
+    return `-|${string}$|-`
+  },
+  queryNoQuotation (string) {
+    return string.replace(/((["']_\|)|(\|_["']))/g, '')
+  },
+  querySingleQuotation (string) {
+    return string.replace(/((["']-\|)|(\|-["']))/g, '\'')
+  }
+}
+
+export const object2file = (json, space = 2) => {
+  let string = JSON.stringify(json, null, space)
+  string = string.replace(/ {2}"(.*?)": /g, '  $1: ') // 去掉“键”的双引号
+  string = string.replace(/: "(.*?)"(,?)/g, ': \'$1\'$2') // 把值的双引号改成单引号
+  string = string.replace(/: ['"](function)/g, ': $1') // 去掉function的前面的双引号
+  string = string.replace(/}['"](,?)/g, '}$1') // 去掉function的后面的双引号
+  string = string.replace(/\\n/g, '\n') // 把 \\n 改成 \n
+  string = stringMark.queryNoQuotation(string)
+  string = stringMark.querySingleQuotation(string)
+  return string
+}

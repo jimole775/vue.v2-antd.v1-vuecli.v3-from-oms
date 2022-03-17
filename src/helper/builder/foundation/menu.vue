@@ -30,9 +30,10 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import { mapActions } from 'vuex'
-import ConfigRoute from './config-route'
-const modules = require.context('../../../../views', true, /(\.vue)$/)
+import ConfigRoute from '../config-modals/config-route'
+const modules = require.context('../../../views', true, /(\.vue)$/)
 export default {
   name: 'Menu',
   components: {
@@ -64,7 +65,7 @@ export default {
       this.configRouteModal.data.parent = menuItem || ''
     },
     configRouteConfirm (data) {
-      this.configRouteModal.data = data
+      Vue.bus.$emit('__router__', data)
     }
   }
 }
