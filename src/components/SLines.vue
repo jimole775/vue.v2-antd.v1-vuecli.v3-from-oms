@@ -26,7 +26,7 @@ export default {
     if (utils.isNone(text)) return ''
     const sentences = getSentences(text)
     return (
-      <div style={style}>
+      <div class="line-multiple" style={style}>
         {
           sentences.map((sentence) => {
             if (lineEnd === 'ellipsis') {
