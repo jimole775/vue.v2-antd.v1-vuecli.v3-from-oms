@@ -1,8 +1,8 @@
 // import mock from './mock.json'
-import { object2file } from '@builder/utils'
-const basePath = 'tabs'
+const { object2file } = require('../../utils')
+// const basePath = 'tabs'
 // buildTabs(mock)
-export default function buildTabs (tabsArray) {
+module.exports = function buildTabs (tabsArray, { name: moduleName, parent: parentName }, basePath) {
   const tabFiles = [
     // {
     //   path: '',

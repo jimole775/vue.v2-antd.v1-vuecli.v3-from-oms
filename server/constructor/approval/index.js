@@ -1,21 +1,26 @@
-const path = require('path')
-const { writeFileSync, object2file, stringMark } = require('../../utils')
-const basePath = 'approval'
-const mock = require('./mock.json')
-buildApproval(mock)
-// module.exports =
-function buildApproval (tabsTree) {
+// import mock from './mock.json'
+const { object2file, stringMark } = require('../../utils')
+// const basePath = 'approval'
+// buildApproval(mock)
+module.exports = function buildApproval (tabsTree, { name: moduleName, parent: parentName }, basePath) {
+  let approvalFiles = [
+    // {
+    //   path: '',
+    //   content: ''
+    // }
+  ]
   const tabIndexs = Object.keys(tabsTree)
   tabIndexs.forEach((tabIndex) => {
     const tabFolder = `${basePath}/tab${(tabIndex * 1 + 1)}`
     const permissionFolder = `${tabFolder}/permission`
     const dispermissionFolder = `${tabFolder}/dispermission`
     const uniPanels = getUniPanels(tabsTree[tabIndex])
-    buildPanels(permissionFolder, uniPanels.permission)
-    buildPanels(dispermissionFolder, uniPanels.dispermission)
-    buildPanelsLoadFile(tabFolder, tabsTree[tabIndex], uniPanels)
+    approvalFiles = approvalFiles.concat(buildPanels(permissionFolder, uniPanels.permission))
+    approvalFiles = approvalFiles.concat(buildPanels(dispermissionFolder, uniPanels.dispermission))
+    approvalFiles.push(buildPanelsLoadFile(tabFolder, tabsTree[tabIndex], uniPanels))
   })
-  buildTabLoadFile(basePath, tabsTree)
+  approvalFiles.push(buildTabLoadFile(basePath, tabsTree))
+  return approvalFiles
 }
 
 // 略过 nodes，把唯一的panel存进一个数组里，过滤重复项
@@ -39,6 +44,7 @@ function getUniPanels (tab) {
 }
 
 function buildPanels (prevDir, panels) {
+  const res = []
   const exportCode = `export default `
   panels.forEach((panel, index) => {
     let fileName = ''
@@ -50,8 +56,12 @@ function buildPanels (prevDir, panels) {
       fileName = `panel${index + 1}.js`
       data = panel.formItems
     }
-    writeFileSync(path.join(prevDir, fileName), `${exportCode}${object2file(data)}`)
+    res.push({
+      path: `${prevDir}/${fileName}`,
+      content: `${exportCode}${object2file(data)}`
+    })
   })
+  return res
 }
 
 function buildPanelsLoadFile (prevPath, tab, uniPanels) {
@@ -70,7 +80,10 @@ function buildPanelsLoadFile (prevPath, tab, uniPanels) {
   const code7 = object2file(exportModule.data)
 
   const fileContent = (`${code1}\n${code2}\n${code3}\n${code4}\n${code5}\n${code6} ${code7}\n`)
-  writeFileSync(path.join(prevPath, 'index.js'), fileContent)
+  return {
+    path: `${prevPath}/index.js`,
+    content: fileContent
+  }
 }
 
 function buildAndInsertLog (exportModule) {
@@ -186,8 +199,8 @@ function buildTabLoadFile (prevPath, tabsTree) {
     exportCmd += `  ${tabIndex * 1}: ${varTab}\n`
   })
   exportCmd += '}\n'
-  writeFileSync(
-    path.join(prevPath, 'index.js'),
-    `${importCmd}\n${exportCmd}`
-  )
+  return {
+    path: `${prevPath}/index.js`,
+    content: `${importCmd}\n${exportCmd}`
+  }
 }

@@ -31,9 +31,11 @@
 
 <script>
 import Vue from 'vue'
+import utils from '@/utils'
 import { mapActions } from 'vuex'
 import ConfigRoute from '../config-modals/config-route'
 const modules = require.context('../../../views', true, /(\.vue)$/)
+const dataCache = {}
 export default {
   name: 'Menu',
   components: {
@@ -60,11 +62,13 @@ export default {
   },
   methods: {
     ...mapActions(['loadMenus', 'loadDictList']),
-    showConfigRouteModal (menuItem) {
+    showConfigRouteModal (menuName) {
       this.configRouteModal.show = true
-      this.configRouteModal.data.parent = menuItem || ''
+      dataCache[menuName] && (this.configRouteModal.data = utils.clone(dataCache[menuName]))
+      this.configRouteModal.data.parent = menuName || ''
     },
     configRouteConfirm (data) {
+      dataCache[data.parent] = utils.clone(data)
       Vue.bus.$emit('__router__', data)
     }
   }

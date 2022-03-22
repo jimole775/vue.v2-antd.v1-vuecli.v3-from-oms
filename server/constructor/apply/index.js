@@ -1,18 +1,23 @@
-const path = require('path')
-const { writeFileSync, object2file, stringMark } = require('../../utils')
-const basePath = 'apply'
-const mock = require('./mock.json')
-buildApply(mock)
-function buildApply (tabsTree) {
+// import mock from './mock.json'
+const { object2file, stringMark } = require('../../utils')
+// buildApply(mock)
+module.exports = function buildApply (tabsTree, { name: moduleName, parent: parentName }, basePath) {
+  let applyFiles = [
+    // {
+    //   path: '',
+    //   content: ''
+    // }
+  ]
   const tabIndexs = Object.keys(tabsTree)
   tabIndexs.forEach((tabIndex) => {
     const tabFolder = `${basePath}/tab${(tabIndex * 1 + 1)}`
     const permissionFolder = `${tabFolder}/permission`
     const uniPanels = getUniPanels(tabsTree[tabIndex])
-    buildPanels(permissionFolder, uniPanels)
-    buildPanelsLoadFile(tabFolder, tabsTree[tabIndex], uniPanels)
+    applyFiles = applyFiles.concat(buildPanels(permissionFolder, uniPanels))
+    applyFiles.push(buildPanelsLoadFile(tabFolder, tabsTree[tabIndex], uniPanels))
   })
-  buildTabLoadFile(basePath, tabsTree)
+  applyFiles.push(buildTabLoadFile(basePath, tabsTree))
+  return applyFiles
 }
 
 // 略过 nodes，把唯一的panel存进一个数组里，过滤重复项
@@ -28,11 +33,16 @@ function getUniPanels (tab) {
 
 function buildPanels (prevDir, panels) {
   const exportCode = `export default `
+  const res = []
   panels.forEach((panel, index) => {
     let fileName = ''
     fileName = `panel${index + 1}.js`
-    writeFileSync(path.join(prevDir, fileName), `${exportCode}${object2file(panel.formItems)}`)
+    res.push({
+      path: `${prevDir}/${fileName}`,
+      content: `${exportCode}${object2file(panel.formItems)}`
+    })
   })
+  return res
 }
 
 function buildPanelsLoadFile (prevPath, tab, uniPanels) {
@@ -43,7 +53,10 @@ function buildPanelsLoadFile (prevPath, tab, uniPanels) {
   const code3 = exportModule.cmd
   const code4 = object2file(exportModule.data)
   const fileContent = `${code1}\n${code2}\n${code3} ${code4}\n`
-  writeFileSync(path.join(prevPath, 'index.js'), fileContent)
+  return {
+    path: `${prevPath}/index.js`,
+    content: fileContent
+  }
 }
 
 function buildExportsModules (tab, permissionModules) {
@@ -91,7 +104,6 @@ function buildLoadsAndModules (uniPanels) {
 function buildTabLoadFile (prevPath, tabsTree) {
   let importCmd = ''
   let exportCmd = 'export default {\n'
-
   const tabIndexs = Object.keys(tabsTree)
   tabIndexs.forEach((tabIndex) => {
     const varTab = 'tab' + (tabIndex * 1 + 1)
@@ -99,8 +111,8 @@ function buildTabLoadFile (prevPath, tabsTree) {
     exportCmd += `  ${tabIndex * 1}: ${varTab}\n`
   })
   exportCmd += '}\n'
-  writeFileSync(
-    path.join(prevPath, 'index.js'),
-    `${importCmd}\n${exportCmd}`
-  )
+  return {
+    path: `${prevPath}/index.js`,
+    content: `${importCmd}\n${exportCmd}`
+  }
 }

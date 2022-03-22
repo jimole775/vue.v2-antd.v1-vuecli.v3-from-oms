@@ -13,10 +13,9 @@
 
 <script>
 import Vue from 'vue'
-// import api from '@/api'
+import api from '@/api'
 import utils from '@/utils'
 import Preview from './preview.vue'
-import buildConstructs from '../constructor/index.js'
 export default {
   components: { Preview },
   name: 'Header',
@@ -27,10 +26,10 @@ export default {
         data: {}
       },
       buildData: {
-        tabs: [],
+        tabsConfig: [],
         // 把所有对应的接口都写到 apimap 统一管理
         // 可多不可少
-        apimap: {
+        apimapConfig: {
           // 0: {
           //   apply: 'postkeyeventsstart', // 申请 接口
           //   approval: 'postkeyeventsapprove', // 审批 接口
@@ -69,7 +68,7 @@ export default {
     }
   },
   created () {
-    this.createListener(0)
+    this.createListener()
   },
   methods: {
     createListener () {
@@ -105,7 +104,7 @@ export default {
       })
 
       Vue.bus.$on('__router__', (data) => {
-        this.$set(this.buildData['routerConfig'], data)
+        this.buildData['routerConfig'] = data
       })
     },
     showPreview () {
@@ -116,20 +115,20 @@ export default {
       // 根据api来判断是否需要提交相关的tab数据
       // 比如：发起API没有填写，那么即使有formItems数据，也不需要提交
       const {
-        tabs,
-        apimap,
-        listConfig,
-        applyConfig,
-        approvalConfig,
-        routerConfig
+        tabsConfig = [],
+        apimapConfig = {},
+        listConfig = {},
+        applyConfig = {},
+        approvalConfig = {},
+        routerConfig = {}
       } = this.buildData
       const err = []
-      tabs.forEach((tab, index) => {
-        const api = apimap[index]
+      tabsConfig.forEach((tab, index) => {
+        const api = apimapConfig[index]
         const list = listConfig[index]
         const apply = applyConfig[index]
         const approval = approvalConfig[index]
-        if (!routerConfig || !routerConfig.name || !routerConfig.path) {
+        if (!routerConfig || !routerConfig.path) {
           err.push('请先在左侧菜单栏配置【路由】地址！')
         }
         if (!api || !api.list || !(api.list && api.list.url && api.list.method)) {
@@ -173,19 +172,18 @@ export default {
           content: err[0]
         })
       } else {
-        buildConstructs(this.buildData)
-        // this.$modal.confirm({
-        //   title: '提示',
-        //   content: '是否提交？',
-        //   onOk: async () => {
-        //     const res = await api.postbuild({ buildConstructs: this.buildData })
-        //     if (res.code === 200) {
-        //       this.$message.success('提交并构建成功！')
-        //     } else {
-        //       this.$message.warning('构建失败！')
-        //     }
-        //   }
-        // })
+        this.$modal.confirm({
+          title: '提示',
+          content: '是否提交？',
+          onOk: async () => {
+            const res = await api.postbuild({ buildData: this.buildData })
+            if (res.code === 200) {
+              this.$message.success('提交并构建成功！')
+            } else {
+              this.$message.warning('构建失败！')
+            }
+          }
+        })
       }
     }
   }

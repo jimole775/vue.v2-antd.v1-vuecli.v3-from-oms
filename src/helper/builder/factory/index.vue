@@ -197,7 +197,11 @@ export default {
       Vue.bus.$emit('__apimap__', rank, data)
     },
     handup (data) {
-      Vue.bus.$emit('__tabs__', data)
+      const cData = utils.clone(data)
+      cData.forEach((item) => {
+        delete item.api
+      })
+      Vue.bus.$emit('__tabs__', cData)
     }
   }
 }

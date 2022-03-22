@@ -1,8 +1,8 @@
 // import mock from './mock.json'
-import { object2file } from '@builder/utils'
-const basePath = 'list'
+const utils = require('../../utils')
+// const basePath = 'list'
 // buildList(mock)
-export default function buildList (tabsTree) {
+module.exports = function buildList (tabsTree, { name: moduleName, parent: parentName }, basePath) {
   const listFiles = [
     // {
     //   path: '',
@@ -23,7 +23,7 @@ export default function buildList (tabsTree) {
 
 function buildColumns (prevDir, columns) {
   const exportCode = `export default `
-  const exportData = object2file(columns)
+  const exportData = utils.object2file(columns)
   return {
     path: `${prevDir}/columns.js`,
     content: `${exportCode}${exportData}`
@@ -32,7 +32,7 @@ function buildColumns (prevDir, columns) {
 
 function buildSearchor (prevDir, searchor) {
   const exportCode = `export default `
-  const exportData = object2file(searchor)
+  const exportData = utils.object2file(searchor)
   return {
     path: `${prevDir}/searchor.js`,
     content: `${exportCode}${exportData}`

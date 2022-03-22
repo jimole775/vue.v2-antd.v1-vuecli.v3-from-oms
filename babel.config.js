@@ -18,5 +18,6 @@ module.exports = {
       }
     ],
     '@babel/plugin-syntax-jsx'
-  ]
+  ],
+  sourceType: 'unambiguous'
 }

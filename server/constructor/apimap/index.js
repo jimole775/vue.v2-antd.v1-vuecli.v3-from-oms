@@ -1,20 +1,22 @@
-const path = require('path')
-const { writeFileSync, object2file, stringMark } = require('../../utils')
-const basePath = 'apimap'
-const mock = require('./mock.json')
-buildApimap(mock)
-function buildApimap (tabApimap) {
-  buildApimapFiles(tabApimap)
-  buildApiFuncFile(tabApimap)
+// import mock from './mock.json'
+const { object2file, stringMark } = require('../../utils')
+module.exports = function buildApimap (tabApimap, { name: moduleName, parent: parentName }, basePath) {
+  const parentPath = parentName ? `${parentName}/` : ''
+  const apiFuncFile = `/src/api/modules/${parentPath}${moduleName}.js`
+  const apiFiles = buildApimapFiles(tabApimap, basePath)
+  apiFiles.push(buildApiFuncFile(tabApimap, apiFuncFile))
+  return apiFiles
 }
 
-function buildApimapFiles (tabApimap) {
+function buildApimapFiles (tabApimap, prevPath) {
+  const files = []
   const tabIndexs = Object.keys(tabApimap)
   tabIndexs.forEach((tabIndex) => {
-    const tabFolder = `${basePath}/tab${(tabIndex * 1 + 1)}`
-    buildApimapFile(tabFolder, tabApimap[tabIndex])
+    const tabFolder = `${prevPath}/tab${(tabIndex * 1 + 1)}`
+    files.push(buildApimapFile(tabFolder, tabApimap[tabIndex]))
   })
-  buildTabLoadFile(basePath, tabApimap)
+  files.push(buildTabLoadFile(prevPath, tabApimap))
+  return files
 }
 
 function buildApimapFile (tabFolder, curApimap) {
@@ -27,13 +29,13 @@ function buildApimapFile (tabFolder, curApimap) {
     const name = `${method}${apiItem.url.replace(/\//g, '')}`
     exportData[key] = name
   })
-  writeFileSync(
-    path.join(tabFolder, 'index.js'),
-    `${exportCode}${object2file(exportData)}\n`
-  )
+  return {
+    path: `${tabFolder}/index.js`,
+    content: `${exportCode}${object2file(exportData)}\n`
+  }
 }
 
-function buildApiFuncFile (tabApimap) {
+function buildApiFuncFile (tabApimap, apiFuncFile) {
   const tabIndexs = Object.keys(tabApimap)
   const inportCode1 = `import http from '@/utils/http'\n`
   const inportCode2 = `import utils from '@/utils'\n`
@@ -41,17 +43,16 @@ function buildApiFuncFile (tabApimap) {
   const exportData = {}
   let hasExportApi = false
   tabIndexs.forEach((tabIndex) => {
-    // const tabFolder = `${basePath}/tab${(tabIndex * 1 + 1)}`
     const curApimap = tabApimap[tabIndex]
     if (curApimap['export'] && curApimap['export'].url) {
       hasExportApi = true
     }
     buildApiFunString(exportData, curApimap)
   })
-  writeFileSync(
-    path.join(basePath, 'api.js'),
-    `${inportCode1}${hasExportApi ? inportCode2 : ''}${exportCode}${object2file(exportData)}\n`
-  )
+  return {
+    path: apiFuncFile,
+    content: `${inportCode1}${hasExportApi ? inportCode2 : ''}${exportCode}${object2file(exportData)}\n`
+  }
 }
 
 function buildApiFunString (exportData, apimap) {
@@ -62,14 +63,14 @@ function buildApiFunString (exportData, apimap) {
     // 导出类型的函数名不同
     if (apimap['export'] && apimap['export'].url) {
       const exportFuncName = method === 'get' ? 'exportGetFile' : 'exportPostFile'
-      exportData[name] = stringMark.noQuotation(`function (params) {\n` + 
-        `${space(4)}return utils.${exportFuncName}('${apiItem.url}', params)\n` + 
+      exportData[name] = stringMark.noQuotation(`function (params) {\n` +
+        `${space(4)}return utils.${exportFuncName}('${apiItem.url}', params)\n` +
         `${space(2)}}`
       )
     } else {
       const params = createParamString(apiItem)
-      exportData[name] = stringMark.noQuotation(`function (params) {\n` + 
-        `${space(4)}return http.${method}('${apiItem.url}', ${params})\n` + 
+      exportData[name] = stringMark.noQuotation(`function (params) {\n` +
+        `${space(4)}return http.${method}('${apiItem.url}', ${params})\n` +
         `${space(2)}}`
       )
     }
@@ -80,7 +81,7 @@ function buildApiFunString (exportData, apimap) {
 function createParamString (apiItem) {
   let res = null
   // 如果params没有设置，那么直接返回 params 字符串
-  if (apiItem.params && !Object.keys(apiItem.params).length) return 'params'
+  if ((apiItem.params && !Object.keys(apiItem.params).length) || !apiItem.params) return 'params'
   if (apiItem.method === 'GET') {
     res = `{
       params: {
@@ -122,10 +123,10 @@ function buildTabLoadFile (prevPath, tabsTree) {
     exportCmd += `${space(2)}${tabIndex * 1}: ${varTab}\n`
   })
   exportCmd += '}\n'
-  writeFileSync(
-    path.join(prevPath, 'index.js'),
-    `${importCmd}\n${exportCmd}`
-  )
+  return {
+    path: `${prevPath}/index.js`,
+    content: `${importCmd}\n${exportCmd}`
+  }
 }
 
 function space (len) {
