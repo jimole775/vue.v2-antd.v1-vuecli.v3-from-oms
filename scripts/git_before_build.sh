@@ -27,13 +27,16 @@ create_tar(){
 main(){
   i=0
   has_done=0
+  org_branch="builder"
+  new_branch=`expr $org_branch-$1`
   create_tar
   git_address=("xxx" "xxxx")
   while [[ $has_done -eq 0 && $i -lt ${#git_address[@]} ]]
   do
     git remote add origin ${git_address[$i]}
-    git pull origin builder
-
+    git pull origin $org_branch
+    git checkout -b $new_branch
+    git push origin $new_branch
     # pull无异常，就跳过
     if [ $? -eq 0 ];then
       has_done=1

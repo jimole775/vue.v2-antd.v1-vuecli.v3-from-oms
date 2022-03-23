@@ -68,9 +68,43 @@ export default {
         if (err) {
           return false
         }
+        const res = this.validateRoute(values)
+        if (res.message) {
+          return this.$modal.warning({
+            title: '提示',
+            content: res.message
+          })
+        }
         this.modal.show = false
         this.$emit('update', utils.clone(values))
       })
+    },
+    validateRoute (values) {
+      // 确保路由是唯一的
+      const routes = this.$router.options.routes || []
+      const res = {
+        path: values.path,
+        name: values.name,
+        message: ''
+      }
+      recursion(routes, res)
+      function recursion (children, res) {
+        for (let i = 0; i < children.length; i++) {
+          const item = children[i]
+          if (item.path === res.path) {
+            res.message = 'URL访问地址已存在'
+            break
+          }
+          if (item.name === res.name) {
+            res.message = '文件存放目录名已存在'
+            break
+          }
+          if (!res.message && item.children) {
+            recursion(item.children, res)
+          }
+        }
+      }
+      return res
     }
   }
 }

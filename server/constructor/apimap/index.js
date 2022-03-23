@@ -25,9 +25,7 @@ function buildApimapFile (tabFolder, curApimap) {
   const keys = Object.keys(curApimap)
   keys.forEach((key) => {
     const apiItem = curApimap[key]
-    const method = apiItem.method.toLocaleLowerCase()
-    const name = `${method}${apiItem.url.replace(/\//g, '')}`
-    exportData[key] = name
+    exportData[key] = buildFunctionName(apiItem)
   })
   return {
     path: `${tabFolder}/index.js`,
@@ -59,7 +57,7 @@ function buildApiFunString (exportData, apimap) {
   Object.keys(apimap).forEach((apiName) => {
     const apiItem = apimap[apiName]
     const method = apiItem.method.toLocaleLowerCase()
-    const name = `${method}${apiItem.url.replace(/\//g, '')}`
+    const name = buildFunctionName(apiItem)
     // 导出类型的函数名不同
     if (apimap['export'] && apimap['export'].url) {
       const exportFuncName = method === 'get' ? 'exportGetFile' : 'exportPostFile'
@@ -76,6 +74,11 @@ function buildApiFunString (exportData, apimap) {
     }
   })
   return exportData
+}
+
+// 用url和method拼装成函数名，需要去掉 / 和 - _
+function buildFunctionName ({ method, url }) {
+  return `${method.toLocaleLowerCase()}${url.replace(/[\/\-_]/g, '')}`
 }
 
 function createParamString (apiItem) {

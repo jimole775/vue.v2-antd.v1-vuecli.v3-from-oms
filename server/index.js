@@ -19,5 +19,5 @@ app.get('/', (req, res) => {
   res.send('hello world')
 })
 
-app.post('/build', resHandler(require('./builder')))
+app.post('/build', resHandler(require('./api/builder')))
 app.listen(cmdParam('port') || 8888)
