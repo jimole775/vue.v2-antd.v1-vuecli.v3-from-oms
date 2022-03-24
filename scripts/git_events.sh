@@ -1,6 +1,7 @@
 #! /usr/bin/bash
 runenv=$(pwd)
-git_address=("xxx" "xxx")
+git_origin=$(git remote show -n)
+git_address=$(git remote get-url $git_origin)
 git_name=${git_address[0]##*/}
 pro_name=${git_name%.*}
 org_branch="builder"
@@ -43,25 +44,14 @@ mv_files(){
 }
 
 git_pull(){
-  i=0
-  has_done=0
   create_target
-  while [[ $has_done -eq 0 && $i -lt ${#git_address[@]} ]]
-  do
-    addr=${git_address[$i]}
-    git remote add origin $addr
-    git remote -v
-    git pull origin $org_branch
-    # pull无异常，就跳过
-    if [ $? -eq 0 ];then
-      has_done=1
-    else
-      err "$addr 出现异常!"
-      # 否则, 先删除origin, 再进入下一个循环
-      git remote rm origin
-      let i++
-    fi
-  done
+  git remote add $git_origin $git_address
+  git remote -v
+  git pull $git_origin $org_branch
+  # pull无异常，就跳过
+  if [ $? -eq 1 ];then
+    err "$git_address 拉取分支出现异常!"
+  fi
   # 先创建 分支
   git checkout -b $new_branch
 }
