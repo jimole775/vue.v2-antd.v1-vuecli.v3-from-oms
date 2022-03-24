@@ -1,9 +1,10 @@
+const path = require('path')
 const cmdParam = require('./utils/cmd-param')
 const Express = require('express')
 const resHandler = require('./res-handler')
 const app = new Express()
 const bodyParser = require('body-parser')
-
+global.src_path = path.resolve(__dirname, '../')
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use(bodyParser.json())
