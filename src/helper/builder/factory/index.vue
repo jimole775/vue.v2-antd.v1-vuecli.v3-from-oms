@@ -43,6 +43,15 @@ import { mapActions } from 'vuex'
 import ApiButton from '@builder/config-modules/api-button'
 import CustomParams from '@builder/config-modules/custom-params'
 import ConfigTab from '@builder/config-modals/config-tab'
+let caches = {}
+const cached = (data) => {
+  caches = utils.clone(data)
+}
+const revert = (data) => {
+  if (!utils.isEmptyObject(caches) && utils.isEmptyObject(data)) {
+    data = utils.clone(caches)
+  }
+}
 export default {
   components: {
     ApiButton,
@@ -85,12 +94,16 @@ export default {
     tabs: {
       handler (data) {
         if (data && data.length) {
+          cached(data)
           this.handup(this.getTabsData(data))
         }
       },
       deep: true,
       immediate: true
     }
+  },
+  mounted () {
+    revert(this.tabs)
   },
   methods: {
     ...mapActions(['setTabType']),
@@ -121,16 +134,8 @@ export default {
       this.tabs.splice(index, 1)
     },
     editTab (tab) {
-      // const { roles, config } = tab.permission || {}
       this.editModal.data = utils.clone(tab)
       this.editModal.show = true
-      // setTimeout(() => {
-      //   this.form.setFieldsValue({
-      //     tabName: tab.tabName,
-      //     roles: roles,
-      //     config: config
-      //   })
-      // })
     },
     addTab (tab) {
       const nPane = this.upgradeTab(utils.clone(tab))

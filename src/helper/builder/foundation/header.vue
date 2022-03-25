@@ -1,7 +1,9 @@
 <template>
   <div>
-    <a-button @click="handup">完成配置</a-button>
+    <a-button @click="handup">提交</a-button>
     <a-button @click="showPreview">预览</a-button>
+    <a-button @click="showPreview">重置</a-button>
+    <a-button @click="showPreview">选择其他项目</a-button>
     <div class="pull-right">
       <a-avatar icon="user" class="mr5" :src="user.image" />
       <span class="black" v-text="user.name" />
@@ -16,6 +18,15 @@ import Vue from 'vue'
 import api from '@/api'
 import utils from '@/utils'
 import Preview from './preview.vue'
+let caches = {}
+const cached = (data) => {
+  caches = utils.clone(data)
+}
+const revert = (data) => {
+  if (!utils.isEmptyObject(caches) && utils.isEmptyObject(data)) {
+    data = utils.clone(caches)
+  }
+}
 export default {
   components: { Preview },
   name: 'Header',
@@ -70,10 +81,14 @@ export default {
   created () {
     this.createListener()
   },
+  mounted () {
+    revert(this.buildData)
+  },
   methods: {
     createListener () {
       Vue.bus.$on('__tabs__', (value) => {
         this.buildData['tabsConfig'] = value
+        cached(this.buildData)
       })
 
       Vue.bus.$on('__apimap__', (tabIndex, value) => {
@@ -86,6 +101,8 @@ export default {
           ...already,
           ...value
         }
+
+        cached(this.buildData)
       })
 
       Vue.bus.$on('__list__', (tabIndex, value) => {
@@ -93,18 +110,22 @@ export default {
           this.buildData['listConfig'][tabIndex] = Object.create(null)
         }
         this.$set(this.buildData['listConfig'], tabIndex, value)
+        cached(this.buildData)
       })
 
       Vue.bus.$on('__apply__', (tabIndex, value) => {
         this.$set(this.buildData['applyConfig'], tabIndex, value)
+        cached(this.buildData)
       })
 
       Vue.bus.$on('__approval__', (tabIndex, value) => {
         this.$set(this.buildData['approvalConfig'], tabIndex, value)
+        cached(this.buildData)
       })
 
       Vue.bus.$on('__router__', (data) => {
         this.buildData['routerConfig'] = data
+        cached(this.buildData)
       })
     },
     showPreview () {
@@ -180,7 +201,7 @@ export default {
             if (res.code === 200) {
               this.$message.success('提交并构建成功！')
             } else {
-              this.$message.warning('构建失败！')
+              this.$message.warning(res.message)
             }
           }
         })
@@ -188,4 +209,5 @@ export default {
     }
   }
 }
+
 </script>

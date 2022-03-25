@@ -25,7 +25,6 @@ import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
 import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels.vue'
-
 export default {
   components: {
     LogBar,
@@ -148,7 +147,6 @@ export default {
           inputs: []
         }
       }
-
       const { radios = [], inputs = [] } = this.operation
       const newRadios = panel.operationItem.radios
       const newInputs = panel.operationItem.inputs
@@ -161,7 +159,6 @@ export default {
           newRadios.push(radioModel)
         }
       })
-
       transferFormItems(inputs, nodeKey).forEach((input) => {
         const inputModel = {
           ...input,
