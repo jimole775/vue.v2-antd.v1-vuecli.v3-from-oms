@@ -1,7 +1,8 @@
 <template>
   <div>
-    <a-button @click="handup">提交</a-button>
-    <a-button @click="showPreview">预览</a-button>
+    <a-button @click="builded">构建</a-button>
+    <a-button @click="stage">暂存</a-button>
+    <!-- <a-button @click="showPreview">预览</a-button> -->
     <a-button @click="showPreview">重置</a-button>
     <a-button @click="showPreview">选择其他项目</a-button>
     <div class="pull-right">
@@ -18,15 +19,6 @@ import Vue from 'vue'
 import api from '@/api'
 import utils from '@/utils'
 import Preview from './preview.vue'
-let caches = {}
-const cached = (data) => {
-  caches = utils.clone(data)
-}
-const revert = (data) => {
-  if (!utils.isEmptyObject(caches) && utils.isEmptyObject(data)) {
-    data = utils.clone(caches)
-  }
-}
 export default {
   components: { Preview },
   name: 'Header',
@@ -76,19 +68,22 @@ export default {
   computed: {
     user () {
       return this.$store.state.global.user
+    },
+    viewData () {
+      return this.$store.state.builder.viewData
     }
   },
   created () {
     this.createListener()
   },
   mounted () {
-    revert(this.buildData)
+    // revert(this.buildData)
   },
   methods: {
     createListener () {
       Vue.bus.$on('__tabs__', (value) => {
         this.buildData['tabsConfig'] = value
-        cached(this.buildData)
+        // cached(this.buildData)
       })
 
       Vue.bus.$on('__apimap__', (tabIndex, value) => {
@@ -101,8 +96,6 @@ export default {
           ...already,
           ...value
         }
-
-        cached(this.buildData)
       })
 
       Vue.bus.$on('__list__', (tabIndex, value) => {
@@ -110,22 +103,18 @@ export default {
           this.buildData['listConfig'][tabIndex] = Object.create(null)
         }
         this.$set(this.buildData['listConfig'], tabIndex, value)
-        cached(this.buildData)
       })
 
       Vue.bus.$on('__apply__', (tabIndex, value) => {
         this.$set(this.buildData['applyConfig'], tabIndex, value)
-        cached(this.buildData)
       })
 
       Vue.bus.$on('__approval__', (tabIndex, value) => {
         this.$set(this.buildData['approvalConfig'], tabIndex, value)
-        cached(this.buildData)
       })
 
       Vue.bus.$on('__router__', (data) => {
         this.buildData['routerConfig'] = data
-        cached(this.buildData)
       })
     },
     showPreview () {
@@ -185,7 +174,7 @@ export default {
       })
       return err
     },
-    handup () {
+    builded () {
       const err = this.validBuildedData()
       if (err.length) {
         this.$modal.warning({
@@ -197,14 +186,28 @@ export default {
           title: '提示',
           content: '是否提交？',
           onOk: async () => {
-            const res = await api.postbuild({ buildData: this.buildData })
+            const res = await api.postbuilderbuilded({ buildData: this.buildData })
             if (res.code === 200) {
               this.$message.success('提交并构建成功！')
+              // 构建完成后，把当前的视图数据一并保存
+              api.postbuilderstage({ viewData: this.viewData })
             } else {
               this.$message.warning(res.message)
             }
           }
         })
+      }
+    },
+    async stage () {
+      if (this.viewData.isEmpty) {
+        this.$message.warning('没有数据可以保存！')
+      } else {
+        const res = await api.postbuilderstage({ viewData: this.viewData })
+        if (res.code === 200) {
+          this.$message.success('保存成功')
+        } else {
+          this.$message.warning(res.message)
+        }
       }
     }
   }

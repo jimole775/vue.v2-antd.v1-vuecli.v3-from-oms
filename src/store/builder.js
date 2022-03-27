@@ -1,12 +1,12 @@
-import storage from './storage'
 export default {
   state: {
     tabType: 0,
     buildData: {},
     stepNodes: [],
-    existModules: [],
-    currentModule: '',
+    projects: [],
+    currentJob: '',
     viewData: {
+      name: '',
       isEmpty: true,
       tabs: [],
       list: {},
@@ -27,21 +27,13 @@ export default {
       return state.buildData
     },
     getViewData (state) {
-      if (!state.viewData.length) {
-        return storage.getItem(`${state.currentModule}_viewData`)
-      } else {
-        return state.viewData
-      }
+      return state.viewData
     },
-    getExistModules (state) {
-      if (!state.existModules.length) {
-        return storage.getItem(`${state.currentModule}_existModules`)
-      } else {
-        return state.existModules
-      }
+    getProjects (state) {
+      return state.projects
     },
-    getCurrentModule (state) {
-      return state.currentModule
+    getCurrentJob (state) {
+      return state.currentJob
     }
   },
   mutations: {
@@ -57,14 +49,12 @@ export default {
     commitViewData (state, key, data) {
       state.viewData.isEmpty = false
       state.viewData[key] = data
-      storage.setItem(`${state.currentModule}_viewData`, state.viewData)
     },
-    commitExistModules (state, data) {
-      state.existModules.push(data)
-      storage.setItem(`${state.currentModule}_existModules`, state.existModules)
+    commitProjects (state, data) {
+      state.projects.push(data)
     },
-    commitCurrentModule (state, name) {
-      state.currentModule = name
+    commitCurrentJob (state, name) {
+      state.currentJob = name
     }
   },
   actions: {
@@ -80,10 +70,10 @@ export default {
     setViewData ({ commit, state }, key, data) {
       commit('commitViewData', key, data)
     },
-    setCurrentModule ({ commit, state }, name) {
-      commit('commitCurrentModule', name)
-      if (!state.existModules.includes(name)) {
-        commit('commitExistModules', name)
+    setCurrentJob ({ commit, state }, name) {
+      commit('commitCurrentJob', name)
+      if (!state.projects.includes(name)) {
+        commit('commitProjects', name)
       }
     }
   }
