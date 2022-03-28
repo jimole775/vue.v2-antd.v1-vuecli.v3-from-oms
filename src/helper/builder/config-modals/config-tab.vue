@@ -64,7 +64,7 @@
 import mixins from '@builder/mixins'
 import CustomParams from '@builder/config-modules/custom-params'
 export default {
-  mixins,
+  mixins: [mixins],
   components: {
     CustomParams
   },

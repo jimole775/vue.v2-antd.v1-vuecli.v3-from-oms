@@ -6,9 +6,7 @@ module.exports = function (req, res) {
     try {
       const projects = readDirSync(path.join(db, './'))
       return resolve({
-        data: {
-          projects: projects.map(i => i.replace(/\.json$/, ''))
-        }
+        projects: projects.map(i => i.replace(/\.json$/, ''))
       })
     } catch (error) {
       return resolve('获取失败:', error)

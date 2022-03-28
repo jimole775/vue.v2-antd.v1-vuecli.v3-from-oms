@@ -20,7 +20,7 @@ import utils from '@/utils'
 import mixins from '@builder/mixins'
 import Preview from './preview.vue'
 export default {
-  mixins,
+  mixins: [mixins],
   name: 'Header',
   components: { Preview },
   data () {
@@ -69,12 +69,6 @@ export default {
   computed: {
     user () {
       return this.$store.state.global.user
-    },
-    viewData () {
-      return this.$store.state.builder.viewData
-    },
-    buildData () {
-      return this.$store.state.builder.buildData
     }
   },
   created () {

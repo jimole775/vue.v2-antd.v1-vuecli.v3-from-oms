@@ -7,9 +7,7 @@ module.exports = function (req, res) {
     if (name) {
       try {
         const viewData = readFileSync(path.join(db, name + '.json'))
-        return resolve({
-          data: { viewData }
-        })
+        return resolve({ viewData })
       } catch (error) {
         return resolve('获取失败:', error)
       }

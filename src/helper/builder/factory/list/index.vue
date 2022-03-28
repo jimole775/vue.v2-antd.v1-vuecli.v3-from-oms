@@ -21,7 +21,7 @@ import TableSummary from './modules/table-summary'
 import BuildFormItems from '@builder/config-modules/build-form-items'
 import TableColumns from './modules/table-columns'
 export default {
-  mixins,
+  mixins: [mixins],
   components: {
     TableSummary,
     TableColumns,

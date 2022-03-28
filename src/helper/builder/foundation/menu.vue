@@ -37,7 +37,7 @@ import ConfigRoute from '../config-modals/config-route'
 const modules = require.context('../../../views', true, /(\.vue)$/)
 // const dataCache = {}
 export default {
-  mixins,
+  mixins: [mixins],
   name: 'Menu',
   components: {
     ConfigRoute

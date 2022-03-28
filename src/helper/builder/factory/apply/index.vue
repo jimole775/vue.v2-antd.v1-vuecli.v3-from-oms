@@ -13,7 +13,7 @@ import mixins from '@builder/mixins'
 import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels'
 import SubmitBar from './submit-bar.vue'
 export default {
-  mixins,
+  mixins: [mixins],
   components: {
     SubmitBar,
     // ApprovalNodesMap,

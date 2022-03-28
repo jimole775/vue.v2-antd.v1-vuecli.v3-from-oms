@@ -65,7 +65,7 @@ const level1 = 2 * 3
 const level2 = 3 * 6
 // const level3 = 4 * 8
 export default {
-  mixins,
+  mixins: [mixins],
   name: 'Layout',
   components: {
     Menu,
@@ -137,6 +137,7 @@ export default {
     },
     configRouteConfirm (data) {
       this.currentJob = data.name
+      this.setViewData({ key: 'name', value: data.name })
       this.setViewData({ key: 'router', value: data })
       this.setBuildData({ key: 'routerConfig', value: data })
     },

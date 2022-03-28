@@ -11,9 +11,7 @@ module.exports = function (req, res) {
       try {
         writeFileSync(path.join(db, viewData.name + '.json'), viewData)
         return resolve({
-          data: {
-            name: viewData.name
-          }
+          name: viewData.name
         })
       } catch (error) {
         return resolve('暂存失败:', error)

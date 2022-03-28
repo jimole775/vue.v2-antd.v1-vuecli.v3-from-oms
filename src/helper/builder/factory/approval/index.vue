@@ -26,7 +26,7 @@ import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
 import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels.vue'
 export default {
-  mixins,
+  mixins: [mixins],
   components: {
     LogBar,
     StepBar,

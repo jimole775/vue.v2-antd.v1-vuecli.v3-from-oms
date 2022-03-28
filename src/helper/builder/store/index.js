@@ -46,6 +46,9 @@ export default {
     },
     commitBuildData (state, { key, index, value }) {
       if (utils.isValuable(index)) {
+        if (!state.buildData[key]) {
+          state.buildData[key] = {}
+        }
         if (key === 'apimapConfig') {
           const already = state.buildData[key][index] || {}
           state.buildData['apimapConfig'][index] = {
