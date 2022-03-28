@@ -32,8 +32,8 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
 import utils from '@/utils'
+import mixins from '@builder/mixins'
 import baseMixins from '@/mixins/baseMixins'
 import todoMixins from '@/mixins/todoMixins'
 import ProjectList from './list'
@@ -61,7 +61,7 @@ export default {
     ProjectApply,
     ProjectApproval
   },
-  mixins: [baseMixins, todoMixins],
+  mixins: [baseMixins, mixins, todoMixins],
   data () {
     return {
       editModal: {
@@ -199,14 +199,19 @@ export default {
       return lists
     },
     handupApimap (rank, data) {
-      Vue.bus.$emit('__apimap__', rank, data)
+      // Vue.bus.$emit('__apimap__', rank, data)
+      this.setViewData({ key: 'apimap', index: rank, value: data })
+      this.setBuildData({ key: 'apimapConfig', index: rank, value: data })
     },
     handup (data) {
       const cData = utils.clone(data)
       cData.forEach((item) => {
         delete item.api
       })
-      Vue.bus.$emit('__tabs__', cData)
+
+      this.setViewData({ key: 'tabs', value: cData })
+      this.setBuildData({ key: 'tabsConfig', value: cData })
+      // Vue.bus.$emit('__tabs__', cData)
     }
   }
 }

@@ -1,3 +1,4 @@
+import utils from '@/utils'
 export default {
   state: {
     tabType: 0,
@@ -43,12 +44,24 @@ export default {
     commitTabType (state, type) {
       state.tabType = type
     },
-    commitBuildData (state, data) {
-      state.buildData = data
+    commitBuildData (state, { key, index, value }) {
+      if (utils.isValuable(index)) {
+        if (key === 'apimapConfig') {
+          const already = state.buildData[key][index] || {}
+          state.buildData['apimapConfig'][index] = {
+            ...already,
+            ...value
+          }
+        } else {
+          state.buildData[key][index] = value
+        }
+      } else {
+        state.buildData[key] = value
+      }
     },
-    commitViewData (state, key, data) {
+    commitViewData (state, { key, value }) {
       state.viewData.isEmpty = false
-      state.viewData[key] = data
+      state.viewData[key] = value
     },
     commitProjects (state, data) {
       state.projects.push(data)
@@ -67,13 +80,12 @@ export default {
     setBuildData ({ commit, state }, data) {
       commit('commitBuildData', data)
     },
-    setViewData ({ commit, state }, key, data) {
-      commit('commitViewData', key, data)
+    setViewData ({ commit, state }, data) {
+      commit('commitViewData', data)
     },
     setCurrentJob ({ commit, state }, name) {
-      commit('commitCurrentJob', name)
-      if (!state.projects.includes(name)) {
-        commit('commitProjects', name)
+      if (state.currentJob !== name) {
+        commit('commitCurrentJob', name)
       }
     }
   }

@@ -37,18 +37,17 @@
       </a-layout>
     </a-layout>
     <div v-else class="layout-project-list">
-      <a-row style="display: table">
+      <a-row v-for="(cols, rowIndex) in viewMatrix" :key="rowIndex" :style="{ height: height }">
         <a-col
+          v-for="(projectItem, colIndex) in cols"
           :span="span"
-          :key="pro"
-          v-for="pro in projects"
+          :key="colIndex"
+          class="project-item"
         >
-          <a @click="() => takeJob(pro)">{{ pro }}</a>
-        </a-col>
-        <a-col
-          :span="span"
-        >
-          <a @click="createJob"><a-icon type="plus-circle" /></a>
+          <div>
+            <a v-if="projectItem.name === '__addition__'" class="icon-font-size" @click="() => createJob(rowIndex)"><a-icon type="plus-circle" /></a>
+            <a v-else class="icon-font-size" @click="() => takeJob(projectItem, rowIndex, colIndex)">{{ projectItem.name || ' ' }}</a>
+          </div>
         </a-col>
       </a-row>
       <ConfigRoute :modal="configRouteModal" @update="configRouteConfirm" />
@@ -56,14 +55,17 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
 import api from '@/api'
+import utils from '@/utils'
 import Menu from './menu'
 import Header from './header'
+import mixins from '@builder/mixins'
 import ConfigRoute from '../config-modals/config-route'
-const minLength = 3
-const maxLength = 6
+const level1 = 2 * 3
+const level2 = 3 * 6
+// const level3 = 4 * 8
 export default {
+  mixins,
   name: 'Layout',
   components: {
     Menu,
@@ -73,40 +75,104 @@ export default {
   data () {
     return {
       currentJob: '',
-      projects: []
+      projects: [],
+      viewMatrix: [[], []],
+      configRouteModal: {
+        show: false,
+        disparent: false,
+        cache: {},
+        data: {}
+      }
     }
   },
   computed: {
     span () {
-      if (this.projects.length <= minLength) {
-        return 24 / minLength
-      } else {
-        return 24 / maxLength
-      }
+      const cols = this.viewMatrix[0].length || 3
+      return 24 / cols
+    },
+    height () {
+      const rows = this.viewMatrix.length || 2
+      return (100 / rows) + '%'
     }
   },
   mounted () {
-    const res = api.getbuilderprojects()
-    if (res.code === 200) {
-      this.projects = res.data.projects
-    }
+    api.getbuilderprojects().then((res) => {
+      if (res.code === 200) {
+        this.projects = res.data.projects || []
+      }
+      this.projects.push('__addition__')
+      this.buildMatrix()
+    })
   },
   methods: {
-    showConfigRouteModal (menuName) {
+    buildMatrix () {
+      // 使用矩阵陈列，2 * 3 | 3 * 6 | 4 * 8
+      let curLength = this.projects.length + 1
+      if (curLength <= level1) {
+        this.viewMatrix = createMatrixItem(2, 3)
+      } else if (curLength > level1) {
+        this.viewMatrix = createMatrixItem(3, 6)
+      } else if (curLength > level2) {
+        this.viewMatrix = createMatrixItem(4, 8)
+      }
+      this.fillProjectInfo()
+    },
+    fillProjectInfo () {
+      const rows = this.viewMatrix.length
+      this.projects.forEach((pro, index) => {
+        const colIndex = index % rows
+        const rowIndex = Math.ceil(index / rows)
+        this.viewMatrix[rowIndex][colIndex] = {
+          x: rowIndex,
+          y: colIndex,
+          name: pro
+        }
+      })
+    },
+    showConfigRouteModal () {
       this.configRouteModal.show = true
-      this.configRouteModal.data.parent = menuName || ''
+      // 放开parent的编辑权限
+      this.configRouteModal.disparent = false
+      this.configRouteModal.data = utils.clone(this.viewData.router)
     },
     configRouteConfirm (data) {
       this.currentJob = data.name
-      Vue.bus.$emit('__router__', data)
+      this.setViewData({ key: 'router', value: data })
+      this.setBuildData({ key: 'routerConfig', value: data })
     },
     takeJob (pro) {
       this.currentJob = pro
     },
     createJob () {
       this.showConfigRouteModal()
+    },
+    loadViewData (name) {
+      api.getbuilderviewdata(name).then(res => {
+        if (res.code === 200) {
+          const keys = ['apply', 'approval', 'list', 'router', 'tabs', 'apimap', 'name']
+          const data = res.data.viewData || {}
+          keys.forEach(k => {
+            if (utils.isValuable(data[k])) {
+              this.setViewData({ key: k, value: data[k] })
+            }
+          })
+        }
+      })
     }
   }
+}
+
+function createMatrixItem (rowLen, colLen) {
+  const rows = []
+  const cols = []
+  const item = Object.create(null)
+  while (colLen--) {
+    cols[colLen] = utils.clone(item)
+  }
+  while (rowLen--) {
+    rows[rowLen] = utils.clone(cols)
+  }
+  return rows
 }
 
 </script>
@@ -130,21 +196,26 @@ export default {
 .layout, .layout-project-list {
   width: 100%;
   height: 100%;
+  background: #333;
 }
 .layout-project-list [class~='ant-col'] {
+  display: flex;
+  align-items: center;
   background: transparent;
-  border: 0;
+  height: 100%;
+  border-right: 1px solid #222;
+  border-bottom: 1px solid #222;
+  border-top: 1px solid #444;
+  border-left: 1px solid #444;
+  > div {
+    margin: 0 auto;
+  }
 }
-.layout-project-list [class~='ant-col'] > div {
-  background: #00a0e9;
-  height: 120px;
-  line-height: 120px;
-  font-size: 13px;
+
+.icon-font-size {
+  i.anticon {
+    font-size: 6rem;
+  }
 }
-.layout-project-list pre {
-  background: #f9f9f9;
-  border-radius: 6px;
-  font-size: 13px;
-  padding: 8px 16px;
-}
+
 </style>

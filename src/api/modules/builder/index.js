@@ -18,11 +18,11 @@ export default {
     return http.post(`${host}/builder/delete`, data)
   },
   // 获取视图缓存
-  postbuilderviewdata (data) {
-    return http.post(`${host}/builder/view-data`, { id: data.id })
+  getbuilderviewdata (name) {
+    return http.get(`${host}/builder/view-data`, { params: name })
   },
   // 获取所有项目名
   getbuilderprojects () {
-    return http.post(`${host}/builder/projects`)
+    return http.get(`${host}/builder/projects`)
   }
 }

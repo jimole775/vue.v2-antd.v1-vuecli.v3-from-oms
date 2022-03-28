@@ -16,11 +16,11 @@
       mode="inline"
       class="menu"
     >
-      <a-menu-item>
+      <a-menu-item :disabled="!hasDisabled('views')">
         <a style="color: #333;" @click="() => showConfigRouteModal('views')">顶层菜单</a>
       </a-menu-item>
       <template v-for="item in menus">
-        <a-menu-item :key="item">
+        <a-menu-item :disabled="!hasDisabled(item)" :key="item">
           <a style="color: #333;" @click="() => showConfigRouteModal(item)">{{ item }}</a>
         </a-menu-item>
       </template>
@@ -30,12 +30,14 @@
 </template>
 
 <script>
-import Vue from 'vue'
+import utils from '@/utils'
 import { mapActions } from 'vuex'
+import mixins from '@builder/mixins'
 import ConfigRoute from '../config-modals/config-route'
 const modules = require.context('../../../views', true, /(\.vue)$/)
 // const dataCache = {}
 export default {
+  mixins,
   name: 'Menu',
   components: {
     ConfigRoute
@@ -61,14 +63,20 @@ export default {
   },
   methods: {
     ...mapActions(['loadMenus', 'loadDictList']),
+    hasDisabled (name) {
+      return this.viewData.router.parent === name
+    },
     showConfigRouteModal (menuName) {
-      this.configRouteModal.show = true
-      // dataCache[menuName] && (this.configRouteModal.data = utils.clone(dataCache[menuName]))
-      this.configRouteModal.data.parent = menuName || ''
+      if (this.viewData.router.parent === menuName) {
+        this.configRouteModal.show = true
+        this.configRouteModal.disname = true
+        this.configRouteModal.disparent = true
+        this.configRouteModal.data = utils.clone(this.viewData.router)
+      }
     },
     configRouteConfirm (data) {
-      // dataCache[data.parent] = utils.clone(data)
-      Vue.bus.$emit('__router__', data)
+      this.setViewData({ key: 'router', value: data })
+      this.setBuildData({ key: 'routerConfig', value: data })
     }
   }
 }

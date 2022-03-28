@@ -14,13 +14,14 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
 import utils from '@/utils'
 import http from '@/utils/http'
+import mixins from '@builder/mixins'
 import TableSummary from './modules/table-summary'
 import BuildFormItems from '@builder/config-modules/build-form-items'
 import TableColumns from './modules/table-columns'
 export default {
+  mixins,
   components: {
     TableSummary,
     TableColumns,
@@ -97,10 +98,14 @@ export default {
       this.handup()
     },
     handup () {
-      Vue.bus.$emit('__list__', this.rank, this.listConfig)
+      // Vue.bus.$emit('__list__', this.rank, this.listConfig)
+      this.setViewData({ key: 'list', index: this.rank, value: this.listConfig })
+      this.setBuildData({ key: 'listConfig', index: this.rank, value: this.listConfig })
     },
     handupApimap (data) {
-      Vue.bus.$emit('__apimap__', this.rank, data)
+      // Vue.bus.$emit('__apimap__', this.rank, data)
+      this.setViewData({ key: 'apimap', index: this.rank, value: data })
+      this.setBuildData({ key: 'apimapConfig', index: this.rank, value: data })
     }
   }
 }

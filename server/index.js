@@ -23,5 +23,6 @@ app.get('/', (req, res) => {
 app.post('/builder/builded', resHandler(require('./api/builded')))
 app.post('/builder/stage', resHandler(require('./api/stage')))
 app.post('/builder/delete', resHandler(require('./api/delete')))
-app.post('/builder/view-data', resHandler(require('./api/view-data')))
+app.get('/builder/view-data', resHandler(require('./api/view-data')))
+app.get('/builder/projects', resHandler(require('./api/projects')))
 app.listen(cmdParam('port') || 8888)

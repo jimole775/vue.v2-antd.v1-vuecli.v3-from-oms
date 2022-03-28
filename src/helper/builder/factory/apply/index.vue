@@ -7,12 +7,13 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
 import utils from '@/utils'
+import mixins from '@builder/mixins'
 // import ApprovalNodesMap from '@/components/ApprovalNodesMap'
 import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels'
 import SubmitBar from './submit-bar.vue'
 export default {
+  mixins,
   components: {
     SubmitBar,
     // ApprovalNodesMap,
@@ -38,10 +39,14 @@ export default {
       this.transfer()
     },
     handupApi (data) {
-      Vue.bus.$emit('__apimap__', this.rank, data)
+      // Vue.bus.$emit('__apimap__', this.rank, data)
+      this.setViewData({ key: 'apimap', index: this.rank, value: data })
+      this.setBuildData({ key: 'apimapConfig', index: this.rank, value: data })
     },
     handup (data) {
-      Vue.bus.$emit('__apply__', this.rank, data)
+      // Vue.bus.$emit('__apply__', this.rank, data)
+      this.setViewData({ key: 'apply', index: this.rank, value: data })
+      this.setBuildData({ key: 'applyConfig', index: this.rank, value: data })
     },
     transfer () {
       const model = {

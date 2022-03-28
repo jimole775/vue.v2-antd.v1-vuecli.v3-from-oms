@@ -60,10 +60,11 @@
   </a-modal>
 </template>
 <script>
-import Vue from 'vue'
 // import utils from '@/utils'
+import mixins from '@builder/mixins'
 import CustomParams from '@builder/config-modules/custom-params'
 export default {
+  mixins,
   components: {
     CustomParams
   },
@@ -90,10 +91,14 @@ export default {
       this.modal.show = false
     },
     handupApimap (rank, data) {
-      Vue.bus.$emit('__apimap__', rank, data)
+      // Vue.bus.$emit('__apimap__', rank, data)
+      this.setViewData({ key: 'apimap', index: rank, value: data })
+      this.setBuildData({ key: 'apimapConfig', index: rank, value: data })
     },
     handup (data) {
-      Vue.bus.$emit('__tabs__', data)
+      this.setViewData({ key: 'tabs', value: data })
+      this.setBuildData({ key: 'tabsConfig', value: data })
+      // Vue.bus.$emit('__tabs__', data)
     }
   }
 }

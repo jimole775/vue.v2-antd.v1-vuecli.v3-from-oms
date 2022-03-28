@@ -18,14 +18,15 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
 import utils from '@/utils'
 import { mapGetters } from 'vuex'
+import mixins from '@builder/mixins'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
 import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels.vue'
 export default {
+  mixins,
   components: {
     LogBar,
     StepBar,
@@ -99,10 +100,14 @@ export default {
       this.stepNodes = stepNodes
     },
     handupApimap (data) {
-      Vue.bus.$emit('__apimap__', this.rank, data)
+      // Vue.bus.$emit('__apimap__', this.rank, data)
+      this.setViewData({ key: 'apimap', index: this.rank, value: data })
+      this.setBuildData({ key: 'apimapConfig', index: this.rank, value: data })
     },
     handup (data) {
-      Vue.bus.$emit('__approval__', this.rank, data)
+      // Vue.bus.$emit('__approval__', this.rank, data)
+      this.setViewData({ key: 'approval', index: this.rank, value: data })
+      this.setBuildData({ key: 'approvalConfig', index: this.rank, value: data })
     },
     transferPanels () {
       const model = {}
