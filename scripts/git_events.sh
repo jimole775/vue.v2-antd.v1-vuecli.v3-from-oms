@@ -8,13 +8,15 @@ org_branch="builder"
 new_branch="$org_branch-$1"
 tag_dir=/f/$pro_name/
 src_dir=$runenv/builder-dist/*
+log_dir=$runenv/server/builder.log
+err_dir=$runenv/server/builder-error.log
 
 log(){
-  echo "`date "+%Y-%m-%d %H:%M:%S"`: $1" >> $runenv/builder.log
+  echo "`date "+%Y-%m-%d %H:%M:%S"`: $1" >> $log_dir
 }
 
 err(){
-  echo "`date "+%Y-%m-%d %H:%M:%S"`: $1" >> $runenv/builder-error.log
+  echo "`date "+%Y-%m-%d %H:%M:%S"`: $1" >> $err_dir
 }
 
 # 创建目录，并执行初始化操作
