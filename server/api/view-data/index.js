@@ -3,7 +3,7 @@ const { readFileSync } = require('../../utils')
 const db = './server/data-base/view-data'
 module.exports = function (req, res) {
   return new Promise((resolve) => {
-    const { name } = req.body
+    const { name } = req.query
     if (name) {
       try {
         const viewData = readFileSync(path.join(db, name + '.json'))

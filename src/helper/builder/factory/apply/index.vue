@@ -39,14 +39,18 @@ export default {
       this.transfer()
     },
     handupApi (data) {
-      // Vue.bus.$emit('__apimap__', this.rank, data)
-      this.setViewData({ key: 'apimap', index: this.rank, value: data })
+      this.setViewData({ key: 'apimap', value: data })
       this.setBuildData({ key: 'apimapConfig', index: this.rank, value: data })
     },
-    handup (data) {
-      // Vue.bus.$emit('__apply__', this.rank, data)
-      this.setViewData({ key: 'apply', index: this.rank, value: data })
+    handupBuildData (data) {
       this.setBuildData({ key: 'applyConfig', index: this.rank, value: data })
+      this.handupViewData()
+    },
+    handupViewData () {
+      const cacheData = {
+        collapsePanels: utils.clone(this.collapsePanels)
+      }
+      this.setViewData({ key: 'apply', value: cacheData })
     },
     transfer () {
       const model = {
@@ -64,7 +68,7 @@ export default {
         }
         panels.push(panelModel)
       })
-      this.handup(model)
+      this.handupBuildData(model)
     }
   }
 }

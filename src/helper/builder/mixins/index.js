@@ -9,6 +9,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['setViewData', 'setBuildData'])
+    ...mapActions(['setViewData', 'setBuildData', 'resetViewData', 'resetBuildData'])
   }
 }

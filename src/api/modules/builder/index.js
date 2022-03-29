@@ -19,7 +19,7 @@ export default {
   },
   // 获取视图缓存
   getbuilderviewdata (name) {
-    return http.get(`${host}/builder/view-data`, { params: name })
+    return http.get(`${host}/builder/view-data`, { params: { name } })
   },
   // 获取所有项目名
   getbuilderprojects () {

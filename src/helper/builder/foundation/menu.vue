@@ -35,7 +35,6 @@ import { mapActions } from 'vuex'
 import mixins from '@builder/mixins'
 import ConfigRoute from '../config-modals/config-route'
 const modules = require.context('../../../views', true, /(\.vue)$/)
-// const dataCache = {}
 export default {
   mixins: [mixins],
   name: 'Menu',
@@ -69,8 +68,7 @@ export default {
     showConfigRouteModal (menuName) {
       if (this.viewData.router.parent === menuName) {
         this.configRouteModal.show = true
-        this.configRouteModal.disname = true
-        this.configRouteModal.disparent = true
+        this.configRouteModal.mode = 'modify'
         this.configRouteModal.data = utils.clone(this.viewData.router)
       }
     },

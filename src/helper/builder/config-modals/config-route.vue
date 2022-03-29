@@ -9,13 +9,13 @@
       <a-row>
         <a-col :span="24">
           <a-form-item label="父级目录名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input :disabled="disparent" v-decorator="['parent']" />
+            <a-input :disabled="isModify" v-decorator="['parent']" />
           </a-form-item>
         </a-col>
         <a-col :span="24">
           <a-form-item label="文件存放目录名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-input
-              :disabled="disname"
+              :disabled="isModify"
               v-decorator="['name', {
                 rules: [
                   { required: true, message: '请确认文件存放目录' },
@@ -36,7 +36,6 @@
 </template>
 <script>
 import utils from '@/utils'
-let cache = {}
 export default {
   props: {
     modal: {
@@ -46,25 +45,21 @@ export default {
   },
   data () {
     return {
-      disname: false,
-      disparent: false,
       form: this.$form.createForm(this)
+    }
+  },
+  computed: {
+    isModify () {
+      return this.modal.mode === 'modify'
+    },
+    isAdd () {
+      return this.modal.mode === 'add'
     }
   },
   watch: {
     modal: {
-      handler ({ data, show, disparent, disname }) {
+      handler ({ data, show }) {
         if (show) {
-          if (!utils.isEmptyObject(cache) && utils.isEmptyObject(data)) {
-            data = utils.clone(cache)
-          }
-          if (disname) {
-            this.disname = disname
-          }
-          if (disparent) {
-            this.disparent = disparent
-          }
-          cache = utils.clone(data)
           setTimeout(() => {
             this.form.setFieldsValue(data)
           })

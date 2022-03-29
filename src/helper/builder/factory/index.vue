@@ -43,15 +43,6 @@ import { mapActions } from 'vuex'
 import ApiButton from '@builder/config-modules/api-button'
 import CustomParams from '@builder/config-modules/custom-params'
 import ConfigTab from '@builder/config-modals/config-tab'
-let caches = {}
-const cached = (data) => {
-  caches = utils.clone(data)
-}
-const revert = (data) => {
-  if (!utils.isEmptyObject(caches) && utils.isEmptyObject(data)) {
-    data = utils.clone(caches)
-  }
-}
 export default {
   components: {
     ApiButton,
@@ -94,16 +85,33 @@ export default {
     tabs: {
       handler (data) {
         if (data && data.length) {
-          cached(data)
-          this.handup(this.getTabsData(data))
+          this.handupViewData(data)
+          this.handupBuildData(data)
         }
       },
-      deep: true,
+      deep: true
+    },
+    viewData: {
+      handler (data) {
+        const tabs = []
+        data.tabs.forEach((tab) => {
+          if (tab.type === '0') {
+            tab.component = utils.clone(ProjectList)
+          }
+          if (tab.type === '1') {
+            tab.component = utils.clone(ProjectApply)
+          }
+          if (tab.type === '2') {
+            tab.component = utils.clone(ProjectApproval)
+          }
+          tabs.push(utils.clone(tab))
+        })
+        if (tabs.length) {
+          this.tabs = tabs
+        }
+      },
       immediate: true
     }
-  },
-  mounted () {
-    revert(this.tabs)
   },
   methods: {
     ...mapActions(['setTabType']),
@@ -157,25 +165,25 @@ export default {
       let id = this.active
       return this.tabs.find(i => i.key === id)
     },
-    getTabsData () {
+    getBuildTabs () {
       const lists = []
       const applies = []
       const approvals = []
       this.tabs.forEach((tab) => {
-        const cTab = utils.clone(tab)
-        const disabledFields = ['component']
+        const copyTab = utils.clone(tab)
+        const disabledFields = ['component', 'api']
         disabledFields.forEach((key) => {
-          delete cTab[key] // 删掉 component
+          delete copyTab[key] // 删掉 component
         })
-        cTab.type = { 0: 'list', 1: 'apply', 2: 'detail' }[cTab.type]
-        if (cTab.type === 'list') {
-          lists.push(cTab)
+        copyTab.type = { 0: 'list', 1: 'apply', 2: 'detail' }[copyTab.type]
+        if (copyTab.type === 'list') {
+          lists.push(copyTab)
         }
-        if (cTab.type === 'apply') {
-          applies.push(cTab)
+        if (copyTab.type === 'apply') {
+          applies.push(copyTab)
         }
-        if (cTab.type === 'detail') {
-          approvals.push(cTab)
+        if (copyTab.type === 'detail') {
+          approvals.push(copyTab)
         }
       })
 
@@ -198,20 +206,17 @@ export default {
       // 只返回 list 类型
       return lists
     },
-    handupApimap (rank, data) {
-      // Vue.bus.$emit('__apimap__', rank, data)
-      this.setViewData({ key: 'apimap', index: rank, value: data })
-      this.setBuildData({ key: 'apimapConfig', index: rank, value: data })
-    },
-    handup (data) {
-      const cData = utils.clone(data)
-      cData.forEach((item) => {
-        delete item.api
+    handupViewData (tabs) {
+      const copyData = utils.clone(tabs)
+      // component 不能转json，删掉
+      copyData.forEach((item) => {
+        delete item.component
       })
-
-      this.setViewData({ key: 'tabs', value: cData })
-      this.setBuildData({ key: 'tabsConfig', value: cData })
-      // Vue.bus.$emit('__tabs__', cData)
+      this.setViewData({ key: 'tabs', value: copyData })
+    },
+    handupBuildData (tabs) {
+      const copyData = utils.clone(this.getBuildTabs(tabs))
+      this.setBuildData({ key: 'tabsConfig', value: copyData })
     }
   }
 }

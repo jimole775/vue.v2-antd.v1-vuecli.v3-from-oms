@@ -100,14 +100,22 @@ export default {
       this.stepNodes = stepNodes
     },
     handupApimap (data) {
-      // Vue.bus.$emit('__apimap__', this.rank, data)
-      this.setViewData({ key: 'apimap', index: this.rank, value: data })
+      this.setViewData({ key: 'apimap', value: data })
       this.setBuildData({ key: 'apimapConfig', index: this.rank, value: data })
     },
-    handup (data) {
-      // Vue.bus.$emit('__approval__', this.rank, data)
-      this.setViewData({ key: 'approval', index: this.rank, value: data })
+    handupViewData () {
+      const cacheData = {
+        log: utils.clone(this.log),
+        operation: utils.clone(this.operation),
+        collapsePanels: utils.clone(this.collapsePanels),
+        current: utils.clone(this.current),
+        stepNodes: utils.clone(this.stepNodes)
+      }
+      this.setViewData({ key: 'approval', value: cacheData })
+    },
+    handupBuildData (data) {
       this.setBuildData({ key: 'approvalConfig', index: this.rank, value: data })
+      this.handupViewData()
     },
     transferPanels () {
       const model = {}
@@ -139,7 +147,7 @@ export default {
           permissionPanels.push(operationPanel)
         }
       })
-      return this.handup(model)
+      return this.handupBuildData(model)
     },
     transferOperation (nodeKey) {
       const panel = {

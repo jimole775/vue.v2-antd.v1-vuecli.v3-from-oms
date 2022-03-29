@@ -91,14 +91,8 @@ export default {
       this.modal.show = false
     },
     handupApimap (rank, data) {
-      // Vue.bus.$emit('__apimap__', rank, data)
-      this.setViewData({ key: 'apimap', index: rank, value: data })
+      this.setViewData({ key: 'apimap', value: data })
       this.setBuildData({ key: 'apimapConfig', index: rank, value: data })
-    },
-    handup (data) {
-      this.setViewData({ key: 'tabs', value: data })
-      this.setBuildData({ key: 'tabsConfig', value: data })
-      // Vue.bus.$emit('__tabs__', data)
     }
   }
 }

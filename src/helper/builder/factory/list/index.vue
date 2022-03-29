@@ -37,14 +37,6 @@ export default {
       default: () => ({})
     }
   },
-  computed: {
-    canShowTable () {
-      return this.tab.type === '0' && this.tab.api && this.tab.api.url
-    },
-    isListTab () {
-      return this.tab.type === '0'
-    }
-  },
   data () {
     return {
       listData: [],
@@ -53,6 +45,14 @@ export default {
         columns: [],
         searchor: []
       }
+    }
+  },
+  computed: {
+    canShowTable () {
+      return this.tab.type === '0' && this.tab.api && this.tab.api.url
+    },
+    isListTab () {
+      return this.tab.type === '0'
     }
   },
   watch: {
@@ -91,19 +91,25 @@ export default {
     },
     updateSearchor (data) {
       this.listConfig.searchor = transferFormItems(data)
-      this.handup()
+      this.handupBuildData()
     },
     updateColumns (data) {
       this.listConfig.columns = transferColumns(data)
-      this.handup()
+      this.handupBuildData()
     },
-    handup () {
-      // Vue.bus.$emit('__list__', this.rank, this.listConfig)
-      this.setViewData({ key: 'list', index: this.rank, value: this.listConfig })
+    handupBuildData () {
+      this.handupViewData()
       this.setBuildData({ key: 'listConfig', index: this.rank, value: this.listConfig })
     },
+    handupViewData () {
+      const cacheData = {
+        listData: utils.clone(this.listData),
+        listConfig: utils.clone(this.listConfig),
+        summaryObject: utils.clone(this.summaryObject)
+      }
+      this.setViewData({ key: 'list', value: cacheData })
+    },
     handupApimap (data) {
-      // Vue.bus.$emit('__apimap__', this.rank, data)
       this.setViewData({ key: 'apimap', index: this.rank, value: data })
       this.setBuildData({ key: 'apimapConfig', index: this.rank, value: data })
     }

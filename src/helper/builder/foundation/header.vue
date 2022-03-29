@@ -72,48 +72,12 @@ export default {
     }
   },
   created () {
-    this.createListener()
+    // this.createListener()
   },
   mounted () {
     // revert(this.buildData)
   },
   methods: {
-    createListener () {
-      // Vue.bus.$on('__tabs__', (value) => {
-      //   this.buildData['tabsConfig'] = value
-      // })
-
-      // Vue.bus.$on('__apimap__', (tabIndex, value) => {
-      //   if (!this.buildData['apimapConfig'][tabIndex]) {
-      //     this.buildData['apimapConfig'][tabIndex] = Object.create(null)
-      //   }
-
-      //   const already = this.buildData['apimapConfig'][tabIndex]
-      //   this.buildData['apimapConfig'][tabIndex] = {
-      //     ...already,
-      //     ...value
-      //   }
-      // })
-
-      // Vue.bus.$on('__list__', (tabIndex, value) => {
-      //   if (!this.buildData['listConfig'][tabIndex]) {
-      //     this.buildData['listConfig'][tabIndex] = Object.create(null)
-      //   }
-      //   this.$set(this.buildData['listConfig'], tabIndex, value)
-      // })
-
-      // Vue.bus.$on('__apply__', (tabIndex, value) => {
-      //   this.$set(this.buildData['applyConfig'], tabIndex, value)
-      // })
-
-      // Vue.bus.$on('__approval__', (tabIndex, value) => {
-      //   this.$set(this.buildData['approvalConfig'], tabIndex, value)
-      // })
-
-      // Vue.bus.$on('__router__', (data) => {
-      //   this.buildData['routerConfig'] = data
-      // })
-    },
     showPreview () {
       this.previewModal.show = true
       this.previewModal.data = utils.clone(this.buildData)
