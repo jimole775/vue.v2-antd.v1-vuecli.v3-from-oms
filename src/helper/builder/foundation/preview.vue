@@ -59,7 +59,7 @@ export default {
     }
   },
   methods: {
-    diggingApiUrl (apimap) {
+    diggingApiUrl (apimap = {}) {
       const tabIndexs = Object.keys(apimap)
       tabIndexs.forEach((tabIndex) => {
         const apimapItem = apimap[tabIndex]

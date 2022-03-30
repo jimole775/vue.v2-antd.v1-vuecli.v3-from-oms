@@ -90,89 +90,25 @@ export default {
       }
     },
     updateSearchor (data) {
-      this.listConfig.searchor = transferFormItems(data)
-      this.handupBuildData()
+      this.listConfig.searchor = data
+      this.handup()
     },
     updateColumns (data) {
-      this.listConfig.columns = transferColumns(data)
-      this.handupBuildData()
+      this.listConfig.columns = data
+      this.handup()
     },
-    handupBuildData () {
-      this.handupViewData()
-      this.setBuildData({ key: 'listConfig', index: this.rank, value: this.listConfig })
-    },
-    handupViewData () {
+    handup () {
       const cacheData = {
         listData: utils.clone(this.listData),
         listConfig: utils.clone(this.listConfig),
         summaryObject: utils.clone(this.summaryObject)
       }
-      this.setViewData({ key: 'list', value: cacheData })
+      this.setViewData({ key: 'list', rank: this.rank, value: cacheData })
     },
     handupApimap (data) {
-      this.setViewData({ key: 'apimap', index: this.rank, value: data })
-      this.setBuildData({ key: 'apimapConfig', index: this.rank, value: data })
+      this.setViewData({ key: 'apimap', rank: this.rank, value: data })
     }
   }
-}
-
-function transferColumns (originColumns) {
-  const copyColumns = utils.clone(originColumns)
-  const columns = []
-  copyColumns.forEach((col) => {
-    const propsObject = col.props
-    if (!propsObject) return false
-    delete propsObject['anchor']
-    delete propsObject['titleTips']
-    delete propsObject['originTitle']
-    // 当前只支持 "0":内部 "1":外部, 其他的情况，就把字段删除
-    if (propsObject['permission'] === '0' || propsObject['permission'] === '1') {
-      const permission = propsObject['permission']
-      propsObject['permission'] = [permission]
-    } else {
-      delete propsObject['permission']
-    }
-    // 拼装 slotsRender 函数
-    if (propsObject['slotsRender']) {
-      const fnInstance = propsObject['slotsRender']
-      propsObject['slotsRender'] = `(h, vm) => {\n${fnInstance}\n}\n`
-    }
-    // 拼装 scopedSlotsRender 函数
-    if (propsObject['scopedSlotsRender']) {
-      const fnInstance = propsObject['scopedSlotsRender']
-      propsObject['scopedSlotsRender'] = `(h, record, vm) => {\n${fnInstance}\n}\n`
-    }
-    columns.push(propsObject)
-  })
-  return columns
-}
-
-function transferFormItems (originFormItems, fields = ['originProps', 'stepNodes', 'configType']) {
-  const cFormItems = utils.clone(originFormItems)
-  const formItems = []
-  cFormItems.forEach((formItem) => {
-    fields.forEach((field) => {
-      delete formItem[field]
-    })
-    deleteNoneFields(formItem)
-    formItems.push(formItem)
-  })
-  return formItems
-}
-
-// 清掉空值的字段
-function deleteNoneFields (formItem) {
-  const fields = ['props', 'operations', 'component']
-  fields.forEach((field) => {
-    const val = formItem[field]
-    if (
-      val === undefined ||
-      (utils.isObject(val) && Object.keys(val).length === 0) ||
-      (utils.isArray(val) && val.length === 0)
-    ) {
-      delete formItem[field]
-    }
-  })
 }
 
 </script>

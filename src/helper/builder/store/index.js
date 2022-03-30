@@ -1,39 +1,41 @@
-import utils from '@/utils'
+// import utils from '@/utils'
+import applyViewToBuild from './view-to-build/apply'
+import approvalViewToBuild from './view-to-build/approval'
+import { columnsViewToBuild, searchorViewToBuild } from './view-to-build/list'
+import tabsViewToBuild from './view-to-build/tabs'
 export default {
   state: {
-    tabType: 0,
-    buildData: {},
+    tabType: '0',
+    currentRank: 0,
+    currentJob: '',
     stepNodes: [],
     projects: [],
-    currentJob: '',
+    buildData: {
+      name: '',
+      listConfig: {},
+      applyConfig: {},
+      approvalConfig: {},
+      apimapConfig: {},
+      routerConfig: {},
+      tabsConfig: []
+    },
     viewData: {
       name: '',
       isEmpty: true,
       tabs: [],
       router: {},
-      list: {
-        listData: [],
-        summaryObject: {},
-        listConfig: {
-          columns: [],
-          searchor: []
-        }
-      },
-      apply: {
-        collapsePanels: []
-      },
+      list: {},
+      apply: {},
       apimap: {},
-      approval: {
-        log: {},
-        operation: {},
-        collapsePanels: [],
-        stepNodes: []
-      }
+      approval: {}
     }
   },
   getters: {
+    getCurrentRank (state) {
+      return state.currentRank
+    },
     getStepNodes (state) {
-      return state.stepNodes
+      return state.stepNodes[state.currentRank]
     },
     getTabType (state) {
       return state.tabType
@@ -58,39 +60,84 @@ export default {
     commitTabType (state, type) {
       state.tabType = type
     },
-    commitBuildData (state, { key, index, value }) {
-      // 有 index 时，数据结构不一样
-      if (utils.isValuable(index)) {
-        if (!state.buildData[key]) {
-          state.buildData[key] = {}
-        }
-        // apimapConfig 额外逻辑
-        if (key === 'apimapConfig') {
-          const already = state.buildData[key][index] || {}
-          state.buildData['apimapConfig'][index] = {
+    commitBuildData (state, { key, value }) {
+      if (!state.buildData[key]) {
+        state.buildData[key] = {}
+      }
+      const { currentRank: rank } = state
+      switch (key) {
+        case 'list':
+          const { listConfig } = value
+          const columns = columnsViewToBuild(listConfig.columns)
+          const searchor = searchorViewToBuild(listConfig.searchor)
+          state.buildData['listConfig'][rank] = { columns, searchor }
+          break
+        case 'apply':
+          const applyBuild = applyViewToBuild(value.collapsePanels)
+          state.buildData['applyConfig'][rank] = applyBuild
+          break
+        case 'approval':
+          const approvalBuild = approvalViewToBuild(value.stepNodes, value.collapsePanels)
+          state.buildData['approvalConfig'][rank] = approvalBuild
+          break
+        case 'apimap':
+          const already = state.buildData[key][rank] || {}
+          state.buildData['apimapConfig'][rank] = {
             ...already,
             ...value
           }
-        } else {
-          state.buildData[key][index] = value
-        }
-      } else {
-        // 没有 index 时，属于公共数据
-        state.buildData[key] = value
+          break
+        case 'tabs':
+          const tabs = value
+          const tabsBuild = tabsViewToBuild(tabs)
+          state.buildData['tabsConfig'] = tabsBuild
+          break
+        case 'router':
+          state.buildData['routerConfig'] = value
+          break
       }
     },
-    commitViewData (state, { key, value }) {
+    commitViewData (state, { key, rank, value }) {
       state.viewData.isEmpty = false
-      state.viewData[key] = value
+      if (!state.viewData[key]) {
+        state.viewData[key] = {}
+      }
+      switch (key) {
+        case 'list':
+        case 'apply':
+        case 'approval':
+          state.viewData[key][rank] = value
+          break
+        case 'apimap':
+          const already = state.viewData[key][rank] || {}
+          state.viewData['apimap'][rank] = {
+            ...already,
+            ...value
+          }
+          break
+        case 'tabs':
+        case 'router':
+          state.viewData[key] = value
+          break
+        default:
+          state.viewData[key] = value
+          break
+      }
     },
     commitProjects (state, data) {
       state.projects.push(data)
     },
     commitCurrentJob (state, name) {
       state.currentJob = name
+    },
+    commitCurrentRank (state, rank) {
+      state.currentRank = rank
     }
   },
   actions: {
+    setCurrentRank ({ commit, state }, nodes) {
+      commit('commitStepNodes', nodes)
+    },
     setStepNodes ({ commit, state }, nodes) {
       commit('commitStepNodes', nodes)
     },
@@ -102,6 +149,7 @@ export default {
     },
     setViewData ({ commit, state }, data) {
       commit('commitViewData', data)
+      commit('commitBuildData', data)
     },
     resetBuildData ({ commit, state }) {
       commit('commitBuildData', { key: 'tabsConfig', value: [] })
@@ -112,8 +160,6 @@ export default {
       commit('commitBuildData', { key: 'approvalConfig', value: {} })
     },
     resetViewData ({ commit, state }) {
-      commit('commitViewData', { key: 'name', value: '' })
-      commit('commitViewData', { key: 'isEmpty', value: true })
       commit('commitViewData', { key: 'tabs', value: [] })
       commit('commitViewData', { key: 'list', value: {} })
       commit('commitViewData', { key: 'router', value: {} })

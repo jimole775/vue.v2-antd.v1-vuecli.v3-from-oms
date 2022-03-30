@@ -62,7 +62,7 @@ export default {
       active: '0_0',
       curEditType: '0',
       tabs: [
-        // key: 用来切换tab
+        // key: 用来切换tab, 一个 key 由 rank + '_' + type 组成
         // tabId: 输出给SApproval组件
         // rank: 用来标记是第几套审批流程，一套审批流程有['列表', '申请', '审批']三个tab
         // type: 用来标记 list, apply, approval
@@ -77,7 +77,9 @@ export default {
       handler (val) {
         if (val) {
           const type = val.split('_').pop()
+          const rank = val.split('_').shift()
           this.setTabType(type)
+          this.setCurrentRank(rank)
         }
       },
       immediate: true
@@ -85,8 +87,7 @@ export default {
     tabs: {
       handler (data) {
         if (data && data.length) {
-          this.handupViewData(data)
-          this.handupBuildData(data)
+          this.handup(data)
         }
       },
       deep: true
@@ -114,7 +115,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['setTabType']),
+    ...mapActions(['setTabType', 'setCurrentRank']),
     rerankTab () {
       this.tabs.sort((a, b) => {
         return a.type - b.type
@@ -165,58 +166,13 @@ export default {
       let id = this.active
       return this.tabs.find(i => i.key === id)
     },
-    getBuildTabs () {
-      const lists = []
-      const applies = []
-      const approvals = []
-      this.tabs.forEach((tab) => {
-        const copyTab = utils.clone(tab)
-        const disabledFields = ['component', 'api']
-        disabledFields.forEach((key) => {
-          delete copyTab[key] // 删掉 component
-        })
-        copyTab.type = { 0: 'list', 1: 'apply', 2: 'detail' }[copyTab.type]
-        if (copyTab.type === 'list') {
-          lists.push(copyTab)
-        }
-        if (copyTab.type === 'apply') {
-          applies.push(copyTab)
-        }
-        if (copyTab.type === 'detail') {
-          approvals.push(copyTab)
-        }
-      })
-
-      // 把"申请"和"审批"的标签名绑到 list.proxyName
-      lists.forEach((list) => {
-        applies.forEach((apply) => {
-          if (list.rank === apply.rank) {
-            if (!list.proxyName) list.proxyName = { apply: '', detail: '' }
-            list.proxyName.apply = apply.tabName
-          }
-        })
-        approvals.forEach((approval) => {
-          if (list.rank === approval.rank) {
-            if (!list.proxyName) list.proxyName = { apply: '', detail: '' }
-            list.proxyName.detail = approval.tabName
-          }
-        })
-      })
-
-      // 只返回 list 类型
-      return lists
-    },
-    handupViewData (tabs) {
+    handup (tabs) {
       const copyData = utils.clone(tabs)
       // component 不能转json，删掉
       copyData.forEach((item) => {
         delete item.component
       })
       this.setViewData({ key: 'tabs', value: copyData })
-    },
-    handupBuildData (tabs) {
-      const copyData = utils.clone(this.getBuildTabs(tabs))
-      this.setBuildData({ key: 'tabsConfig', value: copyData })
     }
   }
 }

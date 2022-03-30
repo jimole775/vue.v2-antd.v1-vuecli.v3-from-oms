@@ -123,11 +123,18 @@ export default {
     loadViewData (name) {
       api.getbuilderviewdata(name).then(res => {
         if (res.code === 200) {
-          const keys = ['apply', 'approval', 'list', 'router', 'tabs', 'apimap', 'name']
+          const rankKeys = ['apply', 'approval', 'list', 'apimap']
           const data = res.data.viewData || {}
-          keys.forEach(k => {
-            if (utils.isValuable(data[k])) {
-              this.setViewData({ key: k, value: data[k] })
+          Object.keys(data).forEach(key => {
+            const module = data[key]
+            if (utils.isValuable(module)) {
+              if (rankKeys.includes(key)) {
+                Object.keys(module).forEach((rank) => {
+                  this.setViewData({ key, rank, value: module[rank] })
+                })
+              } else {
+                this.setViewData({ key, value: module })
+              }
             }
           })
           this.$emit('update', name)

@@ -36,69 +36,23 @@ export default {
     },
     panelsUpdate (data) {
       this.collapsePanels = data
-      this.transfer()
+      this.handup()
     },
     handupApi (data) {
       this.setViewData({ key: 'apimap', value: data })
-      this.setBuildData({ key: 'apimapConfig', index: this.rank, value: data })
+      this.setBuildData({ key: 'apimapConfig', rank: this.rank, value: data })
     },
-    handupBuildData (data) {
-      this.setBuildData({ key: 'applyConfig', index: this.rank, value: data })
-      this.handupViewData()
-    },
-    handupViewData () {
+    // handupBuildData (data) {
+    //   this.setBuildData({ key: 'applyConfig', rank: this.rank, value: data })
+    //   this.handupViewData()
+    // },
+    handup () {
       const cacheData = {
         collapsePanels: utils.clone(this.collapsePanels)
       }
       this.setViewData({ key: 'apply', value: cacheData })
-    },
-    transfer () {
-      const model = {
-        panels: []
-      }
-      const tabPanels = utils.clone(this.collapsePanels || [])
-      tabPanels.forEach((aPanel) => {
-        const panels = model['panels']
-        const panelModel = {
-          mode: 'edit',
-          show: true,
-          title: aPanel.title,
-          formItems: transferFormItems(aPanel.formItems),
-          component: aPanel.component || 'FormItemRender'
-        }
-        panels.push(panelModel)
-      })
-      this.handupBuildData(model)
     }
   }
-}
-
-function transferFormItems (originFormItems, fields = ['originProps', 'stepNodes', 'configType']) {
-  const cFormItems = utils.clone(originFormItems)
-  const formItems = []
-  cFormItems.forEach((formItem) => {
-    fields.forEach((field) => {
-      delete formItem[field]
-    })
-    deleteNoneFields(formItem)
-    formItems.push(formItem)
-  })
-  return formItems
-}
-
-// 清掉空值的字段
-function deleteNoneFields (formItem) {
-  const fields = ['props', 'operations', 'component']
-  fields.forEach((field) => {
-    const val = formItem[field]
-    if (
-      val === undefined ||
-      (utils.isObject(val) && Object.keys(val).length === 0) ||
-      (utils.isArray(val) && val.length === 0)
-    ) {
-      delete formItem[field]
-    }
-  })
 }
 
 </script>
