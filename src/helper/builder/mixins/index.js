@@ -1,6 +1,9 @@
 import { mapActions } from 'vuex'
 export default {
   computed: {
+    editType () {
+      return this.$store.getters.getEditType
+    },
     viewData () {
       return this.$store.getters.getViewData
     },
@@ -9,6 +12,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['setViewData', 'setBuildData', 'resetViewData', 'resetBuildData'])
+    ...mapActions(['setViewData', 'setBuildData', 'setEditType', 'resetViewData', 'resetBuildData'])
   }
 }

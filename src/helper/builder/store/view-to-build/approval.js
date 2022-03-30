@@ -1,5 +1,5 @@
 import utils from '@/utils'
-export default function viewToBuild (getStepNodes, collapsePanels) {
+export default function viewToBuild (getStepNodes = [], collapsePanels = [], operation = {}) {
   const model = {}
   getStepNodes.forEach((node) => {
     model[node.value] = {
@@ -25,7 +25,7 @@ export default function viewToBuild (getStepNodes, collapsePanels) {
       }
     })
     if (node.value !== 'end') {
-      const operationPanel = transferOperation(node.value)
+      const operationPanel = transferOperation(node.value, operation)
       permissionPanels.push(operationPanel)
     }
   })
@@ -33,7 +33,7 @@ export default function viewToBuild (getStepNodes, collapsePanels) {
   // return this.handupBuildData(model)
 }
 
-function transferOperation (nodeKey) {
+function transferOperation (nodeKey, operation) {
   const panel = {
     component: 'ApprovalOperation',
     title: '审批操作',
@@ -44,7 +44,7 @@ function transferOperation (nodeKey) {
       inputs: []
     }
   }
-  const { radios = [], inputs = [] } = this.operation
+  const { radios = [], inputs = [] } = operation
   const newRadios = panel.operationItem.radios
   const newInputs = panel.operationItem.inputs
   radios.forEach((radio) => {
@@ -69,10 +69,10 @@ function transferOperation (nodeKey) {
   return panel
 }
 
-function transferFormItems (originFormItems, nodeKey, fields = ['originProps', 'stepNodes', 'configType']) {
-  const cFormItems = utils.clone(originFormItems)
+function transferFormItems (originFormItems = [], nodeKey, fields = ['originProps', 'stepNodes', 'configType']) {
+  const cpFormItems = utils.clone(originFormItems)
   const formItems = []
-  cFormItems.forEach((formItem) => {
+  cpFormItems.forEach((formItem) => {
     if ((nodeKey && isRightNode(formItem, nodeKey)) || !nodeKey) {
       fields.forEach((field) => {
         delete formItem[field]

@@ -1,7 +1,7 @@
 <template>
   <div class="handler-bar">
     <a-button type="primary" @click="builded">提交</a-button>
-    <a-button type="primary" ghost @click="stage">暂存</a-button>
+    <a-button type="primary" ghost @click="() => stage(1)">暂存</a-button>
     <a-button type="primary" ghost @click="showPreview">预览</a-button>
     <a-button type="danger" ghost @click="showPreview">重置</a-button>
     <a-button type="primary" ghost @click="showPreview">选择其他项目</a-button>
@@ -153,8 +153,7 @@ export default {
             const res = await api.postbuilderbuilded({ buildData: this.buildData })
             if (res.code === 200) {
               this.$message.success('提交并构建成功！')
-              // 构建完成后，把当前的视图数据一并保存
-              api.postbuilderstage({ viewData: this.viewData })
+              this.stage(0)
             } else {
               this.$message.warning(res.message)
             }
@@ -162,13 +161,15 @@ export default {
         })
       }
     },
-    async stage () {
+    async stage (callAlert) {
       if (this.viewData.isEmpty) {
         this.$message.warning('没有数据可以保存！')
       } else {
         const res = await api.postbuilderstage({ viewData: this.viewData })
         if (res.code === 200) {
-          this.$message.success('保存成功')
+          callAlert && this.$message.success('保存成功')
+          // 暂存之后，变更编辑类型
+          this.setEditType('modify')
         } else {
           this.$message.warning(res.message)
         }

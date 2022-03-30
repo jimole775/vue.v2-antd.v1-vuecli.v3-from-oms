@@ -74,7 +74,7 @@ export default {
     },
     configRouteConfirm (data) {
       this.setViewData({ key: 'router', value: data })
-      this.setBuildData({ key: 'routerConfig', value: data })
+      this.setBuildData({ key: 'router', value: data })
     }
   }
 }

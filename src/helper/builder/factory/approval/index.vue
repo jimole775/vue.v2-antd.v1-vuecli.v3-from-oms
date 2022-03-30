@@ -33,12 +33,12 @@ export default {
     OperationBar,
     BuildCollapsePanels
   },
-  props: {
-    rank: {
-      type: Number,
-      default: 0
-    }
-  },
+  // props: {
+  //   rank: {
+  //     type: Number,
+  //     default: 0
+  //   }
+  // },
   data () {
     return {
       log: {},
@@ -101,7 +101,7 @@ export default {
     },
     handupApimap (data) {
       this.setViewData({ key: 'apimap', value: data })
-      this.setBuildData({ key: 'apimapConfig', rank: this.rank, value: data })
+      this.setBuildData({ key: 'apimap', value: data })
     },
     handup () {
       const cacheData = {
@@ -111,11 +111,8 @@ export default {
         collapsePanels: utils.clone(this.collapsePanels)
       }
       this.setViewData({ key: 'approval', value: cacheData })
+      this.setBuildData({ key: 'approval', value: cacheData })
     }
-    // handupBuildData (data) {
-    //   this.setBuildData({ key: 'approvalConfig', rank: this.rank, value: data })
-    //   this.handupViewData()
-    // }
   }
 }
 

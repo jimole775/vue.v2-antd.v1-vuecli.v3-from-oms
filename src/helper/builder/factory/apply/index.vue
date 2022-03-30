@@ -19,12 +19,12 @@ export default {
     // ApprovalNodesMap,
     BuildCollapsePanels
   },
-  props: {
-    rank: {
-      type: Number,
-      default: 0
-    }
-  },
+  // props: {
+  //   rank: {
+  //     type: Number,
+  //     default: 0
+  //   }
+  // },
   data () {
     return {
       collapsePanels: []
@@ -40,7 +40,8 @@ export default {
     },
     handupApi (data) {
       this.setViewData({ key: 'apimap', value: data })
-      this.setBuildData({ key: 'apimapConfig', rank: this.rank, value: data })
+      this.setBuildData({ key: 'apimap', value: data })
+      // this.setBuildData({ key: 'apimapConfig', rank: this.rank, value: data })
     },
     // handupBuildData (data) {
     //   this.setBuildData({ key: 'applyConfig', rank: this.rank, value: data })
@@ -51,6 +52,7 @@ export default {
         collapsePanels: utils.clone(this.collapsePanels)
       }
       this.setViewData({ key: 'apply', value: cacheData })
+      this.setBuildData({ key: 'apply', value: cacheData })
     }
   }
 }

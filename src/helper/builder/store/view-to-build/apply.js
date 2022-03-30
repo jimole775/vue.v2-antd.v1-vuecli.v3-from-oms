@@ -1,5 +1,5 @@
 import utils from '@/utils'
-export default function viewToBuild (collapsePanels) {
+export default function viewToBuild (collapsePanels = []) {
   const model = {
     panels: []
   }
@@ -19,10 +19,10 @@ export default function viewToBuild (collapsePanels) {
   // this.handupBuildData(model)
 }
 
-function transferFormItems (originFormItems, fields = ['originProps', 'stepNodes', 'configType']) {
-  const cFormItems = utils.clone(originFormItems)
+function transferFormItems (originFormItems = [], fields = ['originProps', 'stepNodes', 'configType']) {
+  const cpFormItems = utils.clone(originFormItems)
   const formItems = []
-  cFormItems.forEach((formItem) => {
+  cpFormItems.forEach((formItem) => {
     fields.forEach((field) => {
       delete formItem[field]
     })
@@ -33,7 +33,7 @@ function transferFormItems (originFormItems, fields = ['originProps', 'stepNodes
 }
 
 // 清掉空值的字段
-function deleteNoneFields (formItem) {
+function deleteNoneFields (formItem = {}) {
   const fields = ['props', 'operations', 'component']
   fields.forEach((field) => {
     const val = formItem[field]

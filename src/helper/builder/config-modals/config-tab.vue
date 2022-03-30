@@ -80,19 +80,19 @@ export default {
   },
   methods: {
     editConfirm () {
-      const { api, type, rank } = this.modal.data
+      const { api, type } = this.modal.data
       if (api.url) {
         const key = type === '0' ? 'list' : 'detail'
         const label = type === '0' ? '列表' : '详情'
         const data = { [key]: { ...api, key, label } }
-        this.handupApimap(rank, data)
+        this.handupApimap(data)
       }
       this.$emit('update', this.modal.data)
       this.modal.show = false
     },
-    handupApimap (rank, data) {
+    handupApimap (data) {
       this.setViewData({ key: 'apimap', value: data })
-      this.setBuildData({ key: 'apimapConfig', index: rank, value: data })
+      this.setBuildData({ key: 'apimap', value: data })
     }
   }
 }

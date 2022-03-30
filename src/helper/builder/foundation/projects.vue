@@ -48,7 +48,6 @@ export default {
       viewMatrix: [[], []],
       configRouteModal: {
         show: false,
-        mode: 'add',
         data: {}
       }
     }
@@ -110,15 +109,18 @@ export default {
     },
     configRouteConfirm (data) {
       this.setViewData({ key: 'name', value: data.name })
+      this.setBuildData({ key: 'name', value: data.name })
       this.setViewData({ key: 'router', value: data })
-      this.setBuildData({ key: 'routerConfig', value: data })
+      this.setBuildData({ key: 'router', value: data })
       this.$emit('update', data.name)
     },
     takeJob (proItem) {
       this.loadViewData(proItem.name)
+      this.setEditType('modify')
     },
     createJob () {
       this.showConfigRouteModal()
+      this.setEditType('new')
     },
     loadViewData (name) {
       api.getbuilderviewdata(name).then(res => {

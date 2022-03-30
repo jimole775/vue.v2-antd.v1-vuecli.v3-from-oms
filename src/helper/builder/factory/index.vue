@@ -173,6 +173,7 @@ export default {
         delete item.component
       })
       this.setViewData({ key: 'tabs', value: copyData })
+      this.setBuildData({ key: 'tabs', value: copyData })
     }
   }
 }

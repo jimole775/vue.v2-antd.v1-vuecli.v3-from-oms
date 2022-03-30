@@ -50,10 +50,7 @@ export default {
   },
   computed: {
     isModify () {
-      return this.modal.mode === 'modify'
-    },
-    isAdd () {
-      return this.modal.mode === 'add'
+      return this.$store.state.builder.editType === 'modify'
     }
   },
   watch: {

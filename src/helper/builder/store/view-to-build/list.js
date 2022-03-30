@@ -1,5 +1,5 @@
 import utils from '@/utils'
-export function columnsViewToBuild (originColumns) {
+export function columnsViewToBuild (originColumns = []) {
   const copyColumns = utils.clone(originColumns)
   const columns = []
   copyColumns.forEach((col) => {
@@ -30,10 +30,10 @@ export function columnsViewToBuild (originColumns) {
   return columns
 }
 
-export function searchorViewToBuild (originFormItems, fields = ['originProps', 'stepNodes', 'configType']) {
-  const cFormItems = utils.clone(originFormItems)
+export function searchorViewToBuild (originFormItems = [], fields = ['originProps', 'stepNodes', 'configType']) {
+  const cpFormItems = utils.clone(originFormItems)
   const formItems = []
-  cFormItems.forEach((formItem) => {
+  cpFormItems.forEach((formItem) => {
     fields.forEach((field) => {
       delete formItem[field]
     })

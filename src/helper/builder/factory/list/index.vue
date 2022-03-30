@@ -104,9 +104,11 @@ export default {
         summaryObject: utils.clone(this.summaryObject)
       }
       this.setViewData({ key: 'list', rank: this.rank, value: cacheData })
+      this.setBuildData({ key: 'list', rank: this.rank, value: cacheData })
     },
     handupApimap (data) {
       this.setViewData({ key: 'apimap', rank: this.rank, value: data })
+      this.setBuildData({ key: 'apimap', rank: this.rank, value: data })
     }
   }
 }

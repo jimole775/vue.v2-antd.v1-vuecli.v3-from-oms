@@ -1,5 +1,5 @@
 import utils from '@/utils'
-export default function viewToBuild (tabs) {
+export default function viewToBuild (tabs = []) {
   const lists = []
   const applies = []
   const approvals = []

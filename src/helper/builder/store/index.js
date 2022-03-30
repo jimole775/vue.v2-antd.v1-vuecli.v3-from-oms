@@ -6,9 +6,10 @@ import tabsViewToBuild from './view-to-build/tabs'
 export default {
   state: {
     tabType: '0',
+    editType: 'new', // new | modify
     currentRank: 0,
     currentJob: '',
-    stepNodes: [],
+    stepNodes: {},
     projects: [],
     buildData: {
       name: '',
@@ -51,23 +52,28 @@ export default {
     },
     getCurrentJob (state) {
       return state.currentJob
+    },
+    getEditType (state) {
+      return state.editType
     }
   },
   mutations: {
-    commitStepNodes (state, nodes) {
-      state.stepNodes = nodes || []
+    commitStepNodes (state, nodes = []) {
+      state.stepNodes[state.currentRank] = nodes
     },
     commitTabType (state, type) {
       state.tabType = type
     },
-    commitBuildData (state, { key, value }) {
+    commitEditType (state, type) {
+      state.editType = type
+    },
+    commitBuildData (state, { key, rank = state.currentRank, value }) {
       if (!state.buildData[key]) {
         state.buildData[key] = {}
       }
-      const { currentRank: rank } = state
       switch (key) {
         case 'list':
-          const { listConfig } = value
+          const { listConfig = {} } = value
           const columns = columnsViewToBuild(listConfig.columns)
           const searchor = searchorViewToBuild(listConfig.searchor)
           state.buildData['listConfig'][rank] = { columns, searchor }
@@ -97,7 +103,7 @@ export default {
           break
       }
     },
-    commitViewData (state, { key, rank, value }) {
+    commitViewData (state, { key, rank = state.currentRank, value }) {
       state.viewData.isEmpty = false
       if (!state.viewData[key]) {
         state.viewData[key] = {}
@@ -149,7 +155,6 @@ export default {
     },
     setViewData ({ commit, state }, data) {
       commit('commitViewData', data)
-      commit('commitBuildData', data)
     },
     resetBuildData ({ commit, state }) {
       commit('commitBuildData', { key: 'tabsConfig', value: [] })
@@ -166,6 +171,9 @@ export default {
       commit('commitViewData', { key: 'apimap', value: {} })
       commit('commitViewData', { key: 'apply', value: {} })
       commit('commitViewData', { key: 'approval', value: {} })
+    },
+    setEditType ({ commit, state }, type) {
+      commit('commitEditType', type)
     },
     setCurrentJob ({ commit, state }, name) {
       if (state.currentJob !== name) {
