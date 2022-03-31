@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-    <a-layout v-if="currentJob" id="layout-custom">
+    <a-layout v-if="showProjectFactory" id="layout-custom">
       <a-layout-sider
         :trigger="null"
         class="oms-sider"
@@ -52,14 +52,14 @@ export default {
     Header,
     Projects
   },
-  data () {
-    return {
-      currentJob: ''
+  computed: {
+    showProjectFactory () {
+      return !!this.projectName
     }
   },
   methods: {
     checkedProject (name) {
-      this.currentJob = name
+      this.setProjectName(name)
     }
   }
 }

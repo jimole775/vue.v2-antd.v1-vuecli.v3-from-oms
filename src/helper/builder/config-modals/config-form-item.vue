@@ -10,7 +10,15 @@
       <a-row>
         <a-col :span="24">
           <a-form-item label="字段名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['key', {rules: [{ required: true, message: '请确认关键字' }]}]" />
+            <a-input
+              v-decorator="['key',
+                            {
+                              rules: [
+                                { required: true, message: '请确认关键字' },
+                                { pattern: /^[a-zA-Z]([a-zA-Z0-9]*)$/g, message: '只支持大小写英文字母、数字'}
+                              ]
+                            }]"
+            />
           </a-form-item>
         </a-col>
         <a-col :span="24">

@@ -113,7 +113,6 @@ export default {
     },
     addFormItem () {
       this.modal.show = true
-      debugger
       this.modal.data = {
         layout: {
           span: this.defaultLayout.span,

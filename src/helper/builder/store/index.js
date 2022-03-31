@@ -8,7 +8,7 @@ export default {
     tabType: '0',
     editType: 'new', // new | modify
     currentRank: 0,
-    currentJob: '',
+    projectName: '',
     stepNodes: {},
     projects: [],
     buildData: {
@@ -50,8 +50,8 @@ export default {
     getProjects (state) {
       return state.projects
     },
-    getCurrentJob (state) {
-      return state.currentJob
+    getProjectName (state) {
+      return state.projectName
     },
     getEditType (state) {
       return state.editType
@@ -133,8 +133,8 @@ export default {
     commitProjects (state, data) {
       state.projects.push(data)
     },
-    commitCurrentJob (state, name) {
-      state.currentJob = name
+    commitProjectName (state, name) {
+      state.projectName = name
     },
     commitCurrentRank (state, rank) {
       state.currentRank = rank
@@ -175,9 +175,9 @@ export default {
     setEditType ({ commit, state }, type) {
       commit('commitEditType', type)
     },
-    setCurrentJob ({ commit, state }, name) {
-      if (state.currentJob !== name) {
-        commit('commitCurrentJob', name)
+    setProjectName ({ commit, state }, name) {
+      if (state.projectName !== name) {
+        commit('commitProjectName', name)
       }
     }
   }

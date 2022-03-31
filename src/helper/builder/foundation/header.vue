@@ -3,7 +3,6 @@
     <a-button type="primary" @click="builded">提交</a-button>
     <a-button type="primary" ghost @click="() => stage(1)">暂存</a-button>
     <a-button type="primary" ghost @click="showPreview">预览</a-button>
-    <a-button type="danger" ghost @click="showPreview">重置</a-button>
     <a-button type="primary" ghost @click="backToProjects">选择其他项目</a-button>
     <div class="pull-right">
       <a-avatar icon="user" class="mr5" :src="user.image" />
@@ -19,7 +18,6 @@ import api from '@/api'
 import utils from '@/utils'
 import mixins from '@builder/mixins'
 import Preview from './preview.vue'
-import { mapActions } from ''
 export default {
   mixins: [mixins],
   name: 'Header',
@@ -44,9 +42,8 @@ export default {
     // revert(this.buildData)
   },
   methods: {
-    ...mapActions(['setCurrentJob']),
     backToProjects () {
-      this.setCurrentJob('')
+      this.setProjectName('')
     },
     showPreview () {
       this.previewModal.show = true
