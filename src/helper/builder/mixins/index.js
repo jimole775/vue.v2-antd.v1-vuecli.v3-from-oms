@@ -9,6 +9,9 @@ export default {
     },
     buildData () {
       return this.$store.getters.getBuildData
+    },
+    currentRank () {
+      return this.$store.getters.getCurrentRank
     }
   },
   methods: {

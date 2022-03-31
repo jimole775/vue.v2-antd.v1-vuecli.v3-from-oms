@@ -30,6 +30,17 @@ export default {
       collapsePanels: []
     }
   },
+  watch: {
+    viewData: {
+      handler (data) {
+        if (data.apply) {
+          const currentModule = data.apply[this.currentRank]
+          this.collapsePanels = currentModule.collapsePanels || []
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
     apiUpdate (data) {
       this.handupApi(data)

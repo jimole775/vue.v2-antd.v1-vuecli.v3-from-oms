@@ -4,7 +4,7 @@
     <a-button type="primary" ghost @click="() => stage(1)">暂存</a-button>
     <a-button type="primary" ghost @click="showPreview">预览</a-button>
     <a-button type="danger" ghost @click="showPreview">重置</a-button>
-    <a-button type="primary" ghost @click="showPreview">选择其他项目</a-button>
+    <a-button type="primary" ghost @click="backToProjects">选择其他项目</a-button>
     <div class="pull-right">
       <a-avatar icon="user" class="mr5" :src="user.image" />
       <span class="black" v-text="user.name" />
@@ -19,6 +19,7 @@ import api from '@/api'
 import utils from '@/utils'
 import mixins from '@builder/mixins'
 import Preview from './preview.vue'
+import { mapActions } from ''
 export default {
   mixins: [mixins],
   name: 'Header',
@@ -29,41 +30,6 @@ export default {
         show: false,
         data: {}
       }
-      // buildData: {
-      //   tabsConfig: [],
-      //   // 把所有对应的接口都写到 apimap 统一管理
-      //   // 可多不可少
-      //   apimapConfig: {
-      //     // 0: {
-      //     //   apply: 'postkeyeventsstart', // 申请 接口
-      //     //   approval: 'postkeyeventsapprove', // 审批 接口
-      //     //   list: 'postkeyeventspage', // 列表查询 接口
-      //     //   detail: 'getkeyeventsdetail', // 审批详情 接口
-      //     //   export: 'postkeyeventsexport', // 导出列表 接口
-      //     //   pass: '', // 批量审批 【通过】接口
-      //     //   unpass: '', // 批量审批 【不通过】接口
-      //     //   close: 'postkeyeventsbatchClose', // 批量审批 【关闭】接口
-      //     //   revoke: 'postkeyeventsbatchRevoke', // 批量审批 【撤回】接口
-      //     //   reject: '', // 批量审批 【驳回】接口
-      //     //   appliable: '$services.com.xxx', // 是否有权限申请
-      //     //   approvalable: '$services.com.xxx', // 是否有权限审批
-      //     //   viewable: '$services.com.xxx', // 是否有权限查看
-      //     //   passable: '', // 是否有权限批量通过
-      //     //   unpassable: '', // 是否有权限批量不通过
-      //     //   closable: '$services.com.xxx', // 是否有权限批量关闭
-      //     //   revokable: '$services.com.xxx', // 是否有权限批量撤回
-      //     //   rejectable: '', // 是否有权限批量驳回
-      //     //   logType: 'key_events_flow' // 日志的type
-      //     // }
-      //   },
-      //   // “数据列表”配置项，参数参考 [STable](./STable.md) 文档
-      //   listConfig: {},
-      //   // “申请页面” 配置项
-      //   applyConfig: {},
-      //   // “审批详情” 配置项
-      //   approvalConfig: {},
-      //   routerConfig: {}
-      // }
     }
   },
   computed: {
@@ -78,6 +44,10 @@ export default {
     // revert(this.buildData)
   },
   methods: {
+    ...mapActions(['setCurrentJob']),
+    backToProjects () {
+      this.setCurrentJob('')
+    },
     showPreview () {
       this.previewModal.show = true
       this.previewModal.data = utils.clone(this.buildData)

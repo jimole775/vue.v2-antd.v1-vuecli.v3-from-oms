@@ -125,17 +125,19 @@ export default {
     loadViewData (name) {
       api.getbuilderviewdata(name).then(res => {
         if (res.code === 200) {
-          const rankKeys = ['apply', 'approval', 'list', 'apimap']
+          const keysOfRank = ['apply', 'approval', 'list', 'apimap']
           const data = res.data.viewData || {}
           Object.keys(data).forEach(key => {
             const module = data[key]
             if (utils.isValuable(module)) {
-              if (rankKeys.includes(key)) {
+              if (keysOfRank.includes(key)) {
                 Object.keys(module).forEach((rank) => {
                   this.setViewData({ key, rank, value: module[rank] })
+                  this.setBuildData({ key, rank, value: module[rank] })
                 })
               } else {
                 this.setViewData({ key, value: module })
+                this.setBuildData({ key, value: module })
               }
             }
           })

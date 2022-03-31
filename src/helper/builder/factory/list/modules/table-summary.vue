@@ -17,6 +17,24 @@ export default {
   components: {
     ApiButton
   },
+  props: {
+    dataSource: {
+      type: Object,
+      default: () => ({})
+    }
+  },
+  watch: {
+    dataSource: {
+      handler (data) {
+        if (!this.$utils.isEmptyObject(data)) {
+          Object.keys(data).forEach((key) => {
+            this.$set(this.summaryObject, key, data[key])
+          })
+        }
+      },
+      immediate: true
+    }
+  },
   data () {
     return {
       formItemLayout: {

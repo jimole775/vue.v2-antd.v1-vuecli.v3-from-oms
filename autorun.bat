@@ -1,9 +1,7 @@
-@echo off
-set HOME=%cd%
-echo %HOME%
-if exist %HOME%/node_modules/.bin (
-   start cmd /k "cd %HOME% & npm run serve"
-) else (
-   start cmd /k "cd %HOME% & npm run init & npm run serve"
+@ECHO OFF
+SET HOME=%cd%
+if not exist %HOME%/node_modules/.bin (
+   start /wait /min cmd /k "cd %HOME% & npm run init"
 )
-start cmd /k "cd %HOME% & npm run builder"
+start /min cmd /k "cd %HOME% & npm run serve"
+start /min cmd /k "cd %HOME% & npm run builder"

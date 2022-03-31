@@ -59,7 +59,7 @@ export default {
     ...mapGetters(['getStepNodes', 'getTabType']),
     stepNodesOptions () {
       const res = []
-      this.getStepNodes.forEach((node) => {
+      this.getStepNodes && this.getStepNodes.forEach((node) => {
         if (node.value !== 'end') {
           res.push(node)
         }

@@ -142,7 +142,7 @@ export default {
   },
   actions: {
     setCurrentRank ({ commit, state }, nodes) {
-      commit('commitStepNodes', nodes)
+      commit('commitCurrentRank', nodes)
     },
     setStepNodes ({ commit, state }, nodes) {
       commit('commitStepNodes', nodes)

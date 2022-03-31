@@ -56,7 +56,9 @@ export default {
     modal: {
       handler ({ data, show }) {
         if (show) {
-          this.form.setFieldsValue(data)
+          setTimeout(() => {
+            this.form.setFieldsValue(data)
+          })
         } else {
           this.form.resetFields()
         }

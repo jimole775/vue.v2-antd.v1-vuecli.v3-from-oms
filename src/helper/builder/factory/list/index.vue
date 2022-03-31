@@ -4,7 +4,7 @@
       <BuildFormItems :config="{ anchorText: '配置查询表单' }" @update="updateSearchor" />
     </div>
     <div class="panel-content">
-      <TableSummary @update="updateSummary" />
+      <TableSummary :data-source="summaryObject" @update="updateSummary" />
     </div>
     <div v-if="canShowTable" class="panel-content">
       <TableColumns :data-source="listData" @projectApproval="projectApproval" @update="updateColumns" />
@@ -64,13 +64,20 @@ export default {
       },
       deep: true,
       immediate: true
+    },
+    viewData: {
+      handler (data) {
+        if (data.list) {
+          const currentModule = data.list[this.currentRank]
+          this.listData = currentModule.listData
+          this.summaryObject = currentModule.summaryObject
+          this.listConfig = currentModule.listConfig
+        }
+      },
+      immediate: true
     }
   },
   methods: {
-    updateSummary (data) {
-      this.summaryObject = data
-      this.handupApimap(this.summaryObject)
-    },
     projectApproval () {
       this.$emit('switchTab', '2')
     },
@@ -97,18 +104,23 @@ export default {
       this.listConfig.columns = data
       this.handup()
     },
+    updateSummary (data) {
+      this.summaryObject = data
+      this.handup()
+      this.handupApimap(this.summaryObject)
+    },
     handup () {
       const cacheData = {
         listData: utils.clone(this.listData),
         listConfig: utils.clone(this.listConfig),
         summaryObject: utils.clone(this.summaryObject)
       }
-      this.setViewData({ key: 'list', rank: this.rank, value: cacheData })
-      this.setBuildData({ key: 'list', rank: this.rank, value: cacheData })
+      this.setViewData({ key: 'list', value: cacheData })
+      this.setBuildData({ key: 'list', value: cacheData })
     },
     handupApimap (data) {
-      this.setViewData({ key: 'apimap', rank: this.rank, value: data })
-      this.setBuildData({ key: 'apimap', rank: this.rank, value: data })
+      this.setViewData({ key: 'apimap', value: data })
+      this.setBuildData({ key: 'apimap', value: data })
     }
   }
 }

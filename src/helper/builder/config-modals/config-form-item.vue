@@ -142,7 +142,7 @@ export default {
     stepNodesOptions () {
       const res = []
       const isOperation = !!(this.config.operations && this.config.operations.length)
-      this.getStepNodes.forEach((node) => {
+      this.getStepNodes && this.getStepNodes.forEach((node) => {
         // 如果有审批项，就代表是在编辑【审批内容】
         // 【审批内容】不需要在结束节点显示
         if (isOperation) {

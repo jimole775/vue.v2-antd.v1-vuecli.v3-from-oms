@@ -73,6 +73,20 @@ export default {
       return this.stepNodes[this.current] || {}
     }
   },
+  watch: {
+    viewData: {
+      handler (data) {
+        if (data.approval) {
+          const currentModule = data.approval[this.currentRank]
+          this.log = currentModule.log
+          this.operation = currentModule.operation
+          this.collapsePanels = currentModule.collapsePanels
+          this.stepNodes = currentModule.stepNodes
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
     operationUpdate (data) {
       this.operation = data
