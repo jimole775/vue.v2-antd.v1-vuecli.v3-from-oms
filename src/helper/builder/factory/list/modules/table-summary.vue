@@ -37,10 +37,6 @@ export default {
   },
   data () {
     return {
-      formItemLayout: {
-        labelCol: { span: 6 },
-        wrapperCol: { span: 16 }
-      },
       summaryObject: {
         approval: {
           url: undefined,

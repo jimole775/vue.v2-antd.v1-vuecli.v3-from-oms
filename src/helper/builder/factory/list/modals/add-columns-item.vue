@@ -13,7 +13,7 @@
               v-decorator="['dataIndex',
                             {
                               rules: [
-                                { required: true, message: '请确认字段名' },
+                                { required: true, message: '请确认key' },
                                 { pattern: /^[a-zA-Z]([a-zA-Z0-9]*)$/g, message: '只支持大小写英文字母、数字'}
                               ]
                             }]"
@@ -21,8 +21,8 @@
           </a-form-item>
         </a-col>
         <a-col v-if="!form.getFieldValue('slotsRender')" :span="24">
-          <a-form-item label="title" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['title', {rules: [{ required: true, message: '请确认字段标签' }]}]" />
+          <a-form-item label="label" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+            <a-input v-decorator="['title', {rules: [{ required: true, message: '请确认title' }]}]" />
           </a-form-item>
         </a-col>
         <a-col :span="24">

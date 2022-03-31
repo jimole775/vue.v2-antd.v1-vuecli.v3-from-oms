@@ -9,7 +9,7 @@
     <a-form :form="form">
       <a-row>
         <a-col :span="24">
-          <a-form-item label="字段名" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+          <a-form-item label="key" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-input
               v-decorator="['key',
                             {
@@ -22,7 +22,7 @@
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label="字段标签" :label-col="{span: 6}" :wrapper-col="{span: 16}">
+          <a-form-item label="label" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-input v-decorator="['title', {rules: [{ required: true, message: '请确认字段标签' }]}]" />
           </a-form-item>
         </a-col>
