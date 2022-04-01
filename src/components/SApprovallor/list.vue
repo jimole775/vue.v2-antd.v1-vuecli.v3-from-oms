@@ -2,13 +2,13 @@
 import utils from '@/utils'
 import { mapState } from 'vuex'
 import STable from '@/components/STable'
-import baseMixins from '@/mixins/baseMixins.js'
+import base from '@/mixins/base.js'
 
 export default {
   components: {
     STable
   },
-  mixins: [baseMixins],
+  mixins: [base],
   props: {
     applyAnchorText: {
       type: String,

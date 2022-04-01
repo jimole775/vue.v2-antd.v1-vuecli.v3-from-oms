@@ -8,6 +8,7 @@ export default {
     token: '',
     menus: [],
     mockEnv: false,
+    loading: false,
     todoParams: null,
     menuButtons: [],
     user: '',
@@ -113,6 +114,9 @@ export default {
     },
     setTodoParams (state, params) {
       state.todoParams = params
+    },
+    setLoading (state, status) {
+      state.loading = status
     },
     setMockEnv (state, env) {
       state.mockEnv = env || false

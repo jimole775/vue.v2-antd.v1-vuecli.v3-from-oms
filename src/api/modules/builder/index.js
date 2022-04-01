@@ -24,5 +24,9 @@ export default {
   // 获取所有项目名
   getbuilderprojects () {
     return http.get(`${host}/builder/projects`)
+  },
+  // 获取所有分支名
+  getbuilderbranchs () {
+    return http.get(`${host}/builder/branchs`)
   }
 }

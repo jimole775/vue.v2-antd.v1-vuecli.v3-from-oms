@@ -5,12 +5,12 @@
 </template>
 
 <script>
-import baseMixins from '@/mixins/baseMixins.js'
+import base from '@/mixins/base.js'
 import Phonevalidate from '@/components/Phonevalidate.vue'
 import SLayout from '@/components/SLayout.vue'
 export default {
   name: 'Home',
-  mixins: [baseMixins],
+  mixins: [base],
   components: {
     SLayout,
     Phonevalidate

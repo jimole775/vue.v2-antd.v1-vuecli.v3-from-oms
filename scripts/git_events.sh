@@ -8,56 +8,73 @@ org_branch="builder"
 new_branch="$org_branch-$1"
 tag_dir=/f/$pro_name/
 src_dir=$runenv/builder-dist/*
-log_dir=$runenv/server/builder.log
-err_dir=$runenv/server/builder-error.log
+log_dir=$runenv/logs/builder.log
+err_dir=$runenv/logs/builder-error.log
 
 log(){
+  echo "当前盘符: $(pwd)" >> $log_dir
   echo "`date "+%Y-%m-%d %H:%M:%S"`: $1" >> $log_dir
 }
 
 err(){
-  echo "`date "+%Y-%m-%d %H:%M:%S"`: $1" >> $err_dir
+  echo "当前盘符: $(pwd)" > $log_dir
+  echo "`date "+%Y-%m-%d %H:%M:%S"`: $1" > $err_dir
+}
+
+init(){
+  create_logs $1
+  create_target $1
+}
+
+create_logs(){
+  rm -rf $runenv/logs
+  mkdir -p $runenv/logs
 }
 
 # 创建目录，并执行初始化操作
 create_target(){
   cd f:
-  mkdir -p $pro_name
+  git clone $git_address
   cd $pro_name
-  git init
-}
-
-# 推送
-git_push(){
-  cd $tag_dir
-  git status
-  git add -A
-  git commit -m "feat: build new branch $new_branch"
-  git push -u origin $new_branch
-  rm -rf $tag_dir
 }
 
 # 移动文件
 mv_files(){
   log "move src: $src_dir"
   log "move tag: $tag_dir"
-  cp -rf $src_dir $tag_dir
-  rm -rf $src_dir
+  cp -rf $src_dir $tag_dir > $err_dir
+  rm -rf $src_dir > $err_dir
 }
 
 git_pull(){
-  create_target
-  git remote add $git_origin $git_address
-  git remote -v
-  git pull $git_origin $org_branch
-  # pull无异常，就跳过
+  # 尝试拉取 builder 分支
+  git pull $git_origin $org_branch > $err_dir
+
+  # 如果没有 builder 分支，需要新建并切换到此分支
   if [ $? -eq 1 ];then
-    err "$git_address 拉取分支出现异常!"
+    git checkout -b $org_branch > $err_dir
+
+    git pull $git_origin $org_branch > $err_dir
+
+    git push -u $git_origin $org_branch > $err_dir
   fi
-  # 先创建 分支
-  git checkout -b $new_branch
+
+  # 切换到需要推送的分支
+  git checkout -b $new_branch > $err_dir
+  git pull $git_origin $new_branch > $err_dir
 }
 
+# 推送
+git_push(){
+  # cd $tag_dir
+  git status
+  git add -A
+  git commit -m "feat: build new branch $new_branch" > $err_dir
+  git push -u $git_origin $new_branch > $err_dir
+  rm -rf $tag_dir > $err_dir
+}
+
+init $1
 git_pull $1
 mv_files $1
 git_push $1

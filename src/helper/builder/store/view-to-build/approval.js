@@ -2,6 +2,10 @@ import utils from '@/utils'
 export default function viewToBuild (getStepNodes = [], collapsePanels = [], operation = {}) {
   const model = {}
   getStepNodes.forEach((node) => {
+    // __addition__ 节点过滤掉
+    if (node.value === '__addition__') return false
+
+    // 正常逻辑
     model[node.value] = {
       panels: {
         permission: [],
@@ -24,6 +28,7 @@ export default function viewToBuild (getStepNodes = [], collapsePanels = [], ope
         dispermissionPanels.push({ ...panelModel, mode: 'readonly' })
       }
     })
+    // end节点，没有审批操作
     if (node.value !== 'end') {
       const operationPanel = transferOperation(node.value, operation)
       permissionPanels.push(operationPanel)

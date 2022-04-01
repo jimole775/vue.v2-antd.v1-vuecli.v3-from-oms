@@ -10,7 +10,7 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
+// import Vue from 'vue'
 import api from '@/api'
 import utils from '@/utils'
 import { mapActions } from 'vuex'
@@ -91,16 +91,16 @@ export default {
         apiFun = this.api
       }
       if (!apiFun) return false
-      Vue.bus.emit('loading', true)
+      // Vue.bus.emit('loading', true)
       if (utils.isFunction(apiFun)) {
         if (this.type === 'permission') {
           res = await this.$refs.PhonevalidateRef.validate(apiFun, this.getTrulyParams())
         } else {
           res = await apiFun(this.getTrulyParams())
         }
-        Vue.bus.emit('loading', false)
+        // Vue.bus.emit('loading', false)
       } else {
-        Vue.bus.emit('loading', false)
+        // Vue.bus.emit('loading', false)
         this.$message.error('ExportExcel => 请先在api对象中设置好接口！')
       }
       if (utils.isBackendResponse(res)) {

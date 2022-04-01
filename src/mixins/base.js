@@ -9,9 +9,9 @@ export default {
   },
   computed: {
     ...mapState({
-      currentName: state => state.global.user.name,
-      currentAccount: state => state.global.user.employeeNumber,
-      currentRoleType: state => state.global.global.userRole.type
+      user: state => state.global.user,
+      loading: state => state.global.loading,
+      userRole: state => state.global.global.userRole
     }),
     // 上传附件时，服务端支持的文件类型
     supportSeries () {

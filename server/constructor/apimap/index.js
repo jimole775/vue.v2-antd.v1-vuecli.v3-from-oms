@@ -3,8 +3,9 @@ const { object2file, stringMark } = require('../../utils')
 module.exports = function buildApimap (tabApimap, { name: moduleName, parent: parentName }, basePath) {
   const parentPath = parentName ? `${parentName}/` : ''
   const apiFuncFile = `/src/api/modules/${parentPath}${moduleName}.js`
-  const apiFiles = buildApimapFiles(tabApimap, basePath)
-  apiFiles.push(buildApiFuncFile(tabApimap, apiFuncFile))
+  const availApimap = pickAvailableApi(tabApimap)
+  const apiFiles = buildApimapFiles(availApimap, basePath)
+  apiFiles.push(buildApiFuncFile(availApimap, apiFuncFile))
   return apiFiles
 }
 
@@ -19,6 +20,21 @@ function buildApimapFiles (tabApimap, prevPath) {
   return files
 }
 
+// 没有url或者method的api项，就删掉
+function pickAvailableApi (tabApimap) {
+  Object.keys(tabApimap).forEach((tabIndex) => {
+    const apimap = tabApimap[tabIndex]
+    Object.keys(apimap).forEach((key) => {
+      const apiItem = apimap[key]
+      if (!apiItem.url || !apiItem.method) {
+        delete apimap[key]
+      }
+    })
+  })
+  return tabApimap
+}
+
+// 创建内容文件
 function buildApimapFile (tabFolder, curApimap) {
   const exportCode = `export default `
   const exportData = {}
@@ -33,6 +49,7 @@ function buildApimapFile (tabFolder, curApimap) {
   }
 }
 
+// 创建引导文件
 function buildApiFuncFile (tabApimap, apiFuncFile) {
   const tabIndexs = Object.keys(tabApimap)
   const inportCode1 = `import http from '@/utils/http'\n`

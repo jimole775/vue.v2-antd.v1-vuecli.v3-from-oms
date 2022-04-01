@@ -17,7 +17,7 @@
 <script>
 import utils from '@/utils'
 import { mapActions } from 'vuex'
-import baseMixins from '@/mixins/baseMixins'
+import base from '@/mixins/base'
 const panelmodel = {
   tabName: '',
   proxyName: null,
@@ -37,7 +37,7 @@ export default {
       default: () => ({})
     }
   },
-  mixins: [baseMixins],
+  mixins: [base],
   data () {
     return {
       // 用来存储点击过的【list类型】的tabid

@@ -54,13 +54,13 @@
 <script>
 import api from '@/api'
 import utils from '@/utils'
-import baseMixins from '@/mixins/baseMixins.js'
+import base from '@/mixins/base.js'
 import ApprovalStepBar from '@/components/ApprovalStepBar'
 export default {
   components: {
     ApprovalStepBar
   },
-  mixins: [baseMixins],
+  mixins: [base],
   props: {
     tabProxy: {
       type: Object,

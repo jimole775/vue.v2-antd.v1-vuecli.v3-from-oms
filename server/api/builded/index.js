@@ -1,4 +1,3 @@
-const fs = require('fs')
 const path = require('path')
 const { writeFileSync, readDirSync, readFileSync } = require('../../utils')
 const buildConstruct = require('../../constructor')
@@ -36,28 +35,25 @@ function buildCodeFiles (buildData) {
 // }
 
 function runScripts (buildData, resolve) {
-  const errorLog = path.join(global.src_path, './builder-error.log')
-  const gitEventsShell = path.join(global.src_path, './scripts/git_events.sh')
-  const projectName = buildData.name
-  // 判断有没有 /builder-dist 目录
+  const errorLog = path.join(global.root_path, './logs/builder-error.log')
+  const gitEventsShell = path.join(global.root_path, './scripts/git_events.sh')
+
+  const projectName = buildData.routerConfig.name || ''
+  if (!projectName) return resolve(`构建失败: ${projectName} 项目名异常！`)
+
   const dists = readDirSync(distPath)
-  if (dists && dists.length) {
-    // 先删除错入日志
-    fs.rmSync(errorLog, { force: true })
+  if (!dists || !dists.length) return resolve(`构建失败: ${distPath} 没有创建！`)
 
-    // 执行脚本
-    execSync(`"${gitEventsShell}" ${projectName}`, { cwd: global.src_path })
+  // 执行脚本
+  execSync(`"${gitEventsShell}" ${projectName}`, { cwd: global.root_path })
 
-    // 如果新的错误日志有内容，证明构建失败
-    const content = readFileSync(errorLog)
-    if (content && content.length) {
-      return resolve(`构建失败: ${content.split('\n')[0]}`)
-    } else {
-      return resolve({
-        data: '创建成功'
-      })
-    }
+  // 如果新的错误日志有内容，证明构建失败
+  const content = readFileSync(errorLog)
+  if (content && content.length) {
+    return resolve(`构建失败: ${content.split('\n')[0]}`)
   } else {
-    return resolve(`构建失败: ${distPath} 没有创建！`)
+    return resolve({
+      data: '创建成功'
+    })
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="handler-bar">
-    <a-button type="primary" @click="builded">提交</a-button>
-    <a-button type="primary" ghost @click="() => stage(1)">暂存</a-button>
+    <a-button type="primary" :loading="loading" @click="builded">提交</a-button>
+    <a-button type="primary" :loading="loading" @click="() => stage(1)">暂存</a-button>
     <a-button type="primary" ghost @click="showPreview">预览</a-button>
     <a-button type="primary" ghost @click="backToProjects">选择其他项目</a-button>
     <div class="pull-right">
@@ -17,9 +17,10 @@
 import api from '@/api'
 import utils from '@/utils'
 import mixins from '@builder/mixins'
+import base from '@/mixins/base'
 import Preview from './preview.vue'
 export default {
-  mixins: [mixins],
+  mixins: [mixins, base],
   name: 'Header',
   components: { Preview },
   data () {
