@@ -68,26 +68,32 @@ export default {
       state.editType = type
     },
     commitBuildData (state, { key, rank = state.currentRank, value }) {
-      if (!state.buildData[key]) {
-        state.buildData[key] = {}
-      }
       switch (key) {
         case 'list':
+          if (!state.buildData['listConfig']) {
+            state.buildData['listConfig'] = {}
+          }
           const { listConfig = {} } = value
           const columns = columnsViewToBuild(listConfig.columns)
           const searchor = searchorViewToBuild(listConfig.searchor)
           state.buildData['listConfig'][rank] = { columns, searchor }
           break
         case 'apply':
+          if (!state.buildData['applyConfig']) {
+            state.buildData['applyConfig'] = {}
+          }
           const applyBuild = applyViewToBuild(value.collapsePanels)
           state.buildData['applyConfig'][rank] = applyBuild
           break
         case 'approval':
+          if (!state.buildData['approvalConfig']) {
+            state.buildData['listConfig'] = {}
+          }
           const approvalBuild = approvalViewToBuild(value.stepNodes, value.collapsePanels)
           state.buildData['approvalConfig'][rank] = approvalBuild
           break
         case 'apimap':
-          const already = state.buildData[key][rank] || {}
+          const already = state.buildData['apimapConfig'][rank] || {}
           state.buildData['apimapConfig'][rank] = {
             ...already,
             ...value
