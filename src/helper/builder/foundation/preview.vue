@@ -18,7 +18,7 @@
 <script>
 import utils from '@/utils'
 import http from '@/utils/http'
-import { jsx2vue } from '../utils'
+import { jsx2vue, string2func } from '@builder/utils'
 import SApprovallor from '@/components/SApprovallor'
 export default {
   name: 'Preview',
@@ -120,7 +120,7 @@ export default {
         const keys = Object.keys(formItem)
         keys.forEach((key) => {
           if (isFuncStr(formItem[key]) && isNodeRender(formItem[key])) {
-            formItem[key] = utils.string2func(jsx2vue(formItem[key]))
+            formItem[key] = string2func(jsx2vue(formItem[key]))
           }
         })
       })

@@ -11,6 +11,10 @@ export default {
       type: Object,
       default: () => ({})
     },
+    bridge: {
+      type: Object,
+      default: () => ({})
+    },
     dataSource: {
       type: Array,
       default: () => []
@@ -30,28 +34,13 @@ export default {
   watch: {
     tab: {
       handler (tab) {
-        // if (this.canShowTable) {
         if (tab.api) {
           this.testFetch(tab.api)
         }
-        // }
       },
       deep: true,
       immediate: true
     },
-    // listData: {
-    //   handler (data) {
-    //     if (this.columns.length > 0) {
-    //       return false
-    //     }
-    //     const row = data[0] || {}
-    //     this.defaultList(row)
-    //     this.defaultColumns(row)
-    //     debugger
-    //     this.$emit('update', this.columns)
-    //   },
-    //   immediate: true
-    // },
     dataSource: {
       handler (columns) {
         this.columns = columns
@@ -62,7 +51,7 @@ export default {
   methods: {
     // 尝试获取样例数据
     async testFetch (api) {
-      if (api.url) {
+      if (api.url && this.dataList.length === 0) {
         const fn = http[api.method.toLocaleLowerCase()] || function () {}
         const params = api.method === 'GET' ? { params: api.params } : api.params
         try {
@@ -106,15 +95,13 @@ export default {
     //     ...row
     //   }]
     // },
-    projectApproval () {
-      this.$emit('projectApproval')
-    },
     callScopedSlotsRender (item) {
       const aRow = this.dataList[0] || {}
-      return item.scopedSlotsRender(this.$createElement, aRow, this)
+      item.scopedSlotsRender.bind(this)
+      return item.scopedSlotsRender(this.$createElement, aRow, this.scope)
     },
     callSlotsRender (item) {
-      return item.slotsRender(this.$createElement, this)
+      return item.slotsRender(this.$createElement, this.scope)
     },
     reduceColumnsItem (index) {
       this.$modal.confirm({
@@ -157,13 +144,21 @@ export default {
     },
     buildTHead () {
       return this.columns.map((item, index) => {
-        const reduceNodeMap = {
-          __addition__: ' ',
-          __columns__: (<a style="color: red;" onClick={() => this.reduceColumnsItem(index)}><a-icon type="minus-circle" /></a>)
+        // __addition__: 新增按钮的col
+        // __columns__: 普通的col
+        const evalReduceNode = (item) => {
+          const map = {
+            __addition__: ' ',
+            __columns__: (<a style="color: red;" onClick={() => this.reduceColumnsItem(index)}><a-icon type="minus-circle" /></a>)
+          }
+          return map[item.dataIndex] ? map[item.dataIndex] : map['__columns__']
         }
-        const addNodeMap = {
-          __addition__: (<a-button ghost type="primary" onClick={() => this.addColumnsItem()}>+</a-button>),
-          __columns__: (<a onClick={() => this.editColumnsItem(item)}><a-icon type="edit" /></a>)
+        const evalAddNode = (item) => {
+          const map = {
+            __addition__: (<a-button ghost type="primary" onClick={() => this.addColumnsItem()}>+</a-button>),
+            __columns__: (<a onClick={() => this.editColumnsItem(item)}><a-icon type="edit" /></a>)
+          }
+          return map[item.dataIndex] ? map[item.dataIndex] : map['__columns__']
         }
         const evalTitleNode = (item) => {
           if (item.title) return <span style="padding: 0 0.3rem;">{ item.title }</span>
@@ -173,9 +168,9 @@ export default {
         return (
           <template slot={item.slots && item.slots.title}>
             <div>
-              { reduceNodeMap[item.dataIndex] ? reduceNodeMap[item.dataIndex] : reduceNodeMap['__columns__'] }
+              { evalReduceNode(item) }
               { evalTitleNode(item) }
-              { addNodeMap[item.dataIndex] ? addNodeMap[item.dataIndex] : addNodeMap['__columns__'] }
+              { evalAddNode(item) }
             </div>
           </template>
         )
@@ -211,7 +206,7 @@ export default {
           this.buildTBody()
         }
       </a-table>
-      <AddColumnsItem modal={this.modal} onUpdate={this.columnsItemConfirm} onProjectApproval={this.projectApproval} />
+      <AddColumnsItem modal={this.modal} onUpdate={this.columnsItemConfirm} />
     </div>)
   }
 }

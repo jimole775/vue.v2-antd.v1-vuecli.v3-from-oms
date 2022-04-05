@@ -83,6 +83,7 @@
   </a-modal>
 </template>
 <script>
+import { jsx2vue, string2func } from '@builder/utils'
 export default {
   props: {
     modal: {
@@ -160,14 +161,14 @@ export default {
           permission: params.permission
         }
       }
-      // 添加锚点
+      // 添加锚点的专属逻辑
       if (params.anchor === '1') {
         if (!params.scopedSlotsRender) {
           model.anchorTransfer = true // 标记 scopedSlotsRender 是被【详情锚点】改造而来的
           model.scopedSlots = model.props.scopedSlots = { customRender: params.dataIndex }
-          model.scopedSlotsRender = (h, record, vm) => {
+          model.scopedSlotsRender = function (h, record, vm) {
             return (
-              <a onClick={() => this.projectApproval(record)}>
+              <a onClick={() => vm.bridge.projectApproval(record)}>
                 { record[params.dataIndex] }
               </a>
             )
@@ -216,12 +217,16 @@ export default {
         model.props.slotsRender = params.slotsRender
       }
 
+      // 配置了 scopedSlotsRender，则给
       if (params.scopedSlotsRender) {
         model.anchorTransfer = false
         model.scopedSlots = model.props.scopedSlots = { customRender: params.dataIndex }
-        model.scopedSlotsRender = (h, record, vm) => {
-          return new Function(params.scopedSlotsRender)(h, record, vm)
-        }
+        console.log('model.scopedSlots:', model.scopedSlots)
+        // 这里复制必须是 function，如果是 () => {} 可能导致内部的this丢失
+        model.scopedSlotsRender = string2func(jsx2vue(`function (h, record, vm) {
+          ${params.scopedSlotsRender}
+        }`))
+        console.log('model.scopedSlotsRender:', model.scopedSlotsRender)
         model.props.scopedSlotsRender = params.scopedSlotsRender
       }
       return model

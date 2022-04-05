@@ -10,7 +10,9 @@
       <TableColumns
         :data-source="listConfig.columns"
         :tab="tab"
-        @projectApproval="projectApproval"
+        :bridge="{
+          projectApproval
+        }"
         @update="updateColumns"
       />
     </div>

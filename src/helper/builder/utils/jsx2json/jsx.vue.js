@@ -1,3 +1,8 @@
+/**
+ * 当前模块，主要用途：
+ * 把 jsx 的语法，通过简单直译的方式，解析成 vue.$createElement 语法
+ * 当前逻辑不成熟，不可用，推荐使用 babel 方案
+ */
 import tokenizer from './jsx.tokenizer.js'
 import parser from './jsx.parser.js'
 import utils from '@/utils'

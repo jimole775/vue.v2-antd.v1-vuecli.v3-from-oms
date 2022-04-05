@@ -25,7 +25,6 @@
     :show-rank="false" /** 是否显示序号 */
     @update="updateDataSet" /** 刷新回调 */
     @selectChange="selectChange" /** 勾选回调 */
-
   >
     <!-- 表格头部的摘要插槽 -->
     <template slot="summary">

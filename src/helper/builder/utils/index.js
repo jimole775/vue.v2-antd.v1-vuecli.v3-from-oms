@@ -169,3 +169,75 @@ export function fillArray (target = [], element = '', rowLen = 1, colLen = 0) {
 
   return result
 }
+
+/**
+ * 获取函数的参数名
+ * @param {Function | String} src
+ * @returns Array
+ * @template getFuncParamNames('(a, b) =>') => ['a', 'b']
+ * @template getFuncParamNames('function (a, b)') => ['a', 'b']
+ * @template getFuncParamNames((a, b) => {}) => ['a', 'b']
+ */
+export function getFuncParamNames (src) {
+  if (typeof src === 'function') {
+    src = src.toString()
+  } else {
+    return []
+  }
+  let res = []
+  const funcReg = /function ?\((.+)\)/
+  const arrowReg = /\((.+)\) ?=>/
+  const funcMatched = src.match(funcReg)
+  const arrowMatched = src.match(arrowReg)
+  if (funcMatched && funcMatched[1]) {
+    res = funcMatched[1].split(',')
+  }
+  if (arrowMatched && arrowMatched[1]) {
+    res = arrowMatched[1].split(',')
+  }
+  return res
+}
+
+/**
+ * 函数转字符串
+ * @param {Function} func
+ * @returns String
+ * @template func2string(function(){}) => 'function(){}'
+ */
+export function func2string (func) {
+  if (!func) return ''
+  return func.toString()
+}
+
+/**
+ * 字符串转函数，并且结构头，身，尾，赋值到函数的属性上
+ * @param {String} string
+ * @returns Function
+ * @template string2func('function(){}') => function anonymous (){}
+ * @template string2func('() => {}') => () => {}
+ * @template string2func('') => () => {}
+ */
+export function string2func (string) {
+  if (!string) return () => {}
+  let head = ''
+  let body = ''
+  let tail = ''
+  let func = null
+  let regTail = /\n?\s*?\}$/
+  let regHead = /=>/.test(string)
+    ? /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/ // 箭头函数
+    : /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/ // 普通函数
+  head = string.match(regHead)
+  tail = string.match(regTail)
+  body = string.replace(regHead, '').replace(regTail, '')
+  // function () {} 这种类型的转换，需要增加一个函数名
+  if (/function \(/.test(string)) {
+    string = string.replace(/function \(/, 'function anonymous \(')
+  }
+  func = eval(`(${string})`)
+  func.head = head ? head[0] : ''
+  func.tail = tail ? tail[0] : ''
+  func.body = body || ''
+  func.args = getFuncParamNames(string)
+  return func
+}
