@@ -26,7 +26,7 @@ function buildColumns (prevDir, columns) {
   const exportData = utils.object2file(columns)
   return {
     path: `${prevDir}/columns.js`,
-    content: `${exportCode}${exportData}`
+    content: `${exportCode}${exportData}\n`
   }
 }
 
@@ -35,7 +35,7 @@ function buildSearchor (prevDir, searchor) {
   const exportData = utils.object2file(searchor)
   return {
     path: `${prevDir}/searchor.js`,
-    content: `${exportCode}${exportData}`
+    content: `${exportCode}${exportData}\n`
   }
 }
 

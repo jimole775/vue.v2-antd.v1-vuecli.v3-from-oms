@@ -58,7 +58,7 @@ function buildPanels (prevDir, panels) {
     }
     res.push({
       path: `${prevDir}/${fileName}`,
-      content: `${exportCode}${object2file(data)}`
+      content: `${exportCode}${object2file(data)}\n`
     })
   })
   return res
@@ -143,23 +143,23 @@ function buildLoadsAndModules (uniPanels) {
       permission.loads.push({
         path: `'./permission/operation'`,
         var: `operation`,
-        code: `import operation from './permission/operation'`
+        code: `import operation from './permission/operation'\n`
       })
       permission.modules.push({
         title: panel.title,
         var: `operationRender`,
-        code: `const operationRender = { component: 'ApprovalOperation', title: '审批操作', mode: 'edit', show: true, operationItem: operation }`
+        code: `const operationRender = { component: 'ApprovalOperation', title: '审批操作', mode: 'edit', show: true, operationItem: operation }\n`
       })
     } else {
       const load = {
         path: `'./permission/panel${pIndex}'`,
         var: `panel${pIndex}Edit`,
-        code: `import panel${pIndex}Edit from './permission/panel${pIndex}'`
+        code: `import panel${pIndex}Edit from './permission/panel${pIndex}'\n`
       }
       const module = {
         title: panel.title,
         var: `panel${pIndex}EditRender`,
-        code: `const panel${pIndex}EditRender = { component: '${panel.component}', title: '${panel.title}', mode: '${panel.mode}', show: ${panel.show}, formItems: ${load.var} }`
+        code: `const panel${pIndex}EditRender = { component: '${panel.component}', title: '${panel.title}', mode: '${panel.mode}', show: ${panel.show}, formItems: ${load.var} }\n`
       }
       permission.loads.push(load)
       permission.modules.push(module)
@@ -171,12 +171,12 @@ function buildLoadsAndModules (uniPanels) {
     const load = {
       path: `'./permission/panel${pIndex}'`,
       var: `panel${pIndex}Read`,
-      code: `import panel${pIndex}Read from './dispermission/panel${pIndex}'`
+      code: `import panel${pIndex}Read from './dispermission/panel${pIndex}'\n`
     }
     const module = {
       title: panel.title,
       var: `panel${pIndex}ReadRender`,
-      code: `const panel${pIndex}ReadRender = { component: '${panel.component}', title: '${panel.title}', mode: '${panel.mode}', show: ${panel.show}, formItems: ${load.var} }`
+      code: `const panel${pIndex}ReadRender = { component: '${panel.component}', title: '${panel.title}', mode: '${panel.mode}', show: ${panel.show}, formItems: ${load.var} }\n`
     }
     dispermission.loads.push(load)
     dispermission.modules.push(module)

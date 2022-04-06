@@ -39,7 +39,7 @@ function buildPanels (prevDir, panels) {
     fileName = `panel${index + 1}.js`
     res.push({
       path: `${prevDir}/${fileName}`,
-      content: `${exportCode}${object2file(panel.formItems)}`
+      content: `${exportCode}${object2file(panel.formItems)}\n`
     })
   })
   return res
@@ -87,12 +87,12 @@ function buildLoadsAndModules (uniPanels) {
     const load = {
       var: `panel${pIndex}Edit`,
       path: `'./permission/panel${pIndex}'`,
-      code: `import panel${pIndex}Edit from './permission/panel${pIndex}'`
+      code: `import panel${pIndex}Edit from './permission/panel${pIndex}'\n`
     }
     const module = {
       title: panel.title,
       var: `panel${pIndex}EditRender`,
-      code: `const panel${pIndex}EditRender = { component: '${panel.component}', title: '${panel.title}', mode: '${panel.mode}', show: ${panel.show}, formItems: ${load.var} }`
+      code: `const panel${pIndex}EditRender = { component: '${panel.component}', title: '${panel.title}', mode: '${panel.mode}', show: ${panel.show}, formItems: ${load.var} }\n`
     }
     permission.loads.push(load)
     permission.modules.push(module)

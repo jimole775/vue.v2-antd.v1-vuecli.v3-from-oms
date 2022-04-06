@@ -18,12 +18,12 @@ export function columnsViewToBuild (originColumns = []) {
     // 拼装 slotsRender 函数
     if (propsObject['slotsRender']) {
       const fnInstance = propsObject['slotsRender']
-      propsObject['slotsRender'] = `(h, vm) => {\n${fnInstance}\n}\n`
+      propsObject['slotsRender'] = `(h, vm) => {\n${fnInstance}\n}`
     }
     // 拼装 scopedSlotsRender 函数
     if (propsObject['scopedSlotsRender']) {
       const fnInstance = propsObject['scopedSlotsRender']
-      propsObject['scopedSlotsRender'] = `(h, record, vm) => {\n${fnInstance}\n}\n`
+      propsObject['scopedSlotsRender'] = `(h, record, vm) => {\n${fnInstance}\n}`
     }
     columns.push(propsObject)
   })

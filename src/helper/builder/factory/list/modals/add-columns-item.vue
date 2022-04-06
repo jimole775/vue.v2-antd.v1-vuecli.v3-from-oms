@@ -205,12 +205,10 @@ export default {
       if (params.scopedSlotsRender) {
         model.anchorTransfer = false
         model.scopedSlots = model.props.scopedSlots = { customRender: params.dataIndex }
-        console.log('model.scopedSlots:', model.scopedSlots)
         // 这里复制必须是 function，如果是 () => {} 可能导致内部的this丢失
         model.scopedSlotsRender = string2func(jsx2vue(`function (h, record, vm) {
           ${params.scopedSlotsRender}
         }`))
-        console.log('model.scopedSlotsRender:', model.scopedSlotsRender)
         model.props.scopedSlotsRender = params.scopedSlotsRender
       }
       return model

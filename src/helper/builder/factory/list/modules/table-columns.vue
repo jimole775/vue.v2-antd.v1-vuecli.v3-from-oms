@@ -1,6 +1,7 @@
 <script>
 import utils from '@/utils'
 import http from '@/utils/http'
+import { string2func, jsx2vue } from '@builder/utils'
 import AddColumnsItem from '../modals/add-columns-item.vue'
 export default {
   components: {
@@ -211,6 +212,8 @@ export default {
 }
 function deployDefaultProps (columns) {
   return columns.map((col) => {
+    const props = col.props
+    if (!props) return col
     // console.log(col.props)
     // const params = col.props || {}
     // col = { ...col, ...col.props }
@@ -226,7 +229,6 @@ function deployDefaultProps (columns) {
     // 添加锚点的专属逻辑
     // if (params.anchor === '1') {
     //   if (!params.scopedSlotsRender) {
-    //     model.anchorTransfer = true // 标记 scopedSlotsRender 是被【详情锚点】改造而来的
     //     model.scopedSlots = model.props.scopedSlots = { customRender: params.dataIndex }
     //     model.scopedSlotsRender = function (h, record, vm) {
     //       return (
@@ -243,54 +245,50 @@ function deployDefaultProps (columns) {
     //   }
     // } else {
     //   if (model.anchorTransfer) {
-    //     model.anchorTransfer = false
     //     model.scopedSlotsRender = model.scopedSlots = model.props.scopedSlots = undefined
     //   }
     // }
     // 添加表头提示
-    // if (params.titleTips) {
-    //   if (!params.slotsRender) {
-    //     delete col.title
-    //     delete col.props.title
-    //     col.slots = col.props.slots = { title: params.dataIndex + 'Title' }
-    //     col.slotsRender = (h, vm) => {
-    //       return (
-    //         <a-tooltip title={params.titleTips}>
-    //           { model.originTitle }
-    //           <a-icon type="question-circle-o" />
-    //         </a-tooltip>
-    //       )
-    //     }
-    //     col.props.slotsRender = `return (
-    //       <a-tooltip title={${params.titleTips}}>
-    //         { ${col.originTitle} }
-    //         <a-icon type="question-circle-o" />
-    //       </a-tooltip>
-    //     )`
-    //   }
-    // }
-    // if (params.slotsRender) {
-    //   delete col.title
-    //   delete col.props.title
-    //   col.slots = col.props.slots = { title: params.dataIndex + 'Title' }
-    //   col.slotsRender = (h, vm) => {
-    //     return new Function(params.slotsRender)(h, vm)
-    //   }
-    //   col.props.slotsRender = params.slotsRender
-    // }
+    if (props.titleTips) {
+      if (!props.slotsRender) {
+        delete col.title
+        delete col.props.title
+        col.slots = { title: props.dataIndex + 'Title' }
+        col.slotsRender = (h, vm) => {
+          return (
+            <a-tooltip title={props.titleTips}>
+              { col.originTitle }
+              <a-icon type="question-circle-o" />
+            </a-tooltip>
+          )
+        }
+        // col.props.slotsRender = `return (
+        //   <a-tooltip title={${props.titleTips}}>
+        //     { ${col.originTitle} }
+        //     <a-icon type="question-circle-o" />
+        //   </a-tooltip>
+        // )`
+      }
+    }
+    if (props.slotsRender) {
+      delete col.title
+      delete col.props.title
+      col.slots = col.props.slots = { title: props.dataIndex + 'Title' }
+      col.slotsRender = (h, vm) => {
+        return new Function(props.slotsRender)(h, vm)
+      }
+      col.props.slotsRender = props.slotsRender
+    }
 
     // // 配置了 scopedSlotsRender，则给
-    // if (params.scopedSlotsRender) {
-    //   col.anchorTransfer = false
-    //   col.scopedSlots = col.props.scopedSlots = { customRender: params.dataIndex }
-    //   console.log('col.scopedSlots:', col.scopedSlots)
-    //   // 这里复制必须是 function，如果是 () => {} 可能导致内部的this丢失
-    //   col.scopedSlotsRender = string2func(jsx2vue(`function (h, record, vm) {
-    //     ${params.scopedSlotsRender}
-    //   }`))
-    //   console.log('col.scopedSlotsRender:', col.scopedSlotsRender)
-    //   col.props.scopedSlotsRender = params.scopedSlotsRender
-    // }
+    if (props.scopedSlotsRender) {
+      col.scopedSlots = col.props.scopedSlots = { customRender: props.dataIndex }
+      // 这里复制必须是 function，如果是 () => {} 可能导致内部的this丢失
+      col.scopedSlotsRender = string2func(jsx2vue(`function (h, record, vm) {
+        ${props.scopedSlotsRender}
+      }`))
+      col.props.scopedSlotsRender = props.scopedSlotsRender
+    }
     return col
   })
 }
