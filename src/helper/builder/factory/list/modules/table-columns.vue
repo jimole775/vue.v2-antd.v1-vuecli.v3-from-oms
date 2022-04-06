@@ -43,7 +43,8 @@ export default {
     },
     dataSource: {
       handler (columns) {
-        this.columns = columns
+        // todo 把 columns中的props属性解析到最外层
+        this.columns = deployDefaultProps(columns)
       },
       immediate: true
     }
@@ -89,16 +90,10 @@ export default {
         }))
       ]
     },
-    // defaultList (row) {
-    //   this.dataList = [{
-    //     __addition__: '新增操作',
-    //     ...row
-    //   }]
-    // },
-    callScopedSlotsRender (item) {
+    callScopedSlotsRender (col) {
       const aRow = this.dataList[0] || {}
-      item.scopedSlotsRender.bind(this)
-      return item.scopedSlotsRender(this.$createElement, aRow, this.scope)
+      col.scopedSlotsRender.bind(this)
+      return col.scopedSlotsRender(this.$createElement, aRow, this.scope)
     },
     callSlotsRender (item) {
       return item.slotsRender(this.$createElement, this.scope)
@@ -178,16 +173,20 @@ export default {
     },
     buildTBody () {
       const aRow = this.dataList[0] || {}
-      return this.columns.map((item) => {
+      const evalContent = (col) => {
+        const text = aRow[col.dataIndex]
+        if (col.anchor) {
+          return <a onClick={() => this.bridge.projectApproval(aRow)}>{ text }</a>
+        } else {
+          return col.scopedSlotsRender
+            ? this.callScopedSlotsRender(col)
+            : text
+        }
+      }
+      return this.columns.map((col) => {
         return (
-          <template slot={item.scopedSlots && item.scopedSlots.customRender}>
-            <div>
-              {
-                item.scopedSlotsRender
-                  ? this.callScopedSlotsRender(item)
-                  : aRow[item.dataIndex]
-              }
-            </div>
+          <template slot={col.scopedSlots && col.scopedSlots.customRender}>
+            <div>{ evalContent(col) }</div>
           </template>
         )
       })
@@ -209,6 +208,91 @@ export default {
       <AddColumnsItem modal={this.modal} onUpdate={this.columnsItemConfirm} />
     </div>)
   }
+}
+function deployDefaultProps (columns) {
+  return columns.map((col) => {
+    // console.log(col.props)
+    // const params = col.props || {}
+    // col = { ...col, ...col.props }
+    // const model = {
+    //   title: col.title,
+    //   width: col.width,
+    //   anchor: col.anchor,
+    //   originTitle: col.title,
+    //   dataIndex: col.dataIndex,
+    //   titleTips: col.titleTips,
+    //   permission: col.permission
+    // }
+    // 添加锚点的专属逻辑
+    // if (params.anchor === '1') {
+    //   if (!params.scopedSlotsRender) {
+    //     model.anchorTransfer = true // 标记 scopedSlotsRender 是被【详情锚点】改造而来的
+    //     model.scopedSlots = model.props.scopedSlots = { customRender: params.dataIndex }
+    //     model.scopedSlotsRender = function (h, record, vm) {
+    //       return (
+    //         <a onClick={() => vm.bridge.projectApproval(record)}>
+    //           { record[params.dataIndex] }
+    //         </a>
+    //       )
+    //     }
+    //     model.props.scopedSlotsRender = `return (
+    //       <a onClick={() => vm.bridge.projectApproval(record)}>
+    //         { record['${params.dataIndex}'] }
+    //       </a>
+    //     )`
+    //   }
+    // } else {
+    //   if (model.anchorTransfer) {
+    //     model.anchorTransfer = false
+    //     model.scopedSlotsRender = model.scopedSlots = model.props.scopedSlots = undefined
+    //   }
+    // }
+    // 添加表头提示
+    // if (params.titleTips) {
+    //   if (!params.slotsRender) {
+    //     delete col.title
+    //     delete col.props.title
+    //     col.slots = col.props.slots = { title: params.dataIndex + 'Title' }
+    //     col.slotsRender = (h, vm) => {
+    //       return (
+    //         <a-tooltip title={params.titleTips}>
+    //           { model.originTitle }
+    //           <a-icon type="question-circle-o" />
+    //         </a-tooltip>
+    //       )
+    //     }
+    //     col.props.slotsRender = `return (
+    //       <a-tooltip title={${params.titleTips}}>
+    //         { ${col.originTitle} }
+    //         <a-icon type="question-circle-o" />
+    //       </a-tooltip>
+    //     )`
+    //   }
+    // }
+    // if (params.slotsRender) {
+    //   delete col.title
+    //   delete col.props.title
+    //   col.slots = col.props.slots = { title: params.dataIndex + 'Title' }
+    //   col.slotsRender = (h, vm) => {
+    //     return new Function(params.slotsRender)(h, vm)
+    //   }
+    //   col.props.slotsRender = params.slotsRender
+    // }
+
+    // // 配置了 scopedSlotsRender，则给
+    // if (params.scopedSlotsRender) {
+    //   col.anchorTransfer = false
+    //   col.scopedSlots = col.props.scopedSlots = { customRender: params.dataIndex }
+    //   console.log('col.scopedSlots:', col.scopedSlots)
+    //   // 这里复制必须是 function，如果是 () => {} 可能导致内部的this丢失
+    //   col.scopedSlotsRender = string2func(jsx2vue(`function (h, record, vm) {
+    //     ${params.scopedSlotsRender}
+    //   }`))
+    //   console.log('col.scopedSlotsRender:', col.scopedSlotsRender)
+    //   col.props.scopedSlotsRender = params.scopedSlotsRender
+    // }
+    return col
+  })
 }
 
 function adjustColumn (column) {

@@ -42,8 +42,8 @@
         <a-col v-if="!form.getFieldValue('scopedSlotsRender')" :span="24">
           <a-form-item label="详情锚点" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-radio-group v-decorator="['anchor', {rules: [{ required: false }]}]">
-              <a-radio value="1">是</a-radio>
-              <a-radio value="0">否</a-radio>
+              <a-radio :value="true">是</a-radio>
+              <a-radio :value="false">否</a-radio>
             </a-radio-group>
           </a-form-item>
         </a-col>
@@ -123,7 +123,7 @@ export default {
       this.$nextTick(() => {
         this.form.setFieldsValue({
           width: 100,
-          anchor: '0',
+          anchor: false,
           permission: '0'
         })
       })
@@ -161,30 +161,14 @@ export default {
           permission: params.permission
         }
       }
+
       // 添加锚点的专属逻辑
       if (params.anchor === '1') {
-        if (!params.scopedSlotsRender) {
-          model.anchorTransfer = true // 标记 scopedSlotsRender 是被【详情锚点】改造而来的
-          model.scopedSlots = model.props.scopedSlots = { customRender: params.dataIndex }
-          model.scopedSlotsRender = function (h, record, vm) {
-            return (
-              <a onClick={() => vm.bridge.projectApproval(record)}>
-                { record[params.dataIndex] }
-              </a>
-            )
-          }
-          model.props.scopedSlotsRender = `return (
-            <a onClick={() => vm.bridge.projectApproval(record)}>
-              { record['${params.dataIndex}'] }
-            </a>
-          )`
-        }
-      } else {
-        if (model.anchorTransfer) {
-          model.anchorTransfer = false
-          model.scopedSlotsRender = model.scopedSlots = model.props.scopedSlots = undefined
+        model.scopedSlots = {
+          customRender: model.dataIndex
         }
       }
+
       // 添加表头提示
       if (params.titleTips) {
         if (!params.slotsRender) {
