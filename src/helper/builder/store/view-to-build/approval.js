@@ -1,7 +1,7 @@
 import utils from '@/utils'
-export default function viewToBuild (getStepNodes = [], collapsePanels = [], operation = {}) {
+export default function viewToBuild ({ stepNodes = [], collapsePanels = [], operation = {} }) {
   const model = {}
-  getStepNodes.forEach((node) => {
+  stepNodes.forEach((node) => {
     // __addition__ 节点过滤掉
     if (node.value === '__addition__') return false
 

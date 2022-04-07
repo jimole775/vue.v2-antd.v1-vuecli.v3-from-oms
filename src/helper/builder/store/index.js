@@ -87,9 +87,9 @@ export default {
           break
         case 'approval':
           if (!state.buildData['approvalConfig']) {
-            state.buildData['listConfig'] = {}
+            state.buildData['approvalConfig'] = {}
           }
-          const approvalBuild = approvalViewToBuild(value.stepNodes, value.collapsePanels)
+          const approvalBuild = approvalViewToBuild(value)
           state.buildData['approvalConfig'][rank] = approvalBuild
           break
         case 'apimap':

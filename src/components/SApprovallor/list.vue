@@ -157,6 +157,7 @@ function getSummarySlots (h) {
     <template slot="summary">
       {
         this.hasCatalogButton(this.apimap.appliable) &&
+        this.apimap.apply &&
         <a-button
           ghost
           type="primary"

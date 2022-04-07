@@ -26,7 +26,7 @@ function buildColumns (prevDir, columns) {
   const exportData = utils.object2file(columns)
   return {
     path: `${prevDir}/columns.js`,
-    content: `${exportCode}${exportData}\n`
+    content: `${exportCode}${exportData}`
   }
 }
 
@@ -35,35 +35,32 @@ function buildSearchor (prevDir, searchor) {
   const exportData = utils.object2file(searchor)
   return {
     path: `${prevDir}/searchor.js`,
-    content: `${exportCode}${exportData}\n`
+    content: `${exportCode}${exportData}`
   }
 }
 
 function buildListLoadFile (prevPath) {
-  const content = `import columns from './columns'
-import searchor from './searchor'
-export default {
-  columns,
-  searchor
-}
-`
   return {
     path: `${prevPath}/index.js`,
-    content
+    content: `import columns from './columns'
+    import searchor from './searchor'
+    export default {
+      columns,
+      searchor
+    }`
   }
 }
 
 function buildTabLoadFile (prevPath, tabsTree) {
   let importCmd = ''
-  let exportCmd = 'export default {\n'
-
+  let exportCmd = 'export default {'
   const tabIndexs = Object.keys(tabsTree)
   tabIndexs.forEach((tabIndex) => {
     const varTab = 'tab' + (tabIndex * 1 + 1)
     importCmd += `import ${varTab} from './${varTab}'\n`
-    exportCmd += `  ${tabIndex * 1}: ${varTab}\n`
+    exportCmd += `${tabIndex * 1}: ${varTab}\n`
   })
-  exportCmd += '}\n'
+  exportCmd += '}'
   return {
     path: `${prevPath}/index.js`,
     content: `${importCmd}\n${exportCmd}`

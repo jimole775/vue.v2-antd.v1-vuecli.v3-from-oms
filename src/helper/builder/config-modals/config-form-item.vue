@@ -151,8 +151,8 @@ export default {
       const res = []
       const isOperation = !!(this.config.operations && this.config.operations.length)
       this.getStepNodes && this.getStepNodes.forEach((node) => {
-        // 如果有审批项，就代表是在编辑【审批内容】
-        // 【审批内容】不需要在结束节点显示
+        // 如果有审批项，就代表是在编辑【审批操作】模块
+        // 【审批操作】不需要在结束节点显示
         if (isOperation) {
           if (node.value !== 'end') {
             res.push(node)

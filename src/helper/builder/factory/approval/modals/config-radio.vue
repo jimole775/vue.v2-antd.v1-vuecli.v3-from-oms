@@ -32,7 +32,7 @@
             </span>
             <a-checkbox-group
               v-decorator="['stepNodes', {rules: [{ required: false }]}]"
-              :options="stepNodesOptions"
+              :options="getStepNodesOptions()"
             />
           </a-form-item>
         </a-col>
@@ -56,16 +56,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getStepNodes', 'getTabType']),
-    stepNodesOptions () {
-      const res = []
-      this.getStepNodes && this.getStepNodes.forEach((node) => {
-        if (node.value !== 'end') {
-          res.push(node)
-        }
-      })
-      return res
-    }
+    ...mapGetters(['getStepNodes', 'getTabType'])
   },
   watch: {
     modal: {
@@ -88,6 +79,25 @@ export default {
     }
   },
   methods: {
+    getStepNodesOptions () {
+      const res = []
+      const radioValue = this.form.getFieldValue('checked')
+      const nodes = this.getStepNodes || []
+      nodes.forEach((node) => {
+        // “结束节点”不可编辑
+        if (node.value !== 'end') {
+          // 除了 【删除】，【关闭】，【放弃】，其他的选项都去掉“开始节点”
+          if (node.value === 'start') {
+            if (['7', '10', '11'].includes(radioValue)) {
+              res.push(node)
+            }
+          } else {
+            res.push(node)
+          }
+        }
+      })
+      return res
+    },
     confirm () {
       this.form.validateFields((err, values) => {
         if (err) {

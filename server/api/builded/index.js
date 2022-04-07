@@ -1,7 +1,9 @@
 const path = require('path')
+const prettierrc = require(path.join(global.root_path, './.prettierrc.js'))
 const { writeFileSync, readDirSync, readFileSync } = require('../../utils')
 const buildConstruct = require('../../constructor')
 const { execSync } = require('child_process')
+const prettier = require('prettier')
 const distPath = './builder-dist'
 // const db = './server/data-base/build-data'
 module.exports = function (req, res) {
@@ -23,7 +25,8 @@ module.exports = function (req, res) {
 function buildCodeFiles (buildData) {
   const fileInfos = buildConstruct(buildData)
   fileInfos.forEach((info) => {
-    writeFileSync(path.join(distPath, info.path), info.content)
+    const codes = prettier.format(info.content, prettierrc)
+    writeFileSync(path.join(distPath, info.path), codes)
   })
 }
 

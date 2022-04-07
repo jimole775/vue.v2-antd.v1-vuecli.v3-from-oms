@@ -58,7 +58,7 @@ function buildPanels (prevDir, panels) {
     }
     res.push({
       path: `${prevDir}/${fileName}`,
-      content: `${exportCode}${object2file(data)}\n`
+      content: `${exportCode}${object2file(data)}`
     })
   })
   return res
@@ -79,7 +79,7 @@ function buildPanelsLoadFile (prevPath, tab, uniPanels) {
   const code6 = exportModule.cmd
   const code7 = object2file(exportModule.data)
 
-  const fileContent = (`${code1}\n${code2}\n${code3}\n${code4}\n${code5}\n${code6} ${code7}\n`)
+  const fileContent = (`${code1}\n${code2}\n${code3}\n${code4}\n${code5}\n${code6}\n${code7}\n`)
   return {
     path: `${prevPath}/index.js`,
     content: fileContent
@@ -89,7 +89,7 @@ function buildPanelsLoadFile (prevPath, tab, uniPanels) {
 function buildAndInsertLog (exportModule) {
   const log = {
     moduleVar: 'approveLogViewer',
-    moduleCode: `const approveLogViewer = { component: 'PPApproveLog', title: '操作日志', mode: 'readonly', show: true }`
+    moduleCode: `const approveLogViewer = { component: 'PPApproveLog', title: '操作日志', mode: 'readonly', show: true }\n`
   }
   const nodes = Object.keys(exportModule.data)
   nodes.forEach((node) => {
@@ -190,15 +190,14 @@ function buildLoadsAndModules (uniPanels) {
 
 function buildTabLoadFile (prevPath, tabsTree) {
   let importCmd = ''
-  let exportCmd = 'export default {\n'
-
+  let exportCmd = 'export default {'
   const tabIndexs = Object.keys(tabsTree)
   tabIndexs.forEach((tabIndex) => {
     const varTab = 'tab' + (tabIndex * 1 + 1)
     importCmd += `import ${varTab} from './${varTab}'\n`
-    exportCmd += `  ${tabIndex * 1}: ${varTab}\n`
+    exportCmd += `${tabIndex * 1}: ${varTab}\n`
   })
-  exportCmd += '}\n'
+  exportCmd += '}'
   return {
     path: `${prevPath}/index.js`,
     content: `${importCmd}\n${exportCmd}`

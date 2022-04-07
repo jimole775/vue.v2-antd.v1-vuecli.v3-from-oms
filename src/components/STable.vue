@@ -107,6 +107,10 @@ export default {
       type: String,
       default: '异步列表'
     },
+    anchorFunction: { // 详情锚点的函数
+      type: Function,
+      default: null
+    },
     bridge: {
       type: Object,
       default: () => ({})
@@ -331,9 +335,9 @@ export default {
       columns && columns.forEach(col => {
         // 支持用 anchor属性 的方式增加详情页的锚点
         if (col.anchor) {
-          const projectApproval = this.bridge.projectApproval
+          const anchorFunction = this.$props.anchorFunction || this.bridge.projectApproval
           col.customRender = function (text, record) {
-            return <a onClick={() => projectApproval(record)}>{ text }</a>
+            return <a onClick={() => anchorFunction(record)}>{ text }</a>
           }
         }
         if (col.slots || col.slotsRender) {

@@ -101,7 +101,7 @@ export default {
       handler ({ data, show }) {
         if (show) {
           this.defaultProps()
-          data && this.deployParams(data)
+          this.deployParams(data)
         } else {
           this.form.resetFields()
         }
@@ -111,8 +111,14 @@ export default {
     }
   },
   computed: {
-    title () {
-      return this.modal.data ? this.modal.data.title : ''
+    currentId () {
+      return this.modal.data ? this.modal.data.id : ''
+    },
+    isModify () {
+      return !!this.currentId
+    },
+    isNew () {
+      return !this.currentId
     }
   },
   methods: {
@@ -128,92 +134,123 @@ export default {
         })
       })
     },
-    deployParams (data) {
-      this.$nextTick(() => {
-        this.form.setFieldsValue(data.props)
+    deployParams (data = {}) {
+      if (data.props) {
+        this.$nextTick(() => {
+          this.form.setFieldsValue(data.props)
+        })
+      }
+    },
+    validateUniqueField (values) {
+      let uniqueField = ''
+      this.modal.columns.forEach((col) => {
+        if (this.isNew) {
+          if (values.dataIndex === col.dataIndex) {
+            uniqueField = values.dataIndex
+          }
+        }
+        if (this.isModify) {
+          if (this.modal.data.id !== col.id) {
+            if (values.dataIndex === col.dataIndex) {
+              uniqueField = values.dataIndex
+            }
+          }
+        }
       })
+      return uniqueField
     },
     confirm () {
       this.form.validateFields((err, values) => {
         if (err) {
           return false
         }
+        const uniqueField = this.validateUniqueField(values)
+        if (uniqueField) {
+          return this.$message.warning(`字段 "${uniqueField}" 已存在！`)
+        }
         this.modal.show = false
-        this.$emit('update', this.packageParams(values))
+        if (this.isNew) {
+          values.id = values.dataIndex
+        }
+        if (this.isModify) {
+          values.id = this.currentId
+        }
+        this.$emit('update', packageParams(values))
       })
-    },
-    packageParams (params) {
-      const model = {
-        title: params.title,
-        width: params.width,
-        anchor: params.anchor,
-        originTitle: params.title,
-        dataIndex: params.dataIndex,
-        titleTips: params.titleTips,
-        permission: params.permission,
-        props: { // 用于提交和回显
-          title: params.title,
-          width: params.width,
-          anchor: params.anchor,
-          originTitle: params.title,
-          dataIndex: params.dataIndex,
-          titleTips: params.titleTips,
-          permission: params.permission
-        }
-      }
-
-      // 添加锚点的专属逻辑
-      if (params.anchor === '1') {
-        model.scopedSlots = {
-          customRender: model.dataIndex
-        }
-      }
-
-      // 添加表头提示
-      if (params.titleTips) {
-        if (!params.slotsRender) {
-          delete model.title
-          delete model.props.title
-          model.slots = model.props.slots = { title: params.dataIndex + 'Title' }
-          model.slotsRender = (h, vm) => {
-            return (
-              <a-tooltip title={params.titleTips}>
-                { model.originTitle }
-                <a-icon type="question-circle-o" />
-              </a-tooltip>
-            )
-          }
-          model.props.slotsRender = `return (
-            <a-tooltip title={${params.titleTips}}>
-              { ${model.originTitle} }
-              <a-icon type="question-circle-o" />
-            </a-tooltip>
-          )`
-        }
-      }
-      if (params.slotsRender) {
-        delete model.title
-        delete model.props.title
-        model.slots = model.props.slots = { title: params.dataIndex + 'Title' }
-        model.slotsRender = (h, vm) => {
-          return new Function(params.slotsRender)(h, vm)
-        }
-        model.props.slotsRender = params.slotsRender
-      }
-
-      // 配置了 scopedSlotsRender，则给
-      if (params.scopedSlotsRender) {
-        model.anchorTransfer = false
-        model.scopedSlots = model.props.scopedSlots = { customRender: params.dataIndex }
-        // 这里复制必须是 function，如果是 () => {} 可能导致内部的this丢失
-        model.scopedSlotsRender = string2func(jsx2vue(`function (h, record, vm) {
-          ${params.scopedSlotsRender}
-        }`))
-        model.props.scopedSlotsRender = params.scopedSlotsRender
-      }
-      return model
     }
   }
+}
+
+function packageParams (params) {
+  const model = {
+    id: params.id,
+    title: params.title,
+    width: params.width,
+    anchor: params.anchor,
+    originTitle: params.title,
+    dataIndex: params.dataIndex,
+    titleTips: params.titleTips,
+    permission: params.permission,
+    props: { // 用于提交和回显
+      title: params.title,
+      width: params.width,
+      anchor: params.anchor,
+      originTitle: params.title,
+      dataIndex: params.dataIndex,
+      titleTips: params.titleTips,
+      permission: params.permission
+    }
+  }
+
+  // 添加锚点的专属逻辑
+  if (params.anchor === true) {
+    model.scopedSlots = {
+      customRender: model.dataIndex
+    }
+  }
+
+  // 添加表头提示
+  if (params.titleTips) {
+    if (!params.slotsRender) {
+      delete model.title
+      delete model.props.title
+      model.slots = model.props.slots = { title: params.dataIndex + 'Title' }
+      model.slotsRender = (h, vm) => {
+        return (
+          <a-tooltip title={params.titleTips}>
+            { model.originTitle }
+            <a-icon type="question-circle-o" />
+          </a-tooltip>
+        )
+      }
+      model.props.slotsRender = `return (
+        <a-tooltip title={${params.titleTips}}>
+          { ${model.originTitle} }
+          <a-icon type="question-circle-o" />
+        </a-tooltip>
+      )`
+    }
+  }
+  if (params.slotsRender) {
+    delete model.title
+    delete model.props.title
+    model.slots = model.props.slots = { title: params.dataIndex + 'Title' }
+    model.slotsRender = (h, vm) => {
+      return new Function(params.slotsRender)(h, vm)
+    }
+    model.props.slotsRender = params.slotsRender
+  }
+
+  // 配置了 scopedSlotsRender，则给
+  if (params.scopedSlotsRender) {
+    model.scopedSlots = model.props.scopedSlots = { customRender: params.dataIndex }
+    // 这里复制必须是 function，如果是 () => {} 可能导致内部的this丢失
+    model.scopedSlotsRender = string2func(jsx2vue(`function (h, record, vm) {
+      ${params.scopedSlotsRender}
+    }`))
+    model.props.scopedSlotsRender = params.scopedSlotsRender
+  }
+  return model
 }
 
 </script>

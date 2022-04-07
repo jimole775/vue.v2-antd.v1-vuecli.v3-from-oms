@@ -99,7 +99,7 @@ export default {
           tips: ''
         },
         {
-          checked: '1',
+          checked: '11',
           value: 'delete',
           label: '删除',
           tips: ''
@@ -137,6 +137,7 @@ export default {
     ...mapGetters(['getStepNodes', 'getTabType']),
     stepNodes () {
       const res = []
+      // 审批操作在 “end” 节点都不可操作，统一过滤掉
       this.getStepNodes.forEach((node) => {
         if (node.value !== 'end') {
           res.push(node)
@@ -147,9 +148,12 @@ export default {
   },
   watch: {
     dataSource: {
-      handler (data) {
-        if (data && data.length) {
-          this.radios = data
+      handler (data = {}) {
+        if (data.radios && data.radios.length) {
+          this.radios = data.radios
+        }
+        if (data.inputs && data.inputs.length) {
+          this.inputs = data.inputs
         }
       },
       immediate: true

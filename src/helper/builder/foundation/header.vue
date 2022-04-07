@@ -74,7 +74,7 @@ export default {
           err.push('请先在左侧菜单栏配置【路由】地址！')
         }
         if (!api || !api.list || !(api.list && api.list.url && api.list.method)) {
-          err.push('请先配置【列表】的访问地址！')
+          err.push('请先配置【列表】的数据接口！')
         }
         if (!list || !(list && list.columns && list.columns.length)) {
           err.push('请先配置【列表】的表头字段！')
@@ -82,8 +82,8 @@ export default {
         if (!list || !(list && list.columns && list.columns.length)) {
           err.push('请先配置【列表】的表头数据！')
         }
-        if ((apply && apply.panels && apply.panels.length) && (!api || !api.list || !(api.list && api.list.url && api.list.method))) {
-          err.push('请先配置【申请】模块的访问地址！')
+        if ((apply && apply.panels && apply.panels.length) && (!api || !api.apply || !(api.apply && api.apply.url && api.apply.method))) {
+          err.push('请先配置【申请】模块的发起接口！')
         }
         if ((!apply || !apply.panels || !apply.panels.length) && (api && api.apply && api.apply.url && api.apply.method)) {
           err.push('请先配置【申请】模块的基本信息！')

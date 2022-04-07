@@ -39,7 +39,7 @@ function buildPanels (prevDir, panels) {
     fileName = `panel${index + 1}.js`
     res.push({
       path: `${prevDir}/${fileName}`,
-      content: `${exportCode}${object2file(panel.formItems)}\n`
+      content: `${exportCode}${object2file(panel.formItems)}`
     })
   })
   return res
@@ -52,7 +52,7 @@ function buildPanelsLoadFile (prevPath, tab, uniPanels) {
   const code2 = permission.modules.map(i => i.code).join('\n')
   const code3 = exportModule.cmd
   const code4 = object2file(exportModule.data)
-  const fileContent = `${code1}\n${code2}\n${code3} ${code4}\n`
+  const fileContent = `${code1}\n${code2}\n${code3}\n${code4}\n`
   return {
     path: `${prevPath}/index.js`,
     content: fileContent
@@ -103,14 +103,14 @@ function buildLoadsAndModules (uniPanels) {
 
 function buildTabLoadFile (prevPath, tabsTree) {
   let importCmd = ''
-  let exportCmd = 'export default {\n'
+  let exportCmd = 'export default {'
   const tabIndexs = Object.keys(tabsTree)
   tabIndexs.forEach((tabIndex) => {
     const varTab = 'tab' + (tabIndex * 1 + 1)
     importCmd += `import ${varTab} from './${varTab}'\n`
     exportCmd += `  ${tabIndex * 1}: ${varTab}\n`
   })
-  exportCmd += '}\n'
+  exportCmd += '}'
   return {
     path: `${prevPath}/index.js`,
     content: `${importCmd}\n${exportCmd}`
