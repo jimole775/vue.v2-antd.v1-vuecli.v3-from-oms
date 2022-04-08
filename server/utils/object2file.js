@@ -17,7 +17,7 @@
 //     }
 //   }
 // ]
-const { stringMark } = require('./string-mark')
+const { stringMark } = require('./stringMark')
 module.exports = function object2file (json, space = 2) {
   let string = JSON.stringify(json, null, space)
   string = string.replace(/ {2}"(.*?)": /g, '  $1: ') // 去掉“键”的双引号

@@ -5,7 +5,7 @@ export function columnsViewToBuild (originColumns = []) {
   copyColumns.forEach((col) => {
     const propsObject = col.props
     if (!propsObject) return false
-    delete propsObject['anchor']
+    if (!propsObject['anchor']) delete propsObject['anchor']
     delete propsObject['titleTips']
     delete propsObject['originTitle']
     // 当前只支持 "0":内部 "1":外部, 其他的情况，就把字段删除

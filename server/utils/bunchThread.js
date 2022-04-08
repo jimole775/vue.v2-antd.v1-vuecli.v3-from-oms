@@ -30,7 +30,7 @@ module.exports = class BunchThread {
     } else {
       this.thread($$task)
     }
-    this.taskLiving ++
+    this.taskLiving++
     return this
   }
 
@@ -52,7 +52,7 @@ module.exports = class BunchThread {
     if (global.onBusyNetwork) {
       await this.sleep(global.sleepTimes * global.bunchLimit)
     }
-    this.taskLiving --
+    this.taskLiving--
     if (this.taskQueue.length) {
       return this.thread(this.taskQueue.shift())
     } else {
@@ -68,8 +68,8 @@ module.exports = class BunchThread {
   }
 
   sleep (time) {
-    return new Promise((s, j) => { 
-      setTimeout(s, time)
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, time)
     })
   }
 

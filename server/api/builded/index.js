@@ -25,9 +25,26 @@ module.exports = function (req, res) {
 function buildCodeFiles (buildData) {
   const fileInfos = buildConstruct(buildData)
   fileInfos.forEach((info) => {
-    const codes = prettier.format(info.content, prettierrc)
+    const fileType = evalFileType(info.path)
+    const codes = prettier.format(info.content, { ...prettierrc, parser: evalParser(fileType) })
     writeFileSync(path.join(distPath, info.path), codes)
   })
+}
+
+function evalFileType (path) {
+  if (!path) return ''
+  return path.split('.').pop()
+}
+
+function evalParser (fileType) {
+  const map = {
+    [fileType]: fileType,
+    js: 'babel',
+    md: 'markdown',
+    ts: 'babel-ts',
+    flow: 'babel-flow'
+  }
+  return map[fileType]
 }
 
 // function storeBuildData (buildData) {

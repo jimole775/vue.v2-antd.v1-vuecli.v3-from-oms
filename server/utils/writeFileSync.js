@@ -1,5 +1,5 @@
 const fs = require('fs')
-const buildPath = require('./build-path')
+const buildPath = require('./buildPath')
 const { isArray, isObject } = require('./assert')
 /**
  *

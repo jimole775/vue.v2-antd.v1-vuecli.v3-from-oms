@@ -104,6 +104,9 @@ export default {
           const tabsBuild = tabsViewToBuild(tabs)
           state.buildData['tabsConfig'] = tabsBuild
           break
+        case 'name':
+          state.buildData['name'] = value
+          break
         case 'router':
           state.buildData['routerConfig'] = value
           break

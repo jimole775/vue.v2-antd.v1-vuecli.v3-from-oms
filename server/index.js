@@ -1,5 +1,5 @@
 const path = require('path')
-const cmdParam = require('./utils/cmd-param')
+const cmdParam = require('./utils/cmdParam')
 const Express = require('express')
 const resHandler = require('./res-handler')
 const app = new Express()

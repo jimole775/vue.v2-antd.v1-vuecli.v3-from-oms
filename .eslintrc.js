@@ -13,6 +13,7 @@ module.exports = {
     'no-debugger': 'off',
     'no-eval': 'off',
     'no-useless-escape': 'off',
+    'space-before-function-paren': 'off',
     'vue/attribute-hyphenation': 'off',
     'vue/html-self-closing': 'off',
     'vue/require-default-prop': 'off',

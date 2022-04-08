@@ -1,5 +1,5 @@
 const { execSync } = require('child_process')
-const getSentences = require('./get-sentences')
+const getSentences = require('./getSentences')
 const unique = require('./unique')
 module.exports = function getBranchs () {
   const branchsBuffer = execSync('git branch -a')

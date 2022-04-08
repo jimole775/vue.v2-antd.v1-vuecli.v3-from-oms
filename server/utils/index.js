@@ -1,5 +1,5 @@
 const path = require('path')
-const readDirSync = require('./read-dir-sync')
+const readDirSync = require('./readDirSync')
 const utilDir = path.join(__dirname, './')
 const utilFiles = readDirSync(utilDir)
 const res = {}
