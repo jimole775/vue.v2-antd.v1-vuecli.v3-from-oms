@@ -1,5 +1,5 @@
 <template>
-  <div class="ppproject-footer">
+  <div class="project-footer">
     <ApiButton :value="button" @update="update" />
   </div>
 </template>
@@ -8,8 +8,6 @@ import ApiButton from '@builder/config-modules/api-button'
 export default {
   components: {
     ApiButton
-  },
-  props: {
   },
   data () {
     return {
@@ -29,7 +27,7 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-.ppproject-footer {
+.project-footer {
   text-align: center;
   margin: 2rem 0;
   /deep/ .api-button {

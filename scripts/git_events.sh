@@ -4,8 +4,8 @@ git_origin=$(git remote show -n)
 git_address=$(git remote get-url $git_origin)
 git_name=${git_address[0]##*/}
 pro_name=${git_name%.*}
-org_branch="builder"
-new_branch="$org_branch-$1"
+master="master"
+new_branch="builder-$1"
 tag_dir=/f/$pro_name/
 dst_dir=$runenv/builder-dist/*
 log_dir=$runenv/logs/builder.log
@@ -50,18 +50,25 @@ mv_files(){
 }
 
 git_pull(){
-  # 尝试拉取 builder 分支
-  git pull $git_origin $org_branch
+  # 拉取最新 master 分支
+  git pull
 
-  # 如果没有 builder 分支，需要新建并切换到此分支
-  if [ $? -eq 1 ];then
-    log "新建builder分支！"
-    git checkout -b $org_branch
+  # git branch -D $new_branch
+  git push origin --delete $new_branch
 
-    git pull $git_origin $org_branch
+  # 尝试拉取 要更新的分支
+  # git pull $git_origin $new_branch
 
-    git push -u $git_origin $org_branch
-  fi
+  # 拉取成功，就删除此分支，需要重新建
+  # if [ $? -eq 0 ];then
+  # fi
+
+  # log "新建builder分支！"
+  # git checkout -b $new_branch
+
+  # git pull $git_origin $new_branch
+
+  # git push -u $git_origin $new_branch
 
   # 切换到需要推送的分支
   git checkout -b $new_branch
