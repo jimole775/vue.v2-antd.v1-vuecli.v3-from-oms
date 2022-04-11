@@ -29,7 +29,7 @@
       <a-row>
         <a-col :span="12">
           <a-form-item :label="' '" :label-col="{span: 4}" :wrapper-col="{span: 18}">
-            <ApiButton />
+            <ApiButton :value="getCurrentApimap['approval']" @update="apiUpdate" />
           </a-form-item>
         </a-col>
       </a-row>
@@ -134,7 +134,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getStepNodes', 'getTabType']),
+    ...mapGetters(['getStepNodes', 'getTabType', 'getCurrentApimap']),
     stepNodes () {
       const res = []
       // 审批操作在 “end” 节点都不可操作，统一过滤掉
@@ -157,6 +157,14 @@ export default {
         }
       },
       immediate: true
+    },
+    getCurrentApimap: {
+      handler (apimap) {
+        if (apimap) {
+
+        }
+      },
+      immediate: true
     }
   },
   created () {
@@ -166,6 +174,13 @@ export default {
     this.update()
   },
   methods: {
+    apiUpdate (api) {
+      this.handupApi({ approval: api })
+    },
+    handupApi (data) {
+      this.setViewData({ key: 'apimap', value: data })
+      this.setBuildData({ key: 'apimap', value: data })
+    },
     bindStepNodes () {
       this.radios.forEach((radio) => {
         radio.stepNodes = this.stepNodes.map(i => i.value)

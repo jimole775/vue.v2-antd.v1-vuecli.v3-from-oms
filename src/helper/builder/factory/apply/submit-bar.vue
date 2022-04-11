@@ -1,9 +1,10 @@
 <template>
   <div class="project-footer">
-    <ApiButton :value="button" @update="update" />
+    <ApiButton :value="button" @update="apiUpdate" />
   </div>
 </template>
 <script>
+import { mapGetters } from 'vuex'
 import ApiButton from '@builder/config-modules/api-button'
 export default {
   components: {
@@ -19,9 +20,26 @@ export default {
       }
     }
   },
+  computed: {
+    ...mapGetters(['getCurrentApimap'])
+  },
+  watch: {
+    getCurrentApimap: {
+      handler (apimap) {
+        if (apimap) {
+          this.button = apimap['apply']
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
-    update (data) {
-      this.$emit('update', { apply: data })
+    apiUpdate (api) {
+      this.handupApi({ apply: api })
+    },
+    handupApi (data) {
+      this.setViewData({ key: 'apimap', value: data })
+      this.setBuildData({ key: 'apimap', value: data })
     }
   }
 }

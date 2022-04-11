@@ -21,6 +21,11 @@ err(){
   echo "`date "+%Y-%m-%d %H:%M:%S"`: $1" > $err_dir
 }
 
+# 防止在本地切换分支的时候，会出现冲突
+kill_workspace_branch(){
+  git branch -D $new_branch
+}
+
 create_logs(){
   rm -rf $runenv/logs
   mkdir -p $runenv/logs
@@ -53,7 +58,6 @@ git_pull(){
   # 拉取最新 master 分支
   git pull
 
-  # git branch -D $new_branch
   git push origin --delete $new_branch
 
   # 尝试拉取 要更新的分支
@@ -105,6 +109,7 @@ remove_tar(){
   fi
 }
 
+kill_workspace_branch $1
 create_logs $1
 create_target $1
 log "创建完毕"

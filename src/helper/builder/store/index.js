@@ -55,6 +55,9 @@ export default {
     },
     getEditType (state) {
       return state.editType
+    },
+    getCurrentApimap (state) {
+      return state.viewData.apimap[state.currentRank] || {}
     }
   },
   mutations: {

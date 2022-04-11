@@ -1,7 +1,7 @@
 <template>
   <div>
     <BuildCollapsePanels :data-source="collapsePanels" @update="panelsUpdate" />
-    <SubmitBar @update="apiUpdate" />
+    <SubmitBar />
   </div>
 </template>
 <script>
@@ -32,16 +32,9 @@ export default {
     }
   },
   methods: {
-    apiUpdate (data) {
-      this.handupApi(data)
-    },
     panelsUpdate (data) {
       this.collapsePanels = data
       this.handup()
-    },
-    handupApi (data) {
-      this.setViewData({ key: 'apimap', value: data })
-      this.setBuildData({ key: 'apimap', value: data })
     },
     handup () {
       const cacheData = {

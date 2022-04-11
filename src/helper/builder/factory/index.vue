@@ -40,14 +40,14 @@ import ProjectList from './list'
 import ProjectApply from './apply'
 import ProjectApproval from './approval'
 import { mapActions } from 'vuex'
-import ApiButton from '@builder/config-modules/api-button'
-import CustomParams from '@builder/config-modules/custom-params'
+// import ApiButton from '@builder/config-modules/api-button'
+// import CustomParams from '@builder/config-modules/custom-params'
 import ConfigTab from '@builder/config-modals/config-tab'
 export default {
   components: {
-    ApiButton,
+    // ApiButton,
     ConfigTab,
-    CustomParams,
+    // CustomParams,
     ProjectList,
     ProjectApply,
     ProjectApproval

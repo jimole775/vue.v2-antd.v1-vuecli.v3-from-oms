@@ -33,12 +33,6 @@ export default {
     OperationBar,
     BuildCollapsePanels
   },
-  // props: {
-  //   rank: {
-  //     type: Number,
-  //     default: 0
-  //   }
-  // },
   data () {
     return {
       log: {},

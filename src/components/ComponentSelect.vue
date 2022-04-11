@@ -71,6 +71,7 @@ export default {
       const component = antComponents[comName]
       this.list.push({ title, key: component.name, props: component.props })
     })
+    console.log(this.list)
   },
   methods: {
     handleChange (val) {
