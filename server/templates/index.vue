@@ -3,10 +3,10 @@
     <OmsBreadcrumb />
     <SApprovallor
       :tabs="tabs"
+      :list="list"
+      :apply="apply"
       :apimap="apimap"
-      :list-config="listConfig"
-      :apply-config="applyConfig"
-      :approval-config="approvalConfig"
+      :approval="approval"
       :before-submit="beforeSubmit"
       :before-render="beforeRender"
     />
@@ -15,9 +15,9 @@
 <script>
 import SApprovallor from '@/components/SApprovallor'
 import apimap from './config/apimap'
-import listConfig from './config/list'
-import applyConfig from './config/apply'
-import approvalConfig from './config/approval'
+import list from './config/list'
+import apply from './config/apply'
+import approval from './config/approval'
 import tabs from './config/tabs'
 export default {
   components: {
@@ -27,9 +27,9 @@ export default {
     return {
       tabs,
       apimap,
-      listConfig,
-      applyConfig,
-      approvalConfig
+      list,
+      apply,
+      approval
     }
   },
   methods: {

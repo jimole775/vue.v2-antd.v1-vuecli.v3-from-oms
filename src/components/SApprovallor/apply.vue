@@ -25,9 +25,9 @@
               ...bridge,
               panel,
               panels,
+              apply,
               apimap,
               tabProxy,
-              applyConfig,
               columns: panel.columns,
               formItems: panel.formItems,
               operationItem: panel.operationItem,
@@ -46,11 +46,11 @@ import api from '@/api'
 import utils from '@/utils'
 export default {
   props: {
-    applyConfig: {
+    apimap: {
       type: Object,
       required: true
     },
-    apimap: {
+    apply: {
       type: Object,
       required: true
     },
@@ -78,7 +78,7 @@ export default {
     }
   },
   watch: {
-    applyConfig: {
+    apply: {
       handler (aModulesMap) {
         const panels = aModulesMap.panels || []
         this.panels = panels.map((item) => {

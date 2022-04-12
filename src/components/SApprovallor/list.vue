@@ -18,7 +18,7 @@ export default {
       type: String,
       required: true
     },
-    listConfig: {
+    list: {
       type: Object,
       required: true
     },
@@ -54,10 +54,10 @@ export default {
       return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
     },
     searchor () {
-      return this.transferSearchor(this.queryPermissionItem(this.listConfig.searchor || []))
+      return this.transferSearchor(this.queryPermissionItem(this.list.searchor || []))
     },
     columns () {
-      const columns = this.listConfig.columns || []
+      const columns = this.list.columns || []
       return this.queryPermissionItem(columns)
     }
   },

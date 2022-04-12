@@ -2,19 +2,25 @@
   <form>
     <a-row v-for="(workPlaceItem, index) in workPlaceList" :key="index">
       <a-col :span="layout.s">
-        <a-button
-          v-if="index > 0"
-          @click="workPlaceList.splice(index, 1)"
-          style="position: absolute;z-index: 11;"
-        >
-          -
-        </a-button>
         <a-form-item
           required
           :label-col="layout.l"
           :wrapper-col="layout.w"
         >
           <span slot="label">
+            <a
+              v-if="index === 0"
+              @click="workPlaceList.push({region: '', workPlace: '', deliveryType: ''})"
+            >
+              <a-icon type="plus-circle" />
+            </a>
+            <a
+              v-else
+              class="warning-tips"
+              @click="workPlaceList.splice(index, 1)"
+            >
+              <a-icon type="minus-circle" />
+            </a>
             城市
           </span>
           <a-select
@@ -26,7 +32,7 @@
               {{ item.region }}
             </a-select-option>
           </a-select>
-          <span v-if="!workPlaceItem.region && workPlaceListWarning" class="waring-tip">请选择城市</span>
+          <span v-if="!workPlaceItem.region && workPlaceListWarning" class="warning-tips">请选择城市</span>
         </a-form-item>
       </a-col>
       <a-col :span="layout.s">
@@ -48,7 +54,7 @@
               {{ item.workingPlace }}
             </a-select-option>
           </a-select>
-          <span v-if="!workPlaceItem.workPlace && workPlaceListWarning" class="waring-tip">请选择地点</span>
+          <span v-if="!workPlaceItem.workPlace && workPlaceListWarning" class="warning-tips">请选择地点</span>
         </a-form-item>
       </a-col>
       <a-col :span="layout.s">
@@ -58,7 +64,7 @@
           :wrapper-col="layout.w"
         >
           <span slot="label">
-            形式&nbsp;
+            形式
           </span>
           <DictSelect
             required
@@ -67,12 +73,9 @@
             placeholder="请选择形式"
             v-model="workPlaceItem.deliveryType"
           />
-          <span v-if="!workPlaceItem.deliveryType && workPlaceListWarning" class="waring-tip">请选择形式</span>
+          <span v-if="!workPlaceItem.deliveryType && workPlaceListWarning" class="warning-tips">请选择形式</span>
         </a-form-item>
       </a-col>
-    </a-row>
-    <a-row>
-      <a-col :span="Math.ceil(6/(24/8))" style="text-align: right"><a-button @click="workPlaceList.push({region: '', workPlace: '', deliveryType: ''})">+</a-button></a-col>
     </a-row>
   </form>
 </template>
@@ -175,10 +178,10 @@ export default {
           workPlaceErr = '请先选择城市'
         }
         if (!workPlaceItem.workPlace) {
-          workPlaceErr = '请先选择地点'
+          workPlaceErr = '请先选择工作地点'
         }
         if (!workPlaceItem.deliveryType) {
-          workPlaceErr = '请先选择形式'
+          workPlaceErr = '请先选择交付形式'
         }
       })
       if (workPlaceErr) {
@@ -205,12 +208,10 @@ export default {
 /deep/ .ant-form-item-control {
   line-height: 32px;
 }
-.waring-tip {
+.warning-tips {
   // position: absolute;
   // left: 0;
   // top: 20px;
-  position: relative;
-  top: -3px;
   color: red;
 }
 </style>

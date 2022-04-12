@@ -54,46 +54,46 @@ export default {
       // 根据api来判断是否需要提交相关的tab数据
       // 比如：发起API没有填写，那么即使有formItems数据，也不需要提交
       const {
-        tabsConfig = [],
-        apimapConfig = {},
-        listConfig = {},
-        applyConfig = {},
-        approvalConfig = {},
-        routerConfig = {}
+        tabs = [],
+        apimap = {},
+        list = {},
+        apply = {},
+        approval = {},
+        router = {}
       } = this.buildData
       const err = []
-      if (!tabsConfig.length) {
+      if (!tabs.length) {
         err.push('请先进行配置！')
       }
-      tabsConfig.forEach((tab, index) => {
-        const api = apimapConfig[index]
-        const list = listConfig[index]
-        const apply = applyConfig[index]
-        const approval = approvalConfig[index]
-        if (!routerConfig || !routerConfig.path) {
+      tabs.forEach((tab, index) => {
+        const api = apimap[index]
+        const listConfig = list[index]
+        const applyConfig = apply[index]
+        const approvalConfig = approval[index]
+        if (!router || !router.path) {
           err.push('请先在左侧菜单栏配置【路由】地址！')
         }
         if (!api || !api.list || !(api.list && api.list.url && api.list.method)) {
           err.push('请先配置【列表】的数据接口！')
         }
-        if (!list || !(list && list.columns && list.columns.length)) {
+        if (!listConfig || !(listConfig && listConfig.columns && listConfig.columns.length)) {
           err.push('请先配置【列表】的表头字段！')
         }
-        if (!list || !(list && list.columns && list.columns.length)) {
+        if (!listConfig || !(listConfig && listConfig.columns && listConfig.columns.length)) {
           err.push('请先配置【列表】的表头数据！')
         }
-        if ((apply && apply.panels && apply.panels.length) && (!api || !api.apply || !(api.apply && api.apply.url && api.apply.method))) {
+        if ((applyConfig && applyConfig.panels && applyConfig.panels.length) && (!api || !api.apply || !(api.apply && api.apply.url && api.apply.method))) {
           err.push('请先配置【申请】模块的发起接口！')
         }
-        if ((!apply || !apply.panels || !apply.panels.length) && (api && api.apply && api.apply.url && api.apply.method)) {
+        if ((!applyConfig || !applyConfig.panels || !applyConfig.panels.length) && (api && api.apply && api.apply.url && api.apply.method)) {
           err.push('请先配置【申请】模块的基本信息！')
         }
         if (api && api.approval && api.approval.url && api.approval.method) {
-          if (!approval) {
+          if (!approvalConfig) {
             err.push('【审批详情】模块未配置！')
           } else {
-            Object.keys(approval).forEach(node => {
-              const { permission, dispermission } = approval[node]['panels']
+            Object.keys(approvalConfig).forEach(node => {
+              const { permission, dispermission } = approvalConfig[node]['panels']
               if (permission.length === 0) {
                 err.push('请先配置【审批详情】模块的审批操作！')
               }

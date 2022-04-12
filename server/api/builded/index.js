@@ -58,7 +58,7 @@ function runScripts (buildData, resolve) {
   const errorLog = path.join(global.root_path, './logs/builder-error.log')
   const gitEventsShell = path.join(global.root_path, './scripts/git_events.sh')
 
-  const projectName = buildData.routerConfig.name || ''
+  const projectName = buildData.router.name || ''
   if (!projectName) return resolve(`构建失败: ${projectName} 项目名异常！`)
 
   const dists = readDirSync(distPath)

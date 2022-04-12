@@ -1,14 +1,14 @@
 <template>
   <div>
     <div class="panel-content">
-      <BuildFormItems :data-source="listConfig.searchor" :config="{ anchorText: '配置查询表单' }" @update="updateSearchor" />
+      <BuildFormItems :data-source="list.searchor" :config="{ anchorText: '配置查询表单' }" @update="updateSearchor" />
     </div>
     <div class="panel-content">
       <TableSummary :data-source="summaryObject" @update="updateSummary" />
     </div>
     <div class="panel-content">
       <TableColumns
-        :data-source="listConfig.columns"
+        :data-source="list.columns"
         :tab="tab"
         :bridge="{
           projectApproval
@@ -44,7 +44,7 @@ export default {
   data () {
     return {
       summaryObject: {},
-      listConfig: {
+      list: {
         columns: [],
         searchor: []
       }
@@ -61,7 +61,7 @@ export default {
         if (data.list) {
           const currentModule = data.list[this.currentRank]
           this.summaryObject = currentModule.summaryObject
-          this.listConfig = currentModule.listConfig
+          this.list = currentModule.list
         }
       },
       immediate: true
@@ -72,11 +72,11 @@ export default {
       this.$emit('switchTab', '2')
     },
     updateSearchor (data) {
-      this.listConfig.searchor = data
+      this.list.searchor = data
       this.handup()
     },
     updateColumns (data) {
-      this.listConfig.columns = data
+      this.list.columns = data
       this.handup()
     },
     updateSummary (data) {
@@ -86,7 +86,7 @@ export default {
     },
     handup () {
       const cacheData = {
-        listConfig: utils.clone(this.listConfig),
+        list: utils.clone(this.list),
         summaryObject: utils.clone(this.summaryObject)
       }
       this.setViewData({ key: 'list', value: cacheData })

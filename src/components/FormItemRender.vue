@@ -24,11 +24,16 @@ export default {
     bridge: {
       type: Object,
       default: () => ({})
+    },
+    isCutNullFields: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
     return {
       scope: this,
+      scopeFormItems: {},
       form: this.$form.createForm(this)
     }
   },
@@ -64,8 +69,8 @@ export default {
   },
   methods: {
     initialize () {
-      const dataSource = this.dataSource || {}
-      const formItems = this.formItems || []
+      const dataSource = utils.clone(this.dataSource || {})
+      const formItems = utils.clone(this.formItems || [])
       this.formatFormItems(formItems)
 
       // 全局统一的默认值
@@ -76,7 +81,18 @@ export default {
 
       this.$props.beforeRender(dataSource, formItems, this.scope)
 
+      this.scopeFormItems = this.tryCutFields(formItems)
       // this.triggeringChangeCallback(dataSource, formItems)
+    },
+    tryCutFields (formItems) {
+      // 判断是否要裁剪没有值的字段
+      if (this.isCutNullFields) {
+        return formItems.filter((item) => {
+          return utils.isValuable(item.value) || utils.isValuable(item.component) || utils.isValuable(item.wrapperCustomRender)
+        })
+      } else {
+        return formItems
+      }
     },
     labelRender (h, formItem) {
       let labelC = null
@@ -123,8 +139,9 @@ export default {
           } else {
             item.value = item.default
           }
-        } else {
-          item.value = item.default = utils.isValuable(dataSource[item.key]) ? dataSource[item.key] : null
+        }
+        if (utils.isValuable(dataSource[item.key])) {
+          item.value = dataSource[item.key]
         }
       })
     },
@@ -138,8 +155,8 @@ export default {
       const tips = []
       // 操作模块的必填字段验证
       const fieldsValue = this.form.getFieldsValue()
-      for (let i = 0; i < this.formItems.length; i++) {
-        const formItem = this.formItems[i]
+      for (let i = 0; i < this.scopeFormItems.length; i++) {
+        const formItem = this.scopeFormItems[i]
         // 只有在 required 和 show 同时为 true 时，才进行必填校验
         if (formItem.required && formItem.show) {
           if (formItem.keys) {
@@ -230,7 +247,7 @@ export default {
           res = utils.merge(res, item.params)
         }
         if (item.paramTransfer) {
-          res = item.paramTransfer(res, this.scope)
+          item.paramTransfer(res, this.scope)
         }
       })
       return res
@@ -256,7 +273,7 @@ export default {
             const params = {
               ...values,
               // ...utils.formatFormValues(values, this.formItems),
-              ...this.getFormItemsValue(values, this.formItems)
+              ...this.getFormItemsValue(values, this.scopeFormItems)
             }
             resolve({
               type: 'success',
@@ -268,12 +285,15 @@ export default {
       })
     }
   },
+  beforeDestroy () {
+    this.form.resetFields()
+  },
   render (h) {
     return (
       <a-form form={this.form}>
         <a-row>
           {
-            this.formItems && this.formItems.map((formItem) => {
+            this.scopeFormItems && this.scopeFormItems.map((formItem) => {
               if (this.isCanShow(formItem)) {
                 return (
                   <a-col span={formItem.layout ? formItem.layout.span : 8}>

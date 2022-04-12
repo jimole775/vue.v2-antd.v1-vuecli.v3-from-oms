@@ -1,8 +1,3 @@
-const layout16 = {
-  span: 16,
-  label: 3,
-  wrapper: 20
-}
 export default [
   {
     label: '申请人',

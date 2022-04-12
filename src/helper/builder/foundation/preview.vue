@@ -8,10 +8,10 @@
   >
     <SApprovallor
       :tabs="tabs"
+      :list="list"
+      :apply="apply"
       :apimap="apimap"
-      :list-config="listConfig"
-      :apply-config="applyConfig"
-      :approval-config="approvalConfig"
+      :approval="approval"
     />
   </a-modal>
 </template>
@@ -34,10 +34,10 @@ export default {
   data () {
     return {
       tabs: [],
+      list: {},
+      apply: {},
       apimap: {},
-      listConfig: {},
-      applyConfig: {},
-      approvalConfig: {}
+      approval: {}
     }
   },
   watch: {
@@ -49,9 +49,9 @@ export default {
           this.transferFunction(scopeData)
           this.tabs = scopeData.tabs
           this.apimap = this.diggingApiUrl(scopeData.apimap)
-          this.listConfig = scopeData.listConfig
-          this.applyConfig = scopeData.applyConfig
-          this.approvalConfig = scopeData.approvalConfig
+          this.list = scopeData.list
+          this.apply = scopeData.apply
+          this.approval = scopeData.approval
         }
       },
       deep: true,
@@ -69,39 +69,40 @@ export default {
           apimap[tabIndex][apiName] = packageApi(apiItem)
         })
       })
+      console.log('apimap:', apimap)
       return apimap
     },
     // 把jsx类型的render函数字符串转成vue类型的render
     // 使eval执行不会报错
     transferFunction (data) {
-      // listConfig: {},
+      // list: {},
       // // “申请页面” 配置项
-      // applyConfig: {},
+      // apply: {},
       // // “审批详情” 配置项
-      // approvalConfig: {},
+      // approval: {},
       let allFormItems = []
-      let { listConfig, applyConfig, approvalConfig } = data
-      let tabIndexs = Object.keys(listConfig)
+      let { list, apply, approval } = data
+      let tabIndexs = Object.keys(list)
       tabIndexs.forEach((tabIndex) => {
-        const list = listConfig[tabIndex]
-        const { columns, searchor } = list
+        const curList = list[tabIndex]
+        const { columns, searchor } = curList
         allFormItems = [...allFormItems, ...columns, ...searchor]
       })
 
-      tabIndexs = Object.keys(applyConfig)
+      tabIndexs = Object.keys(apply)
       tabIndexs.forEach((tabIndex) => {
-        const apply = applyConfig[tabIndex]
-        apply.panels.forEach((panel) => {
+        const curApply = apply[tabIndex]
+        curApply.panels.forEach((panel) => {
           allFormItems = [...allFormItems, ...panel.formItems]
         })
       })
 
-      tabIndexs = Object.keys(approvalConfig)
+      tabIndexs = Object.keys(approval)
       tabIndexs.forEach((tabIndex) => {
-        const approval = approvalConfig[tabIndex]
-        const nodes = Object.keys(approval)
+        const curAppr = approval[tabIndex]
+        const nodes = Object.keys(curAppr)
         nodes.forEach((node) => {
-          const { permission, dispermission } = approval[node].panels
+          const { permission, dispermission } = curAppr[node].panels
           permission.concat(dispermission).forEach((panel) => {
             const formItems = panel.formItems
             const operationItem = panel.operationItem
@@ -124,6 +125,7 @@ export default {
           }
         })
       })
+      console.log('tfunc:', data)
       return data
     }
   }

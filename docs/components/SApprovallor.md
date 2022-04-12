@@ -3,7 +3,7 @@
   <SApprovallor
     :tabs="tabs"
     :apimap="apimap"
-    :list-config="listConfig"
+    :list="list"
     :before-submit="beforeSubmit"
     :before-render="beforeRender"
     :apply-modules-map="applyModulesMap"
@@ -164,7 +164,7 @@ export default {
       apimap: {
         0: apimodel
       },
-      listConfig: {
+      list: {
         0: listmodel
       },
       applyModulesMap: {

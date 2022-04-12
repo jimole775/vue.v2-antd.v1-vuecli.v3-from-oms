@@ -598,6 +598,9 @@ export default {
           }
           // 置空 default，避免重新渲染的时候会进行默认赋值
           this.resetByFieldType(searchItem, 'default')
+          setTimeout(() => {
+            this.setComponentView(searchItem, null)
+          })
         }
       })
       this.pagination.current = 1
@@ -733,8 +736,8 @@ export default {
     // 最后交给定制的回调参数进行调整
     handleParamsByCustom (finalParams) {
       this.searchor.forEach((searchItem) => {
-        if (searchItem.beforeSubmit) {
-          searchItem.beforeSubmit(finalParams, this.scope)
+        if (searchItem.paramTransfer && utils.isFunction(searchItem.paramTransfer)) {
+          searchItem.paramTransfer(finalParams, this.scope)
         }
       })
       return finalParams
@@ -1068,13 +1071,13 @@ function buildSearchorGroup (h) {
   function createFormItem (searchItem) {
     if (searchItem.component) {
       return <searchItem.component
-        props={searchItem.props}
-        attrs={searchItem.attrs}
-        dom-attrs={searchItem.domAttrs}
         allow-clear={!searchItem.required}
-        value={utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default}
         ref={this.spillComponentRef(searchItem)}
         depend={this.queryParams[searchItem.dependKey]}
+        props={utils.isFunction(searchItem.props) ? searchItem.props(this.scope) : searchItem.props}
+        attrs={utils.isFunction(searchItem.attrs) ? searchItem.attrs(this.scope) : searchItem.attrs}
+        dom-attrs={utils.isFunction(searchItem.domAttrs) ? searchItem.domAttrs(this.scope) : searchItem.domAttrs}
+        value={utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default}
         onKeyup={(e) => /13/.test(e.keyCode) && this.fetchData()}
         onChange={
           (value, optionItem) => {

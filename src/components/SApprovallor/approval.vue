@@ -66,7 +66,7 @@ export default {
       type: Object,
       required: true
     },
-    approvalConfig: {
+    approval: {
       type: Object,
       required: true
     },
@@ -154,7 +154,7 @@ export default {
           this.currentNode.approvalAccountList.includes(this.currentAccount)
     },
     activeModule () {
-      return this.approvalConfig && this.approvalConfig[this.currentNode.nodeCode]
+      return this.approval && this.approval[this.currentNode.nodeCode]
     }
   },
   methods: {
@@ -189,7 +189,7 @@ export default {
           panel.componentName === 'ApprovalOperation') {
           const inputs = panel.operationItem.inputs || []
           inputs.forEach((item) => {
-            if (item.show.includes(params.approvalResult)) {
+            if (item.show && item.show.includes(params.approvalResult)) {
               if (item.required === true) {
                 requiredFields.push(item.key)
               }

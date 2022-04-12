@@ -1,14 +1,14 @@
 // import mock from './mock.json'
 const { toCamelCase } = require('../../utils')
 // buildRouter(mock)
-module.exports = function buildRouter (routerConfig) {
+module.exports = function buildRouter (router) {
   const routerFiles = [
     // {
     //   path: '',
     //   content: ''
     // }
   ]
-  routerFiles.push(buildRouteFile(routerConfig))
+  routerFiles.push(buildRouteFile(router))
   return routerFiles
 }
 

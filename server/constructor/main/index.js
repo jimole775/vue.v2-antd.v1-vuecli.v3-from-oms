@@ -5,11 +5,11 @@ module.exports = function buildIndexVue (prevPath) {
     <OmsLayout>
       <OmsBreadcrumb />
       <SApprovallor
+        :list="list"
         :tabs="tabs"
+        :apply="apply"
         :apimap="apimap"
-        :list-config="listConfig"
-        :apply-config="applyConfig"
-        :approval-config="approvalConfig"
+        :approval="approval"
         :before-submit="beforeSubmit"
         :before-render="beforeRender"
       />
@@ -18,9 +18,9 @@ module.exports = function buildIndexVue (prevPath) {
   <script>
   import SApprovallor from '@/components/SApprovallor'
   import apimap from './config/apimap'
-  import listConfig from './config/list'
-  import applyConfig from './config/apply'
-  import approvalConfig from './config/approval'
+  import list from './config/list'
+  import apply from './config/apply'
+  import approval from './config/approval'
   import tabs from './config/tabs'
   export default {
     components: {
@@ -28,11 +28,11 @@ module.exports = function buildIndexVue (prevPath) {
     },
     data () {
       return {
+        list,
         tabs,
+        apply,
         apimap,
-        listConfig,
-        applyConfig,
-        approvalConfig
+        approval
       }
     },
     methods: {

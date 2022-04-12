@@ -1,9 +1,3 @@
-const layout24 = {
-  span: 24,
-  label: 3,
-  wrapper: 20
-}
-
 export default [
   {
     label: '项目名称',

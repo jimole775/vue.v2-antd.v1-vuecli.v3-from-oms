@@ -3,10 +3,10 @@
     <template slot="example">
       <SApprovallor
         :tabs="tabs"
+        :list="list"
+        :apply="apply"
         :apimap="apimap"
-        :list-config="listConfig"
-        :apply-config="applyConfig"
-        :approval-config="approvalConfig"
+        :approval="approval"
         :before-submit="beforeSubmit"
         :before-render="beforeRender"
       />
@@ -71,7 +71,7 @@ export default {
         }
       },
       // “数据列表”配置项，参数参考 [STable](./STable.md) 文档
-      listConfig: {
+      list: {
         0: {
           columns: [
             {
@@ -93,7 +93,7 @@ export default {
         }
       },
       // “申请页面” 配置项
-      applyConfig: {
+      apply: {
         0: {
           // 配置需要展示的组件，一个组件等同于一个板块
           components: [{
@@ -112,7 +112,7 @@ export default {
         }
       },
       // “审批详情” 配置项
-      approvalConfig: {
+      approval: {
         0: {
           // 节点名“start”
           start: {

@@ -13,19 +13,16 @@
     "make:CHANGELOG": "conventional-changelog -p angular -i docs/CHANGELOG.md -s -r 0",
     "track:CHANGELOG": "git add docs/CHANGELOG.md",
     "handup:CHANGELOG": "git commit docs/CHANGELOG.md -m \"chore: 创建周迭代CHANGELOG\"",
-    "version": "npm pull && npm run update:version && npm run make:CHANGELOG && npm run track:CHANGELOG && npm run handup:CHANGELOG",
+    "version": "git pull && npm run update:version && npm run make:CHANGELOG && npm run track:CHANGELOG && npm run handup:CHANGELOG",
     "postversion": "npm run make:tag && git push && git push --tags",
-    "builder": "node ./server/index.js",
-    "start": "npm-run-all -p builder serve"
+    "builder": "node ./server/index.js"
   },
   "dependencies": {
     "@babel/standalone": "^7.17.6",
     "ant-design-vue": "^1.4.4",
     "axios": "^0.18.0",
-    "axios-mock-adapter": "^1.16.0",
     "babel-plugin-transform-vue-jsx": "github:vuejs/babel-plugin-transform-vue-jsx",
     "core-js": "^2.6.5",
-    "dayjs": "^1.8.14",
     "echarts": "^4.2.1",
     "js-cookie": "^2.2.0",
     "jsx-ast-utils": "^3.2.1",
@@ -41,6 +38,7 @@
     "watermark-dom": "^2.3.0"
   },
   "devDependencies": {
+    "axios-mock-adapter": "^1.16.0",
     "@babel/preset-env": "^7.5.5",
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
@@ -66,7 +64,6 @@
     "markdown-loader": "^6.0.0",
     "marked": "^0.7.0",
     "mockjs": "^1.1.0",
-    "npm-run-all": "^4.1.5",
     "prettier": "^2.6.2",
     "vue-template-compiler": "^2.5.21",
     "webpack-bundle-analyzer": "^4.4.2"

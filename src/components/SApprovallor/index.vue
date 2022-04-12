@@ -2,14 +2,14 @@
   <div class="moveBox">
     <STabs :ref="'STabsRef'" :tab-proxy="tabProxy" />
     <div v-show="tabProxy.showList">
-      <template v-for="listPane in listPanes">
+      <template v-for="panel in listPanels">
         <ProjectList
-          v-show="listPane.tabId === tabProxy.activeId"
-          :key="listPane.tabId"
-          :apimap="listPane.apimap"
-          :list-data-dir="listPane.apimap.listDataDir || listDataDir"
-          :list-config="listPane.listConfig"
-          :ref="'ProjectList' + listPane.tabId"
+          v-show="panel.tabId === tabProxy.activeId"
+          :key="panel.tabId"
+          :apimap="panel.apimap"
+          :list-data-dir="panel.apimap.listDataDir || listDataDir"
+          :list="panel.list"
+          :ref="'ProjectList' + panel.tabId"
           :transfer-searchor="transferSearchor"
           :stable-row-key="stableRowKey"
           :apply-anchor-text="applyAnchorText"
@@ -22,13 +22,13 @@
       </template>
     </div>
     <div v-show="tabProxy.showApply">
-      <template v-for="applyPane in applyPanes">
+      <template v-for="panel in applyPanels">
         <ProjectApply
-          v-show="applyPane.tabId === tabProxy.activeId"
-          :key="applyPane.tabId"
-          :apimap="applyPane.apimap"
-          :apply-config="applyPane.applyConfig"
-          :ref="'ProjectApply' + applyPane.tabId"
+          v-show="panel.tabId === tabProxy.activeId"
+          :key="panel.tabId"
+          :apimap="panel.apimap"
+          :apply="panel.apply"
+          :ref="'ProjectApply' + panel.tabId"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
@@ -38,13 +38,13 @@
       </template>
     </div>
     <div v-show="tabProxy.showDetail">
-      <template v-for="approvalPane in approvalPanes">
+      <template v-for="panel in approvalPanels">
         <ProjectApproval
-          v-show="approvalPane.tabId === tabProxy.activeId"
-          :key="approvalPane.tabId"
-          :apimap="approvalPane.apimap"
-          :approval-config="approvalPane.approvalConfig"
-          :ref="'ProjectApproval' + approvalPane.tabId"
+          v-show="panel.tabId === tabProxy.activeId"
+          :key="panel.tabId"
+          :apimap="panel.apimap"
+          :approval="panel.approval"
+          :ref="'ProjectApproval' + panel.tabId"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
@@ -83,7 +83,7 @@ export default {
       type: String,
       default: null
     },
-    listConfig: {
+    list: {
       type: Object,
       default: () => ({})
     },
@@ -91,11 +91,11 @@ export default {
       type: Object,
       default: () => ({})
     },
-    applyConfig: {
+    apply: {
       type: Object,
       default: () => ({})
     },
-    approvalConfig: {
+    approval: {
       type: Object,
       default: () => ({})
     },
@@ -134,50 +134,50 @@ export default {
         activeId: '0',
         lastListId: '0'
       },
-      listPanes: []
+      listPanels: []
     }
   },
   computed: {
-    applyPanes () {
+    applyPanels () {
       return this.tabProxy.tabs.filter((tab) => {
         const live = /\d_1_.+/.test(tab.tabId)
         if (live) {
           tab.apimap = utils.clone(this.activeApimap)
-          tab.applyConfig = utils.clone(this.activeApplyConfig)
+          tab.apply = utils.clone(this.activeApply)
         }
         return live
       })
     },
-    approvalPanes () {
+    approvalPanels () {
       return this.tabProxy.tabs.filter((tab) => {
         const live = /\d_2_.+/.test(tab.tabId)
         if (live) {
           tab.apimap = utils.clone(this.activeApimap)
-          tab.approvalConfig = utils.clone(this.activeApprovalConfig)
+          tab.approval = utils.clone(this.activeApproval)
         }
         return live
       })
     },
-    activeApplyConfig () {
-      return this.applyConfig[this.tabProxy.lastListId]
+    activeApply () {
+      return this.apply[this.tabProxy.lastListId]
     },
-    activeApprovalConfig () {
-      return this.approvalConfig[this.tabProxy.lastListId]
+    activeApproval () {
+      return this.approval[this.tabProxy.lastListId]
     },
     activeApimap () {
       return this.apimap[this.tabProxy.lastListId]
     }
   },
   mounted () {
-    // this.listPanes 不能用 computed 构造
+    // this.listPanels 不能用 computed 构造
     // 否则在切换tab的时候，会有性能问题
     // 原因是 STable 比较臃肿，不便于频繁刷新
-    this.listPanes = this.tabProxy.tabs.filter((tab) => {
+    this.listPanels = this.tabProxy.tabs.filter((tab) => {
       const live = tab.type === 'list'
-      const config = this.listConfig[tab.tabId] || {}
+      const list = this.list[tab.tabId] || {}
       const apimap = this.apimap[tab.tabId] || {}
-      if (live && config) {
-        tab.listConfig = utils.clone(config)
+      if (live && list) {
+        tab.list = utils.clone(list)
         tab.apimap = utils.clone(apimap)
       }
       return live
@@ -194,8 +194,10 @@ export default {
       this.reload()
     },
     async reload () {
-      await this.$refs.ProjectListRef
-      this.$refs.ProjectListRef.reload()
+      const refName = 'ProjectList' + this.tabProxy.activeId
+      const refs = this.$refs[refName] ? this.$refs[refName] : []
+      const tar = refs[0] ? refs[0] : {}
+      tar.reload && tar.reload()
     }
   }
 }

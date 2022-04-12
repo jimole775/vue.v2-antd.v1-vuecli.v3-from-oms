@@ -8,21 +8,21 @@ const buildIndexVue = require('./main')
 function buildConstruct (filesInfo) {
   if (filesInfo) {
     const {
-      tabsConfig = [],
-      listConfig = {},
-      applyConfig = {},
-      apimapConfig = {},
-      routerConfig = {},
-      approvalConfig = {}
+      tabs = [],
+      list = {},
+      apply = {},
+      apimap = {},
+      router = {},
+      approval = {}
     } = filesInfo
     /* fileInfos: { path: '', content: '' } */
-    const listFileInfos = buildList(listConfig, routerConfig, buildPrevPath(routerConfig, 'config/list'))
-    const applyFileInfos = buildApply(applyConfig, routerConfig, buildPrevPath(routerConfig, 'config/apply'))
-    const approvalFileInfos = buildApproval(approvalConfig, routerConfig, buildPrevPath(routerConfig, 'config/approval'))
-    const apimapFileInfos = buildApimap(apimapConfig, routerConfig, buildPrevPath(routerConfig, 'config/apimap'))
-    const routerFileInfos = buildRouter(routerConfig)
-    const tabsFileInfos = buildTabs(tabsConfig, routerConfig, buildPrevPath(routerConfig, 'config/tabs'))
-    const indexFileInfos = buildIndexVue(buildPrevPath(routerConfig, ''))
+    const listFileInfos = buildList(list, router, buildPrevPath(router, 'config/list'))
+    const applyFileInfos = buildApply(apply, router, buildPrevPath(router, 'config/apply'))
+    const approvalFileInfos = buildApproval(approval, router, buildPrevPath(router, 'config/approval'))
+    const apimapFileInfos = buildApimap(apimap, router, buildPrevPath(router, 'config/apimap'))
+    const routerFileInfos = buildRouter(router)
+    const tabsFileInfos = buildTabs(tabs, router, buildPrevPath(router, 'config/tabs'))
+    const indexFileInfos = buildIndexVue(buildPrevPath(router, ''))
     return [
       ...indexFileInfos,
       ...tabsFileInfos,

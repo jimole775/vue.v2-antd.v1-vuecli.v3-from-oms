@@ -12,7 +12,7 @@ module.exports = {
         '@builder': resolve('./src/helper/builder')
       }
     },
-    devtool: 'eval-source-map'
+    devtool: 'source-map'
     // plugins: [new BundleAnalyzerPlugin({
     //   analyzerHost: 'localhost',
     //   analyzerPort: '8088'

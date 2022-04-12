@@ -1,20 +1,20 @@
 import utils from '@/utils'
 export default function viewToBuild ({ stepNodes = [], collapsePanels = [], operation = {} }) {
-  const model = {}
+  const res = {}
   stepNodes.forEach((node) => {
     // __addition__ 节点过滤掉
     if (node.value === '__addition__') return false
 
     // 正常逻辑
-    model[node.value] = {
+    res[node.value] = {
       panels: {
         permission: [],
         dispermission: []
       }
     }
     const tabPanels = utils.clone(collapsePanels || [])
-    const permissionPanels = model[node.value]['panels']['permission']
-    const dispermissionPanels = model[node.value]['panels']['dispermission']
+    const permissionPanels = res[node.value]['panels']['permission']
+    const dispermissionPanels = res[node.value]['panels']['dispermission']
     tabPanels.forEach((aPanel) => {
       if (isRightNode(aPanel, node.value)) {
         const panelModel = {
@@ -34,8 +34,7 @@ export default function viewToBuild ({ stepNodes = [], collapsePanels = [], oper
       permissionPanels.push(operationPanel)
     }
   })
-  return model
-  // return this.handupBuildData(model)
+  return res
 }
 
 function transferOperation (nodeKey, operation) {

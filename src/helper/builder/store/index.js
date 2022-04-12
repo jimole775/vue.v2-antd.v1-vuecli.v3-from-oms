@@ -13,20 +13,20 @@ export default {
     projects: [],
     buildData: {
       name: '',
-      listConfig: {},
-      applyConfig: {},
-      approvalConfig: {},
-      apimapConfig: {},
-      routerConfig: {},
-      tabsConfig: []
+      list: {},
+      tabs: [],
+      router: {},
+      apimap: {},
+      apply: {},
+      approval: {}
     },
     viewData: {
       name: '',
       isEmpty: true,
-      tabs: [],
-      router: {},
       list: {},
+      tabs: [],
       apply: {},
+      router: {},
       apimap: {},
       approval: {}
     }
@@ -73,31 +73,31 @@ export default {
     commitBuildData (state, { key, rank = state.currentRank, value }) {
       switch (key) {
         case 'list':
-          if (!state.buildData['listConfig']) {
-            state.buildData['listConfig'] = {}
+          if (!state.buildData[key]) {
+            state.buildData[key] = {}
           }
-          const { listConfig = {} } = value
-          const columns = columnsViewToBuild(listConfig.columns)
-          const searchor = searchorViewToBuild(listConfig.searchor)
-          state.buildData['listConfig'][rank] = { columns, searchor }
+          const { list = {} } = value
+          const columns = columnsViewToBuild(list.columns)
+          const searchor = searchorViewToBuild(list.searchor)
+          state.buildData[key][rank] = { columns, searchor }
           break
         case 'apply':
-          if (!state.buildData['applyConfig']) {
-            state.buildData['applyConfig'] = {}
+          if (!state.buildData[key]) {
+            state.buildData[key] = {}
           }
           const applyBuild = applyViewToBuild(value.collapsePanels)
-          state.buildData['applyConfig'][rank] = applyBuild
+          state.buildData[key][rank] = applyBuild
           break
         case 'approval':
-          if (!state.buildData['approvalConfig']) {
-            state.buildData['approvalConfig'] = {}
+          if (!state.buildData[key]) {
+            state.buildData[key] = {}
           }
           const approvalBuild = approvalViewToBuild(value)
-          state.buildData['approvalConfig'][rank] = approvalBuild
+          state.buildData[key][rank] = approvalBuild
           break
         case 'apimap':
-          const already = state.buildData['apimapConfig'][rank] || {}
-          state.buildData['apimapConfig'][rank] = {
+          const already = state.buildData[key][rank] || {}
+          state.buildData[key][rank] = {
             ...already,
             ...value
           }
@@ -105,13 +105,11 @@ export default {
         case 'tabs':
           const tabs = value
           const tabsBuild = tabsViewToBuild(tabs)
-          state.buildData['tabsConfig'] = tabsBuild
+          state.buildData[key] = tabsBuild
           break
         case 'name':
-          state.buildData['name'] = value
-          break
         case 'router':
-          state.buildData['routerConfig'] = value
+          state.buildData[key] = value
           break
       }
     },
@@ -169,12 +167,12 @@ export default {
       commit('commitViewData', data)
     },
     resetBuildData ({ commit, state }) {
-      commit('commitBuildData', { key: 'tabsConfig', value: [] })
-      commit('commitBuildData', { key: 'listConfig', value: {} })
-      commit('commitBuildData', { key: 'routerConfig', value: {} })
-      commit('commitBuildData', { key: 'applyConfig', value: {} })
-      commit('commitBuildData', { key: 'apimapConfig', value: {} })
-      commit('commitBuildData', { key: 'approvalConfig', value: {} })
+      commit('commitBuildData', { key: 'tabs', value: [] })
+      commit('commitBuildData', { key: 'list', value: {} })
+      commit('commitBuildData', { key: 'router', value: {} })
+      commit('commitBuildData', { key: 'apply', value: {} })
+      commit('commitBuildData', { key: 'apimap', value: {} })
+      commit('commitBuildData', { key: 'approval', value: {} })
     },
     resetViewData ({ commit, state }) {
       commit('commitViewData', { key: 'tabs', value: [] })

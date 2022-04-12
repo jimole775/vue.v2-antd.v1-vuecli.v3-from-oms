@@ -18,13 +18,14 @@
 import utils from '@/utils'
 import { mapActions } from 'vuex'
 import base from '@/mixins/base'
-const panelmodel = {
+const tabmodel = {
   tabName: '',
   proxyName: null,
   type: 'apply', // 'list' 'apply' 'detail'
   tabId: '1_1',
   closable: true,
   show: true,
+  visible: true,
   lastListId: '',
   recordData: {}
 }
@@ -44,7 +45,7 @@ export default {
       // 用push的方式来存储，取的时候，永远取最后一个
       // 主要的作用就是在用户关闭可编辑的tab时，可回溯到最后一个被浏览的list
       usedListIds: [],
-      cachePanesLen: null
+      cacheTabsLen: null
     }
   },
   computed: {
@@ -57,12 +58,12 @@ export default {
     'tabProxy.tabs': {
       handler (tabs) {
         // tabProxy.tabs 有时候是后端返回的，属于异步获取
-        // this.initialize() 中也会对panes进行更改，所以需要用 currentPanesLen 进行预存
+        // this.initialize() 中也会对tabs进行更改，所以需要用 currentTabsLen 进行预存
         // 防止死循环
-        if (tabs && tabs.length && tabs.length !== this.cachePanesLen) {
+        if (tabs && tabs.length && tabs.length !== this.cacheTabsLen) {
           // this.initialize()
-          this.activePane(this.tabProxy.activeId)
-          this.cachePanesLen = tabs.length
+          this.activeTab(this.tabProxy.activeId)
+          this.cacheTabsLen = tabs.length
         }
       },
       deep: true,
@@ -71,16 +72,16 @@ export default {
     'tabProxy.activeId': {
       handler (tabId) {
         if (tabId) {
-          const curPanel = this.getPanelFromTabId(tabId)
+          const curTab = this.getCurTabFromTabId(tabId)
           // 如果目标pane时【detail】类型，就需要关联跳转前的【list】的tabid
           // 主要为了防止detail页内用lastListId查询数据时的报错
-          if (curPanel.type === 'apply') {
-            curPanel.__apply_listTabId__ = this.tabProxy.lastListId
+          if (curTab.type === 'apply') {
+            curTab.__apply_listTabId__ = this.tabProxy.lastListId
           }
-          if (curPanel.type === 'detail') {
-            curPanel.__detail_listTabId__ = this.tabProxy.lastListId
+          if (curTab.type === 'detail') {
+            curTab.__detail_listTabId__ = this.tabProxy.lastListId
           }
-          this.activePane(tabId)
+          this.activeTab(tabId)
           this.showPage(tabId)
         }
       },
@@ -104,8 +105,8 @@ export default {
       // 直接show activeId
       // 默认一定要加载按钮权限列表
       await this.getMenuButtons()
-      // 根据权限列表裁剪有效的panes
-      this.queryPermissionPanes()
+      // 根据权限列表裁剪有效的tabs
+      this.queryPermissionTabs()
       return Promise.resolve()
     },
     async getMenuButtons () {
@@ -115,7 +116,7 @@ export default {
       }
       return Promise.resolve()
     },
-    queryPermissionPanes () {
+    queryPermissionTabs () {
       const tabs = this.tabProxy.tabs || []
       const menuButtons = this.$store.state.global.menuButtons || []
       this.tabProxy.tabs = tabs.filter(tab => {
@@ -140,28 +141,28 @@ export default {
         this.tabProxy.lastListId = this.tabProxy.activeId = this.tabProxy.tabs[0].tabId
       }
     },
-    activePane (tabId) {
+    activeTab (tabId) {
       // 根据提供的id去获取指定的Panel面板
-      const curPanel = this.getPanelFromTabId(tabId)
+      const curTab = this.getCurTabFromTabId(tabId)
       // 需要把面板show设置为true
-      curPanel.show = true
+      curTab.show = true
     },
     negativePane (tabId) {
-      const curPanel = this.getPanelFromTabId(tabId)
-      curPanel.show = false
+      const curTab = this.getCurTabFromTabId(tabId)
+      curTab.show = false
     },
     addDetailTab (detailType, recordData) {
       // 根据recordData的id来判断当前是否有重复的panel
       if (this.isUniqueTanpe(recordData)) {
-        const newPanel = utils.clone(panelmodel)
-        const listPanel = this.getPanelFromTabId(this.getLastListTabId())
-        newPanel.type = Number.parseInt(detailType) === 1 ? 'apply' : 'detail'
-        newPanel.tabId = this.upRiseTabId(this.getLastEditTabId(listPanel.tabId, detailType))
-        newPanel.tabName = getTabName(detailType, listPanel)
-        newPanel.lastListId = listPanel.tabId
-        newPanel.recordData = recordData
-        this.tabProxy.activeId = newPanel.tabId
-        this.tabProxy.tabs.push(newPanel)
+        const newTab = utils.clone(tabmodel)
+        const listPanel = this.getCurTabFromTabId(this.getLastListTabId())
+        newTab.type = Number.parseInt(detailType) === 1 ? 'apply' : 'detail'
+        newTab.tabId = this.upRiseTabId(this.getLastEditTabId(listPanel.tabId, detailType))
+        newTab.tabName = getTabName(detailType, listPanel)
+        newTab.lastListId = listPanel.tabId
+        newTab.recordData = recordData
+        this.tabProxy.activeId = newTab.tabId
+        this.tabProxy.tabs.push(newTab)
       } else {
         // 如果已经渲染的，就直接切换tab就行，不用新增tab
         return this.changeTabByRecordData(recordData)
@@ -179,8 +180,8 @@ export default {
     isUniqueTanpe (recordData = {}) {
       let isUnique = true
       for (let index = 0; index < this.tabProxy.tabs.length; index++) {
-        const tab = this.tabProxy.tabs[index]
-        if (tab.recordData && tab.recordData.id === recordData.id) {
+        const pane = this.tabProxy.tabs[index]
+        if (pane.recordData && pane.recordData.id === recordData.id) {
           isUnique = false
           break
         }
@@ -189,34 +190,34 @@ export default {
     },
     changeTabByRecordData (recordData = {}) {
       for (let index = 0; index < this.tabProxy.tabs.length; index++) {
-        const tab = this.tabProxy.tabs[index]
-        if (tab.recordData && tab.recordData.id === recordData.id) {
-          this.tabProxy.activeId = tab.tabId
+        const pane = this.tabProxy.tabs[index]
+        if (pane.recordData && pane.recordData.id === recordData.id) {
+          this.tabProxy.activeId = pane.tabId
           break
         }
       }
     },
     // tab切换事件
     tabChangeEvent (tabId) {
-      const curPanel = this.getPanelFromTabId(tabId)
+      const curTab = this.getCurTabFromTabId(tabId)
       // curPan.type === undefined 属于向前兼容
-      if (curPanel.type === 'list' || curPanel.type === undefined) {
+      if (curTab.type === 'list' || curTab.type === undefined) {
         this.setLastListTabId(tabId)
       }
       // 目标tab如果是detail，
       // 需要保持 lastListId 是 list 类型的 tabId
       // 因为，申请和详情页有时候需要根据 list 的 tabId 去匹配一些数据
-      if (curPanel.type === 'apply') {
-        this.setLastListTabId(curPanel.__apply_listTabId__)
+      if (curTab.type === 'apply') {
+        this.setLastListTabId(curTab.__apply_listTabId__)
       }
-      if (curPanel.type === 'detail') {
-        this.setLastListTabId(curPanel.__detail_listTabId__)
+      if (curTab.type === 'detail') {
+        this.setLastListTabId(curTab.__detail_listTabId__)
       }
     },
     // 往 this.usedListIds 里塞 tabId
     setLastListTabId (tabId) {
-      const curPanel = this.getPanelFromTabId(tabId)
-      if (curPanel.type === 'list' || curPanel.type === undefined) {
+      const curTab = this.getCurTabFromTabId(tabId)
+      if (curTab.type === 'list' || curTab.type === undefined) {
         this.tabProxy.lastListId = tabId
         if (!this.usedListIds) {
           this.usedListIds = []
@@ -239,9 +240,9 @@ export default {
       // 如果是第一次新增panel，给与默认tabId
       let res = this.spillTabId(listId, detailType, 0)
       for (let i = this.tabProxy.tabs.length - 1; i > 0; i--) {
-        const tab = this.tabProxy.tabs[i]
-        if (tab.tabId.length > 1 && this.getDetailTypeFormTabId(tab.tabId) === detailType) {
-          res = tab.tabId
+        const pane = this.tabProxy.tabs[i]
+        if (pane.tabId.length > 1 && this.getDetailTypeFormTabId(pane.tabId) === detailType) {
+          res = pane.tabId
           break
         }
       }
@@ -250,30 +251,30 @@ export default {
     // tab新增或者删除事件
     tabEditEvent (tabId, action) {
       if (action === 'remove') {
-        this.removePane(tabId)
+        this.removeTab(tabId)
       }
     },
     // 关闭标签页
     // 两种情景触发当前方法：
     // 1. 当前只有用户点击【x】操作
-    // 2. 审批完毕时，this.$emit('removePane')进行调用
-    removePane (tabId) {
+    // 2. 审批完毕时，this.$emit('removeTab')进行调用
+    removeTab (tabId) {
       for (let i = 0; i < this.tabProxy.tabs.length; i++) {
-        const tab = this.tabProxy.tabs[i]
-        if (tab.tabId === tabId) {
+        const pane = this.tabProxy.tabs[i]
+        if (pane.tabId === tabId) {
           this.tabProxy.tabs.splice(i, 1)
           break
         }
       }
       // activeId 切换到最后一个 list
       this.tabProxy.activeId = this.getLastListTabId()
-      // 这里手动activePane，是为了防止activeId没改变，导致没触发watch方法的情况
-      this.activePane(this.tabProxy.activeId)
+      // 这里手动activeTab，是为了防止activeId没改变，导致没触发watch方法的情况
+      this.activeTab(this.tabProxy.activeId)
     },
-    getPanelFromTabId (tabId) {
-      let correctPanel = this.tabProxy.tabs.filter((pan) => pan.tabId === tabId)
-      correctPanel = correctPanel && correctPanel.length ? correctPanel[0] : {}
-      return correctPanel
+    getCurTabFromTabId (tabId) {
+      const correctTab = this.tabProxy.tabs.find((pan) => pan.tabId === tabId)
+      // correctTab = correctTab && correctTab.length ? correctTab[0] : {}
+      return correctTab || {}
     },
     /**
      * 父级html是这样写的:
