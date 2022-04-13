@@ -10,8 +10,8 @@
     <template v-for="item in menus">
       <a-menu-item v-if="!item.children" :key="item.id">
         <router-link :to="item.path">
-          <!-- <a-icon :type="item.icon" /> -->
-          <i v-if="item.icon" :class="['far', item.icon]" />
+          <a-icon v-if="item.icon" :type="item.icon" />
+          <!-- <i v-if="item.icon" :class="['far', item.icon]" /> -->
           <span>{{ item.title }}</span>
         </router-link>
       </a-menu-item>
@@ -40,11 +40,7 @@ export default {
     'sub-menu': SubMenu
   },
   created: function () {
-    this.loadMenus()
     this.loadDictList()
-  },
-  data () {
-    return {}
   },
   computed: {
     submenuSelectedKeys () {
@@ -60,7 +56,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['loadMenus', 'loadDictList', 'loadUser'])
+    ...mapActions(['loadDictList'])
   }
 }
 </script>

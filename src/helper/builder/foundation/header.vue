@@ -16,11 +16,11 @@
 <script>
 import api from '@/api'
 import utils from '@/utils'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import base from '@/mixins/base'
 import Preview from './preview.vue'
 export default {
-  mixins: [mixins, base],
+  mixins: [builder, base],
   name: 'Header',
   components: { Preview },
   data () {

@@ -42,10 +42,10 @@
 <script>
 import Menu from './menu'
 import Header from './header'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import Projects from './projects'
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   name: 'Layout',
   components: {
     Menu,

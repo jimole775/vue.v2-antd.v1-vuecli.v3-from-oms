@@ -61,10 +61,10 @@
 </template>
 <script>
 // import utils from '@/utils'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import CustomParams from '@builder/config-modules/custom-params'
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   components: {
     CustomParams
   },

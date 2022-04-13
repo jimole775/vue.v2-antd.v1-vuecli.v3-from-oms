@@ -20,13 +20,13 @@
 <script>
 import utils from '@/utils'
 import { mapGetters } from 'vuex'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import LogBar from './modules/log-bar'
 import StepBar from './modules/step-bar'
 import OperationBar from './modules/operation-bar'
 import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels.vue'
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   components: {
     LogBar,
     StepBar,

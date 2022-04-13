@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import global from './global'
-import builder from '@/helper/builder/store'
+import builder from './builder'
 
 Vue.use(Vuex)
 

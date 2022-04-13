@@ -6,11 +6,11 @@
 </template>
 <script>
 import utils from '@/utils'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels'
 import SubmitBar from './submit-bar.vue'
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   components: {
     SubmitBar,
     BuildCollapsePanels

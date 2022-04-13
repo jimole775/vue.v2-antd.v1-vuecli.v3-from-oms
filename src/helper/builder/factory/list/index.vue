@@ -20,12 +20,12 @@
 </template>
 <script>
 import utils from '@/utils'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import TableSummary from './modules/table-summary'
 import BuildFormItems from '@builder/config-modules/build-form-items'
 import TableColumns from './modules/table-columns'
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   components: {
     TableSummary,
     TableColumns,

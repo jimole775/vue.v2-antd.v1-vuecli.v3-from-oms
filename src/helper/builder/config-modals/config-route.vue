@@ -46,10 +46,10 @@
 <script>
 import api from '@/api'
 import utils from '@/utils'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import base from '@/mixins/base'
 export default {
-  mixins: [mixins, base],
+  mixins: [builder, base],
   props: {
     modal: {
       type: Object,

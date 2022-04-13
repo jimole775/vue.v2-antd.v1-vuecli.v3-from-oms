@@ -32,11 +32,11 @@
 <script>
 import utils from '@/utils'
 import { mapActions } from 'vuex'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import ConfigRoute from '../config-modals/config-route'
 const modules = require.context('../../../views', true, /(\.vue)$/)
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   name: 'Menu',
   components: {
     ConfigRoute

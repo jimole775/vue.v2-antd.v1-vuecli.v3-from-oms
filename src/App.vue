@@ -12,9 +12,7 @@ import utils from '@/utils'
 export default {
   data () {
     return {
-      locale: zhCN,
-      menusList: [],
-      canShow: false
+      locale: zhCN
     }
   },
   computed: {
@@ -23,12 +21,6 @@ export default {
     },
     userRole () {
       return this.$store.state.global.userRole
-    },
-    menus () {
-      return this.$store.state.global.menus
-    },
-    isMockEnv () {
-      return this.$store.state.global.mockEnv
     }
   },
   watch: {
@@ -36,15 +28,9 @@ export default {
       if (val) {
         this.createWatermark(val)
       }
-    },
-    menus (val) {
-      if (val) {
-        this.getMenusList(val)
-      }
     }
   },
   created () {
-    this.currentPath = this.$router.history.current.path
     // 处理外部链接跳转
     this.extractJump()
   },
@@ -55,31 +41,6 @@ export default {
         removeOMSJump()
         const params = utils.isJSONString(jumpdata) ? JSON.parse(jumpdata) : jumpdata
         jumper.go(params)
-      }
-    },
-    getMenusList (tempData) {
-      var menuArr = []
-      for (var i = 0; i < tempData.length; i++) {
-        if (!tempData[i].children) {
-          menuArr.push(tempData[i].path)
-        } else if (tempData[i].children.length > 0) {
-          for (var j = 0; j < tempData[i].children.length; j++) {
-            menuArr.push(tempData[i].children[j].path)
-          }
-        }
-      }
-      this.menusList = menuArr
-
-      // 启用mock的时候，都是后端接口没有生产的时候
-      // 这种情况，左侧菜单后端也没有的
-      // 所以，这里没有必要进行路由黑名单的控制
-      if (!this.isMockEnv) {
-        // 过滤没在服务器注册的路由，如果匹配不到，就直接跳转主页
-        if (this.menusList.indexOf(this.$router.history.current.path) === -1 &&
-              this.$router.history.current.path !== '/demands_and_interviews/approval-process' &&
-              this.$router.history.current.path !== '/demands_and_interviews/interview-approve') {
-          this.$router.push('/')
-        }
       }
     },
     createWatermark ({ employeeNumber }) {

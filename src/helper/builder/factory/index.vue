@@ -33,7 +33,7 @@
 </template>
 <script>
 import utils from '@/utils'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import base from '@/mixins/base'
 import todo from '@/mixins/todo'
 import ProjectList from './list'
@@ -52,7 +52,7 @@ export default {
     ProjectApply,
     ProjectApproval
   },
-  mixins: [base, mixins, todo],
+  mixins: [base, builder, todo],
   data () {
     return {
       editModal: {

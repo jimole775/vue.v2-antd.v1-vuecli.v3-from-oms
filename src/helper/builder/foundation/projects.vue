@@ -31,13 +31,13 @@
 <script>
 import api from '@/api'
 import utils from '@/utils'
-import mixins from '@builder/mixins'
+import builder from '@/mixins/builder'
 import ConfigRoute from '../config-modals/config-route'
 const level1 = 2 * 3
 const level2 = 3 * 6
 // const level3 = 4 * 8
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   name: 'Projects',
   components: {
     ConfigRoute

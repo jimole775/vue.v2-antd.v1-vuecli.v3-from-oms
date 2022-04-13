@@ -1,8 +1,7 @@
-// import utils from '@/utils'
-import applyViewToBuild from './view-to-build/apply'
-import approvalViewToBuild from './view-to-build/approval'
-import { columnsViewToBuild, searchorViewToBuild } from './view-to-build/list'
-import tabsViewToBuild from './view-to-build/tabs'
+import applyViewToBuild from '@builder/utils/view-to-build/apply'
+import approvalViewToBuild from '@builder/utils/view-to-build/approval'
+import { columnsViewToBuild, searchorViewToBuild } from '@builder/utils/view-to-build/list'
+import tabsViewToBuild from '@builder/utils/view-to-build/tabs'
 export default {
   state: {
     tabType: '0',

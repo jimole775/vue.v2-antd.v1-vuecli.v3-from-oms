@@ -1,7 +1,7 @@
 import api from '@/api'
 import utils from '@/utils'
 import { Message } from 'ant-design-vue'
-import mockMenu from './mockMenu'
+import mockMenu from '@/config/menu.mock.js'
 const exportingListStoreKey = '$$EXPORTINGLIST'
 export default {
   state: {
@@ -122,10 +122,10 @@ export default {
       state.mockEnv = env || false
     },
     setMenus (state, menus) {
-      state.menus = menus || []
       if (state.mockEnv) {
-        state.menus = state.menus.concat(mockMenu)
+        menus = mockMenu.concat(menus)
       }
+      state.menus = menus || []
     },
     setMenuButtons (state, menuButtons) {
       state.menuButtons = menuButtons || []

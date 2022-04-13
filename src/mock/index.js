@@ -1,5 +1,4 @@
 import mock from 'mockjs'
-import store from '@/store'
 import utils from '@/utils'
 const context = require.context('./', true, /(\.js)$/)
 const apiBase = 'mock'
@@ -126,5 +125,3 @@ function getRangeField (key, params) {
 }
 
 mock.setup(500)
-
-store.commit('setMockEnv', true)

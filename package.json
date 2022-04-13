@@ -5,7 +5,9 @@
   "scripts": {
     "init:commitizen": "npm install -g commitizen && commitizen init cz-conventional-changelog --save --save-exact",
     "init": "npm install && npm run init:commitizen",
-    "serve": "vue-cli-service serve --open",
+    "serve": "vue-cli-service serve --mode local",
+    "build:test": "vue-cli-service build --mode test",
+    "build:dev": "vue-cli-service build --mode dev",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "update:version": "node ./tag.version.js --version && git add package.json && git commit package.json -m \"chore: update project's version\"",

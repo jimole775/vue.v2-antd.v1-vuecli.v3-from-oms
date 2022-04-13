@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import routerItems from '@/helper/examples/router/index.js'
+import routerItems from '@/router/modules/examples.js'
 export default {
   name: 'Menu',
   computed: {
