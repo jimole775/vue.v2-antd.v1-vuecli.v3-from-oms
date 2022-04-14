@@ -186,23 +186,24 @@ function createMatrixItem (rowLen, colLen) {
   height: 100%;
   background: #333;
 }
-.layout-project-list [class~='ant-col'] {
-  display: flex;
-  align-items: center;
-  background: transparent;
-  height: 100%;
-  border-right: 1px solid #222;
-  border-bottom: 1px solid #222;
-  border-top: 1px solid #444;
-  border-left: 1px solid #444;
-  > div {
-    margin: 0 auto;
-  }
-  p.project-name {
-    margin-top: 5px;
-    text-align: center;
-    font-size: 1rem;
+.layout-project-list {
+  .project-item {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    height: 100%;
+    border-right: 1px solid #222;
+    border-bottom: 1px solid #222;
+    border-top: 1px solid #444;
+    border-left: 1px solid #444;
+    > div {
+      margin: 0 auto;
+    }
+    p.project-name {
+      margin-top: 5px;
+      text-align: center;
+      font-size: 1rem;
+    }
   }
 }
-
 </style>

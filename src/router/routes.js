@@ -12,5 +12,4 @@ context.keys().forEach((item) => {
   routes = routes.concat(context(item).default || context(item))
 })
 
-console.log(routes)
 export default routes

@@ -2,12 +2,12 @@
 <template>
   <SApprovallor
     :tabs="tabs"
-    :apimap="apimap"
     :list="list"
+    :apply="apply"
+    :apimap="apimap"
+    :approval="approval"
     :before-submit="beforeSubmit"
     :before-render="beforeRender"
-    :apply-modules-map="applyModulesMap"
-    :approval-modules-map="approvalModulesMap"
   />
 </template>
 <script>
@@ -167,10 +167,10 @@ export default {
       list: {
         0: listmodel
       },
-      applyModulesMap: {
+      apply: {
         0: applymodel
       },
-      approvalModulesMap: {
+      approval: {
         0: approvalmodel
       }
     }

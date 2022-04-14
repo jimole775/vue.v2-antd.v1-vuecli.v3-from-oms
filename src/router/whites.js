@@ -1,12 +1,12 @@
 import store from '@/store/index'
-import white from '@/config/white.router.js'
+import white from '@/config/router.white.js'
 import examples from './modules/examples'
 import builder from './modules/builder'
 
 /**
  * 白名单的获取
  * 白名单主要由两部分构成：
- * 1. @/config/white.router.js 里面手动配置
+ * 1. @/config/router.white.js 里面手动配置
  * 2. store.state.global.menus 由后端服务器返回
  * @returns { Function }
  */

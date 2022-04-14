@@ -7,7 +7,6 @@
           v-show="panel.tabId === tabProxy.activeId"
           :key="panel.tabId"
           :apimap="panel.apimap"
-          :list-data-dir="panel.apimap.listDataDir || listDataDir"
           :list="panel.list"
           :ref="'ProjectList' + panel.tabId"
           :transfer-searchor="transferSearchor"
@@ -78,10 +77,6 @@ export default {
     stableRowKey: {
       type: String,
       default: 'id'
-    },
-    listDataDir: {
-      type: String,
-      default: null
     },
     list: {
       type: Object,

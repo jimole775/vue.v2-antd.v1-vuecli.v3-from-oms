@@ -1,7 +1,7 @@
 import api from '@/api'
 import utils from '@/utils'
 import { Message } from 'ant-design-vue'
-import mockMenu from '@/config/menu.mock.js'
+import mockMenu from '@/config/mock.menu.js'
 const exportingListStoreKey = '$$EXPORTINGLIST'
 export default {
   state: {

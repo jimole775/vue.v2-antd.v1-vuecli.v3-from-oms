@@ -65,7 +65,7 @@ export default {
   computed: {
     ...mapGetters(['getStepNodes', 'getTabType']),
     stepNodesOptions () {
-      return this.getStepNodes
+      return this.getStepNodes || []
     }
   },
   watch: {

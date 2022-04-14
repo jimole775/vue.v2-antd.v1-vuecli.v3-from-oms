@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="builder-menu">
     <div class="logo-text pd-x" style="max-height:50px;">
       <div class="logo-image">
         <span class="logo-desc">新模块配置</span>
@@ -19,9 +19,9 @@
       <a-menu-item :disabled="!hasDisabled('views')">
         <a style="color: #333;" @click="() => showConfigRouteModal('views')">顶层菜单</a>
       </a-menu-item>
-      <template v-for="item in menus">
-        <a-menu-item :disabled="!hasDisabled(item)" :key="item">
-          <a style="color: #333;" @click="() => showConfigRouteModal(item)">{{ item }}</a>
+      <template v-for="name in menus">
+        <a-menu-item :disabled="!hasDisabled(name)" :key="name">
+          <a style="color: #333;" @click="() => showConfigRouteModal(name)">{{ name }}</a>
         </a-menu-item>
       </template>
     </a-menu>
@@ -33,8 +33,8 @@
 import utils from '@/utils'
 import { mapActions } from 'vuex'
 import builder from '@/mixins/builder'
+import routes from '@/router/routes.js'
 import ConfigRoute from '../config-modals/config-route'
-const modules = require.context('../../../views', true, /(\.vue)$/)
 export default {
   mixins: [builder],
   name: 'Menu',
@@ -51,9 +51,21 @@ export default {
   },
   computed: {
     menus () {
-      const vues = modules.keys()
-      const menus = vues.map(i => i.split('/')[1])
-      return menus
+      const res = Object.create(null)
+      // 设置赋值 当前已选的 父级菜单
+      res[this.viewData.router.parent] = null
+
+      // 通过routes的component筛选出 父级菜单
+      routes.forEach(i => {
+        if (i.component) {
+          const dirty = i.component.toString()
+          const pure = dirty.match(/\.\/src\/views\/.*?\.(vue|js)/g)
+          if (pure) {
+            res[pure[0].replace(/\.\/src\/views\/(.*?)\/.+/g, '$1')] = null
+          }
+        }
+      })
+      return Object.keys(res)
     }
   },
   created: function () {
@@ -91,5 +103,9 @@ export default {
 // 菜单栏展开状态时，选中项的背景色
 .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
   background: linear-gradient(90deg, #F4F9F5 0%, #E5FAE9 100%);
+}
+.builder-menu {
+  overflow: auto;
+  height: 100%;
 }
 </style>

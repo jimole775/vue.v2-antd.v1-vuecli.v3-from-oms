@@ -66,13 +66,13 @@ export default {
           closable: 'basicdata.key-events-close', // 是否有权限批量关闭
           revokable: 'basicdata.key-events-revoke', // 是否有权限批量撤回
           rejectable: '', // 是否有权限批量驳回
-          listDataDir: '$listDataDir',
           logType: 'key_events_flow' // 日志的type
         }
       },
       // “数据列表”配置项，参数参考 [STable](./STable.md) 文档
       list: {
         0: {
+          dataDir: 'records',
           columns: [
             {
               title: '编号',

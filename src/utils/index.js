@@ -265,7 +265,7 @@ const utils = {
     if (!input) return input
     return Number.parseFloat((input + '').replace(/,/g, ''))
   },
-  /** 把对象转换成的urlquery字段
+  /** url是否携带参数
    * @param {String}
    * @return {Boolean}
    * @template = hasQueryString('?dasd') => true

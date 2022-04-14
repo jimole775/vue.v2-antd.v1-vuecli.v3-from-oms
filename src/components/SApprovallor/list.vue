@@ -30,10 +30,6 @@ export default {
       type: Function,
       required: true
     },
-    listDataDir: {
-      type: String,
-      default: null
-    },
     bridge: {
       type: Object,
       default: () => ({})
@@ -52,6 +48,9 @@ export default {
     }),
     isOutsideStuff () {
       return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
+    },
+    dataDir () {
+      return this.list.dataDir || ''
     },
     searchor () {
       return this.transferSearchor(this.queryPermissionItem(this.list.searchor || []))
@@ -112,7 +111,7 @@ export default {
   },
   render (h) {
     const summarySlots = getSummarySlots.call(this, h)
-    const { apimap, stableRowKey, listDataDir } = this.$props
+    const { apimap, stableRowKey } = this.$props
     return (
       <div>
         <STable
@@ -125,8 +124,8 @@ export default {
           }}
           columns={this.columns}
           searchor={this.searchor}
+          data-dir={this.dataDir}
           row-key={stableRowKey}
-          data-dir={listDataDir}
           data-api={apimap.list}
           export-api={apimap.export}
           pass-api={this.hasCatalogButton(apimap.passable) ? apimap.pass : ''}

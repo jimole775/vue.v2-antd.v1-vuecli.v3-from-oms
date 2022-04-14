@@ -18,7 +18,6 @@ export default {
     closable: '$closable',
     revokable: '$revokable',
     rejectable: '$rejectable',
-    listDataDir: '$listDataDir',
     logType: '$logType' // 日志的type
   }
 }

@@ -35,7 +35,7 @@ export default {
       return state.currentRank
     },
     getStepNodes (state) {
-      return state.stepNodes[state.currentRank]
+      return state.stepNodes[state.currentRank] || []
     },
     getTabType (state) {
       return state.tabType
