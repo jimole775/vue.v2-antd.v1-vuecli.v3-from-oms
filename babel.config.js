@@ -16,8 +16,6 @@ module.exports = {
         'libraryDirectory': 'es',
         'style': 'true'
       }
-    ],
-    '@babel/plugin-syntax-jsx'
-  ],
-  sourceType: 'unambiguous'
+    ]
+  ]
 }
