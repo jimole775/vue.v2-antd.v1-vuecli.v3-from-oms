@@ -1,5 +1,4 @@
 import mock from 'mockjs'
-import store from '@/store'
 import utils from '@/utils'
 const context = require.context('./', true, /(\.js)$/)
 const apiBase = 'mock'
@@ -20,13 +19,19 @@ mock.mock(/\/dync/, options => {
 
 function getParams (options) {
   let res = null
-  if (options.type === 'GET' && utils.hasQueryString(options.url)) {
+  if (options.type === 'GET' && hasQueryString(options.url)) {
     res = utils.getParamsFromURL(options.url)
   }
   if (options.body) {
     res = utils.isJSONString(options.body) ? JSON.parse(options.body) : options.body
   }
   return res
+}
+
+function hasQueryString (src) {
+  if (!src) return false
+  if (!utils.isString(src)) return false
+  return /\w*?\?{1}\w+/.test(src)
 }
 
 function dataQuery (data, params) {
@@ -126,5 +131,3 @@ function getRangeField (key, params) {
 }
 
 mock.setup(500)
-
-store.commit('setMockEnv', true)
