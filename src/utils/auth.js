@@ -1,12 +1,12 @@
 
-const TokenKey = 'OMSToken'
-const JumpKey = 'OMSJump'
+const TokenKey = 'SToken'
+const JumpKey = 'JumpInfo'
 
-export function getToken () {
+export function takeToken () {
   return localStorage[TokenKey] || ' '
 }
 
-export function setToken (token) {
+export function saveToken (token) {
   localStorage[TokenKey] = token
 }
 
@@ -14,14 +14,14 @@ export function removeToken () {
   return delete localStorage[TokenKey]
 }
 
-export function setOMSJump (omsjump) {
+export function saveJumpInfo (omsjump) {
   localStorage[JumpKey] = omsjump
 }
 
-export function getOMSJump () {
+export function takeJumpInfo () {
   return localStorage[JumpKey] || ' '
 }
 
-export function removeOMSJump () {
+export function removeJumpInfo () {
   return delete localStorage[JumpKey]
 }

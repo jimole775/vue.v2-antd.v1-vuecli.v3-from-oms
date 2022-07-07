@@ -15,7 +15,6 @@ export default new class Storage {
     }
     this.storage.setItem(name, finalData)
   }
-
   getItem (name) {
     var finalData = ''
     try {
@@ -40,7 +39,6 @@ export default new class Storage {
     }
     return finalData
   }
-
   removeItem (name) {
     this.storage.removeItem(name)
   }

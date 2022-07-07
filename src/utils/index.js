@@ -3,7 +3,7 @@ import 'moment/locale/zh-cn'
 import { cloneDeep, merge, debounce } from 'lodash'
 import { Modal } from 'ant-design-vue'
 import axios from 'axios'
-import { getToken } from './auth'
+import { takeToken } from './auth'
 import store from '@/store'
 // import base64 from './base64'
 moment.locale('zh-cn')
@@ -379,7 +379,7 @@ const utils = {
     const link = document.createElement('a')
     const fileName = customFileName || (url.indexOf('/') !== -1 ? url.split('/')[url.split('/').length - 1] : 'unknowFile')
     const fileUrl = `${domain}${this.encodeFileName(url.split('?')[0])}`
-    const fileParam = `${this.setParamsToURL({ ...this.getParamsFromURL(url), ...param, auth_token: `oms:${getToken()}` })}`
+    const fileParam = `${this.setParamsToURL({ ...this.getParamsFromURL(url), ...param, auth_token: `oms:${takeToken()}` })}`
     link.style.display = 'none'
     link.href = fileUrl + fileParam
     link.setAttribute('download', fileName)
@@ -405,7 +405,7 @@ const utils = {
       url: `${domain}${this.encodeFileName(url.split('?')[0])}`,
       params: {
         ...this.getParamsFromURL(url),
-        auth_token: `oms:${getToken()}`
+        auth_token: `oms:${takeToken()}`
       },
       responseType: 'blob'
     }).then(res => {
@@ -442,7 +442,7 @@ const utils = {
         params: obj,
         responseType: 'blob',
         headers: {
-          'x-token': getToken()
+          'x-token': takeToken()
         }
       }).catch((error) => {
         console.log(error)
@@ -484,7 +484,7 @@ const utils = {
         data: params,
         responseType: 'blob',
         headers: {
-          'x-token': getToken()
+          'x-token': takeToken()
         }
       }).catch((error) => {
         console.log(error)

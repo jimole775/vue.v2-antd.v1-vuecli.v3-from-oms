@@ -6,7 +6,7 @@
 <script>
 import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN'
 import watermark from 'watermark-dom'
-import { getOMSJump, removeOMSJump } from '@/utils/auth'
+import { takeJumpInfo, removeJumpInfo } from '@/utils/auth'
 import jumper from '@/utils/jumper'
 import utils from '@/utils'
 export default {
@@ -50,9 +50,9 @@ export default {
   },
   methods: {
     extractJump () {
-      const jumpdata = getOMSJump()
+      const jumpdata = takeJumpInfo()
       if (jumpdata && jumpdata.length > 2) {
-        removeOMSJump()
+        removeJumpInfo()
         const params = utils.isJSONString(jumpdata) ? JSON.parse(jumpdata) : jumpdata
         jumper.go(params)
       }

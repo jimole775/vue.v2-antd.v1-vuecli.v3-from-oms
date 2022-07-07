@@ -1,7 +1,7 @@
 import api from '@/api'
-import utils from '@/utils'
 import { Message } from 'ant-design-vue'
-import mockMenu from './mockMenu'
+import mockMenu from '@/mock/menus'
+
 const exportingListStoreKey = '$$EXPORTINGLIST'
 export default {
   state: {
@@ -107,6 +107,9 @@ export default {
     }
   },
   mutations: {
+    setLoading (state, status) {
+      state.loading = status
+    },
     setExportList (state, params) {
       state.exportingList = params
       sessionStorage.setItem(exportingListStoreKey, JSON.stringify(state.exportingList || []))
@@ -118,10 +121,10 @@ export default {
       state.mockEnv = env || false
     },
     setMenus (state, menus) {
-      state.menus = menus || []
       if (state.mockEnv) {
-        state.menus = state.menus.concat(mockMenu)
+        menus = mockMenu.concat(menus)
       }
+      state.menus = menus || []
     },
     setMenuButtons (state, menuButtons) {
       state.menuButtons = menuButtons || []
@@ -138,7 +141,7 @@ export default {
     currentRole (state, userRole) {
       state.userRole = userRole || {}
     },
-    setToken (state, token) {
+    saveToken (state, token) {
       state.token = token || ''
     }
   },
@@ -230,7 +233,7 @@ export default {
       } catch (e) {}
     },
     changeToken ({ commit, token }) {
-      commit('setToken', token)
+      commit('saveToken', token)
     }
   }
 }
