@@ -352,7 +352,6 @@ body {
   background-repeat: no-repeat;
   font-size: 0;
 }
-
 .primary-shadow {
   box-shadow: 0 2px 4px 0 rgba(9, 130, 83, 0.3);
 }
@@ -427,13 +426,21 @@ body {
   color: @primary-color;
 }
 .line-standard {
-  line-height: 2.8
+  line-height: 2.8 // 单独一行的情况
 }
 .line-multiple {
-  line-height: 1.8
+  line-height: 1.8 // 多行文本的情况
 }
-.line-multiple > .line-standard {
-  line-height: 1.8
+.line-multiple {
+  .line-standard {
+    line-height: 1.8
+  }
+}
+// 表格内部的 line-standard，不管单行还是多行都设置 1.8
+.ant-table-row {
+  .line-standard {
+    line-height: 1.8
+  }
 }
 .overHidden {
   max-width: 300px;

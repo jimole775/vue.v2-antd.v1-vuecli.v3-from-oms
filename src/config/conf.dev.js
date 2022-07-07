@@ -1,5 +1,8 @@
-if (process.env.NODE_ENV === 'development') {
-  console.log('is dev!')
-  require('@/mock') // mock data开关
-  require('@/plugins/highlight')
+import store from '@/store'
+if (['local', 'dev'].includes(process.env.VUE_APP_ENV)) {
+  // mock data开关
+  store.commit('setMockEnv', true)
+
+  // 加载模拟数据
+  require('@/mock')
 }
