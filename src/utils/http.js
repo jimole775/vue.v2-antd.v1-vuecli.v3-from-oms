@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { saveToken, takeToken } from '@/utils/auth'
+import { setToken, getToken } from '@/utils/auth'
 import utils from '@/utils'
 import qs from 'qs'
 
@@ -18,13 +18,13 @@ http.interceptors.request.use(
     /** 避免出现两个token的情况 */
     if (to.token && to.token.length) {
       if (utils.isString(to.token)) {
-        saveToken(to.token)
+        setToken(to.token)
       }
       if (utils.isArray(to.token)) {
-        saveToken(to.token[0])
+        setToken(to.token[0])
       }
     }
-    config.headers['x-token'] = takeToken()
+    config.headers['x-token'] = getToken()
     return config
   },
   error => {

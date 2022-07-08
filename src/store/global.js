@@ -141,7 +141,7 @@ export default {
     currentRole (state, userRole) {
       state.userRole = userRole || {}
     },
-    saveToken (state, token) {
+    setToken (state, token) {
       state.token = token || ''
     }
   },
@@ -233,7 +233,7 @@ export default {
       } catch (e) {}
     },
     changeToken ({ commit, token }) {
-      commit('saveToken', token)
+      commit('setToken', token)
     }
   }
 }

@@ -2,11 +2,11 @@
 const TokenKey = 'SToken'
 const JumpKey = 'JumpInfo'
 
-export function takeToken () {
+export function getToken () {
   return localStorage[TokenKey] || ' '
 }
 
-export function saveToken (token) {
+export function setToken (token) {
   localStorage[TokenKey] = token
 }
 
@@ -14,11 +14,11 @@ export function removeToken () {
   return delete localStorage[TokenKey]
 }
 
-export function saveJumpInfo (omsjump) {
+export function setJumpInfo (omsjump) {
   localStorage[JumpKey] = omsjump
 }
 
-export function takeJumpInfo () {
+export function getJumpInfo () {
   return localStorage[JumpKey] || ' '
 }
 

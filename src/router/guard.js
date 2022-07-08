@@ -2,7 +2,7 @@ import qs from 'qs'
 import store from '@/store/index'
 import base64 from '@/utils/base64'
 import collectWhites from './whites'
-import { saveToken, takeToken, saveJumpInfo } from '@/utils/auth'
+import { setToken, getToken, setJumpInfo } from '@/utils/auth'
 
 export default (router) => {
   router.beforeEach((to, from, next) => {
@@ -23,7 +23,7 @@ function trackPageView (to, from) {
       pageTitle: '', // 页面标题，选填
       userId: user.employeeNumber, // 用户工号,必填
       userName: user.name, // 用户名，必填
-      sessionId: takeToken() // sessionId，可以是用户登录token，必填
+      sessionId: getToken() // sessionId，可以是用户登录token，必填
     })
   }
 }
@@ -43,7 +43,7 @@ function handleNativeRedirect (to, from, next) {
     delete parmasObj.omsjump
     let path = url + '?' + qs.stringify(parmasObj)
     // mo跳转数据需要用base64解码
-    saveJumpInfo(base64.decode(omsjump))
+    setJumpInfo(base64.decode(omsjump))
     next(path)
   }
 }
@@ -57,7 +57,7 @@ function handleToken (to, from, next) {
     let parmasObj = qs.parse(splitParmas)
     delete parmasObj.token
     let path = url + '?' + qs.stringify(parmasObj)
-    saveToken(token)
+    setToken(token)
     next(path)
   } else {
     // 新增缓存用户信息
