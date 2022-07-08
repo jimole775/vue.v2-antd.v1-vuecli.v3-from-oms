@@ -58,7 +58,7 @@ export default {
       type: Number,
       default: null
     },
-    logType: {
+    businessType: {
       type: String,
       default: 'budget'
     },
@@ -99,7 +99,7 @@ export default {
         pageNum: this.current,
         pageSize: this.pageSize,
         businessId: this.id,
-        businessType: this.logType
+        businessType: this.businessType
       })
       if (res.code === 200) {
         if (res.data) {

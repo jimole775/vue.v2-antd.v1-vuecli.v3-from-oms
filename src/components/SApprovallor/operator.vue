@@ -1,14 +1,15 @@
 <script>
 import utils from '@/utils'
+import { mapState } from 'vuex'
 export default {
   title: '审批模块',
-  name: 'ApprovalOperation',
+  name: 'Operator',
   props: {
     dataSource: {
       type: Object,
       default: () => ({})
     },
-    operation: {
+    option: {
       type: Object,
       default: () => ({})
     },
@@ -21,45 +22,79 @@ export default {
     return {
       scope: this,
       approvalResult: '1',
+      liveInputs: [],
+      liveRadios: [],
       form: this.$form.createForm(this)
     }
   },
   computed: {
+    ...mapState({
+      user: state => state.global.user,
+      roleType: state => state.global.userRole.type
+    }),
+    isOutsideStuff () {
+      return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
+    },
     currentNode () {
-      return this.dataSource['flowNode']
+      const listApiMap = this.bridge.apimap.list || {}
+      const flowField = listApiMap.recordStatusField || 'flowNode'
+      return this.dataSource[flowField]
+    }
+  },
+  watch: {
+    approvalResult: {
+      handler (value) {
+        this.$emit('updateRadio', value)
+      },
+      immediate: true
     },
-    liveRadios () {
-      // 如果 operation 下级就有 radios
-      // 那么可以确定，当前审批操作不存在审批节点
-      if (this.operation['radios']) {
-        return this.operation['radios']
-      } else {
-        const currentOperation = this.operation[this.currentNode] || {}
-        return currentOperation['radios'] || []
-      }
-    },
-    liveInputs () {
-      let inputs = []
-      // 如果 operation 下级就有 inputs
-      // 那么可以确定，当前审批操作不存在审批节点
-      if (this.operation['inputs']) {
-        inputs = this.operation['inputs']
-      } else {
-        const currentOperation = this.operation[this.currentNode] || {}
-        inputs = currentOperation['inputs'] || []
-      }
-      return inputs.filter((input) => {
-        return (utils.isArray(input.showOnRadios) && input.showOnRadios.includes(this.approvalResult)) ||
-          (utils.isFunction(input.showOnRadios) && input.showOnRadios(this.approvalResult, this.scope))
-      })
+    option: {
+      handler (option) {
+        this.clearForm()
+        this.liveInputs = (option.inputs || []).filter(i => i.show)
+        this.liveRadios = (option.radios || []).filter(i => i.show)
+        this.bindFirstRadioValue()
+      },
+      deep: true,
+      immediate: true
     }
   },
   methods: {
+    bindFirstRadioValue () {
+      const liveRadios = this.liveRadios || []
+      const values = liveRadios.map(i => i.value)
+      // 如果当前的radios没有被选中的，那么就默认选中第一个
+      if (!values.includes(this.approvalResult)) {
+        const firstRadio = liveRadios[0] || {}
+        this.approvalResult = firstRadio.value || '1'
+      }
+    },
+    clearForm () {
+      this.form.resetFields()
+      this.form = this.$form.createForm(this)
+    },
+    isShowByEnv (item) {
+      return !!(item.showOnEnv && item.showOnEnv.includes('handler'))
+    },
+    isShowByRoles (item) {
+      const roleType = this.isOutsideStuff ? 1 : 0
+      return !!(item.showOnRoles && item.showOnRoles.includes(roleType))
+    },
+    isInEditNode (item) {
+      return !!(item.editOnNodes && item.editOnNodes.includes(this.currentNode))
+    },
+    isShowByRadio (item) {
+      return !!(item.showOnRadios && item.showOnRadios.includes(this.approvalResult))
+    },
+    isShowByNode (item) {
+      return !!(item.showOnNodes && item.showOnNodes.includes(this.currentNode))
+    },
     changeEventForRadios ({ target: { value } }) {
       this.liveRadios && this.liveRadios.forEach((radioItem) => {
         if (Number.parseInt(value) === Number.parseInt(radioItem.value)) {
           if (utils.isFunction(radioItem.onChange)) {
-            radioItem.onChange(value, this.operation, this.scope)
+            // 第二个参数主要是为了保持change类回调的参数统一
+            radioItem.onChange(value, null, radioItem, this.scope)
           }
         }
       })
@@ -72,7 +107,7 @@ export default {
         pureval = val
       }
       if (utils.isFunction(inputItem.onChange)) {
-        inputItem.onChange(pureval, this.operation, this.scope)
+        inputItem.onChange(pureval, option, inputItem, this.scope)
       }
     },
     async emitSubmit () {
@@ -88,7 +123,7 @@ export default {
     },
     formatParams (values) {
       // 只处理 inputs 的参数，不处理 radios 的
-      const inputs = this.operation.inputs || []
+      const inputs = this.liveInputs || []
       let params = utils.clone(values)
       inputs.forEach((item) => {
         if (item.paramTransfer && utils.isFunction(item.paramTransfer)) {
@@ -217,17 +252,16 @@ function wrapperRender (h, inputItem, index) {
   if (inputItem.wrapperCustomRender) {
     return inputItem.wrapperCustomRender(this.$createElement, inputItem, this.scope)
   } else {
+    const defaultVal = utils.isFunction(inputItem.default) ? inputItem.default(inputItem, this.scope) : inputItem.default
+    const decoratorInfo = { initialValue: defaultVal, rules: [{ required: inputItem.required, message: `请确认${inputItem.label}` }] }
     return (
       <inputItem.component
-        key={inputItem.key}
+        key={`${inputItem.key}_${index}`}
         ref={`${inputItem.key}_${index}`}
         props={inputItem.props}
         attrs={inputItem.attrs}
         domProps={inputItem.domProps}
-        vDecorator={[inputItem.key, {
-          initialValue: utils.isFunction(inputItem.default) ? inputItem.default(this.scope) : inputItem.default,
-          rules: [{ required: inputItem.required, message: `请确认${inputItem.label}` }]
-        }]}
+        vDecorator={[inputItem.key, decoratorInfo]}
         onChange={(val, option) => this.changeEventForInput(val, option, inputItem)}
       />
     )
@@ -235,8 +269,8 @@ function wrapperRender (h, inputItem, index) {
 }
 
 function buildFooter (h) {
-  if (this.operation.footerCustomRender) {
-    return this.operation.footerCustomRender(h, this.operation, this.scope)
+  if (this.option.submitCustomRender) {
+    return this.option.submitCustomRender(h, this.option, this.scope)
   } else {
     return (
       <a-form-item

@@ -44,7 +44,7 @@ export default {
       const fileName = item.split('./').pop()
       const comp = require('./' + fileName)
       const component = comp.default || comp
-      if (component.forBuilder) {
+      if (component.enumerated) {
         this.list.push({
           title: component.title ? component.title : fileName.replace('.vue', ''),
           key: fileName.replace('.vue', ''),

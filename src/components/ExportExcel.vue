@@ -10,15 +10,17 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
+// import Vue from 'vue'
 import api from '@/api'
 import utils from '@/utils'
 import { mapActions } from 'vuex'
+import loading from '@/utils/loading'
 import { getToken } from '@/utils/auth'
 import Phonevalidate from '@/components/Phonevalidate'
 export default {
   title: '异步导出',
   name: 'ExportExcel',
+  forBuilder: true,
   components: {
     Phonevalidate
   },
@@ -32,7 +34,7 @@ export default {
       default: ''
     },
     params: {
-      type: Object | Function,
+      type: [Object, Function],
       default: () => ({})
     },
     validate: {
@@ -91,16 +93,16 @@ export default {
         apiFun = this.api
       }
       if (!apiFun) return false
-      Vue.bus.emit('loading', true)
+      loading.mounted()
       if (utils.isFunction(apiFun)) {
         if (this.type === 'permission') {
           res = await this.$refs.PhonevalidateRef.validate(apiFun, this.getTrulyParams())
         } else {
           res = await apiFun(this.getTrulyParams())
         }
-        Vue.bus.emit('loading', false)
+        loading.unload()
       } else {
-        Vue.bus.emit('loading', false)
+        loading.unload()
         this.$message.error('ExportExcel => 请先在api对象中设置好接口！')
       }
       if (utils.isBackendResponse(res)) {

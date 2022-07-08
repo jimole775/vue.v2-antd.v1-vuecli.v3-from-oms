@@ -7,7 +7,7 @@
       <a v-else class="href-style" @click="download">{{ fileData.fileName }}</a>
       &nbsp;
       <a
-        v-if="fileData.fileName"
+        v-if="fileData.fileId"
         title="预览"
         class="preview-style"
         @click="getFilePreviewUrl"
@@ -17,6 +17,7 @@
     </span>
     <span v-if="mode === 'button'">
       <a-button
+        v-if="fileData.fileId"
         ghost
         type="primary"
         @click="download"
@@ -31,8 +32,8 @@
 import api from '@/api'
 import utils from '@/utils'
 import PreviewFrame from '@/components/PreviewFrame'
-const imgSeries = /\.(jpe?g|png|bmp|gif|tiff|webp)$/i
-const docSeries = /\.(xlsx?|docx?|pdf|pptx?)$/i
+// const imgSeries = /\.(jpe?g|png|bmp|gif|tiff|webp)$/i
+// const docSeries = /\.(xlsx?|docx?|pdf|pptx?)$/i
 export default {
   title: '下载',
   name: 'SDownload',
@@ -41,7 +42,7 @@ export default {
   props: {
     value: {
       type: Object,
-      default: undefined
+      default: null
     },
     len: {
       type: Number,
@@ -65,13 +66,13 @@ export default {
       handler (val) {
         if (val) {
           this.modal.name = val['fileName'] || ''
-          if (docSeries.test(this.modal.name)) {
-            this.modal.type = 'doc'
-          }
-          if (imgSeries.test(this.modal.name)) {
-            this.modal.type = 'img'
-          }
-          this.fileData = val
+          // if (docSeries.test(this.modal.name)) {
+          //   this.modal.type = 'doc'
+          // }
+          // if (imgSeries.test(this.modal.name)) {
+          //   this.modal.type = 'img'
+          // }
+          this.fileData = utils.clone(val)
         }
       },
       deep: true,
@@ -91,7 +92,6 @@ export default {
       modal: {
         show: false,
         data: '',
-        type: '',
         name: ''
       },
       fileData: {}
@@ -99,13 +99,14 @@ export default {
   },
   methods: {
     download () {
-      if (this.fileData['fileId']) {
-        api.gfsfiledownload(this.fileData['fileId'], this.fileName)
+      if (this.fileData.fileId) {
+        const fileName = this.$props.fileName || this.fileData.fileName
+        api.gfsfiledownload(this.fileData.fileId, fileName)
       }
     },
     async getFilePreviewUrl () {
-      if (this.fileData['fileId']) {
-        this.modal.data = this.fileData['fileId']
+      if (this.fileData.fileId) {
+        this.modal.data = this.fileData.fileId
         this.modal.show = true
       } else {
         this.modal.show = false

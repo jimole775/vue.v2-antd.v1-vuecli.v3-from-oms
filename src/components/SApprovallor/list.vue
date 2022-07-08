@@ -1,7 +1,7 @@
 <script>
-import utils from '@/utils'
 import { mapState } from 'vuex'
 import STable from '@/components/STable'
+import utils from '@/utils'
 import baseMixins from '@/mixins/baseMixins.js'
 
 export default {
@@ -10,15 +10,7 @@ export default {
   },
   mixins: [baseMixins],
   props: {
-    applyAnchorText: {
-      type: String,
-      required: true
-    },
-    stableRowKey: {
-      type: String,
-      required: true
-    },
-    listConfig: {
+    list: {
       type: Object,
       required: true
     },
@@ -29,10 +21,6 @@ export default {
     transferSearchor: {
       type: Function,
       required: true
-    },
-    listDataDir: {
-      type: String,
-      default: null
     },
     bridge: {
       type: Object,
@@ -50,18 +38,37 @@ export default {
       user: state => state.global.user,
       roleType: state => state.global.userRole.type
     }),
+    currentApimap () {
+      return this.apimap.list || { batch: {} }
+    },
     isOutsideStuff () {
       return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
     },
     searchor () {
-      return this.transferSearchor(this.queryPermissionItem(this.listConfig.searchor || []))
+      return this.transferSearchor(this.queryPermissionItem(this.list.searchor || []))
     },
     columns () {
-      const columns = this.listConfig.columns || []
+      const columns = this.list.columns || []
       return this.queryPermissionItem(columns)
     }
   },
   methods: {
+    evalBatchApi (apiObject = {}) {
+      const api = apiObject.api || ''
+      const permission = apiObject.permission || ''
+      if (permission === undefined) {
+        return api
+      } else {
+        return this.vaildateBatchButton(permission) ? api : ''
+      }
+    },
+    vaildateBatchButton (ability) {
+      if (utils.isValuable(ability)) {
+        return this.hasCatalogButton(ability)
+      } else {
+        return true
+      }
+    },
     queryPermissionItem (list) {
       // 外部人员标识为1，内部为0
       const SIGN = this.isOutsideStuff ? 1 : 0
@@ -112,7 +119,7 @@ export default {
   },
   render (h) {
     const summarySlots = getSummarySlots.call(this, h)
-    const { apimap, stableRowKey, listDataDir } = this.$props
+    const { batch, table } = this.currentApimap || { batch: {}, table: {} }
     return (
       <div>
         <STable
@@ -125,18 +132,20 @@ export default {
           }}
           columns={this.columns}
           searchor={this.searchor}
-          row-key={stableRowKey}
-          data-dir={listDataDir}
-          data-api={apimap.list}
-          export-api={apimap.export}
-          pass-api={this.hasCatalogButton(apimap.passable) ? apimap.pass : ''}
-          unpass-api={this.hasCatalogButton(apimap.unpassable) ? apimap.unpass : ''}
-          revoke-api={this.hasCatalogButton(apimap.revokable) ? apimap.revoke : ''}
-          close-api={this.hasCatalogButton(apimap.closable) ? apimap.close : ''}
-          delete-api={this.hasCatalogButton(apimap.deletable) ? apimap.delete : ''}
-          reject-api={this.hasCatalogButton(apimap.rejectable) ? apimap.reject : ''}
-          abandon-api={this.hasCatalogButton(apimap.abandonable) ? apimap.abandon : ''}
-          transfer-api={this.hasCatalogButton(apimap.transferable) ? apimap.transfer : ''}
+          data-api={table.dataApi}
+          data-dir={table.dataDir}
+          record-status-field={table.recordStatusField}
+          row-key={table.rowKey || 'flowInstanceId'}
+          pass-api={this.evalBatchApi(batch.pass)}
+          close-api={this.evalBatchApi(batch.close)}
+          export-api={this.evalBatchApi(batch.export)}
+          unpass-api={this.evalBatchApi(batch.unpass)}
+          revoke-api={this.evalBatchApi(batch.revoke)}
+          cancel-api={this.evalBatchApi(batch.cancel)}
+          delete-api={this.evalBatchApi(batch.delete)}
+          reject-api={this.evalBatchApi(batch.reject)}
+          abandon-api={this.evalBatchApi(batch.abandon)}
+          transfer-api={this.evalBatchApi(batch.transfer)}
           is-pagination={true}
           onUpdate={this.updateDataSet}
           onSelectChange={this.selectChange}
@@ -152,17 +161,18 @@ export default {
 function getSummarySlots (h) {
   const slots = this.$slots || {}
   const summarys = slots.stableSummary || []
-  const { applyAnchorText } = this.$props
+  const applyInfo = this.apimap.apply || {}
+  const anchorText = applyInfo.anchorText || '申请'
   return (
     <template slot="summary">
       {
-        this.hasCatalogButton(this.apimap.appliable) &&
+        this.evalBatchApi({ api: applyInfo.submit, permission: applyInfo.permission }) &&
         <a-button
           ghost
           type="primary"
           onClick={() => this.projectApply()}
         >
-          { applyAnchorText }
+          { anchorText }
         </a-button>
       }
       { ...summarys }

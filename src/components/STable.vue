@@ -6,6 +6,7 @@ const indexKey = '_index_'
 const cellMaxCharLen = 20
 export default {
   title: '标准表格',
+  name: 'STable',
   props: {
     columns: {
       type: Array,
@@ -52,6 +53,10 @@ export default {
       default: null
     },
     abandonApi: { // 批量放弃
+      type: String | Function,
+      default: null
+    },
+    cancelApi: { // 批量作废
       type: String | Function,
       default: null
     },
@@ -103,9 +108,13 @@ export default {
       type: Boolean,
       default: false
     },
-    moduleName: { // 当前菜单名，主要用于下载列表
+    tableName: { // 当前列表名，主要用于下载列表
       type: String,
-      default: '异步列表'
+      default: '列表'
+    },
+    anchorFunction: { // 详情锚点的函数
+      type: Function,
+      default: null
     },
     bridge: {
       type: Object,
@@ -167,7 +176,7 @@ export default {
       return {
         pass: {
           type: 'pass',
-          title: '通过',
+          label: '通过',
           api: this.passApi,
           columns: [],
           approvalResult: '1',
@@ -177,7 +186,7 @@ export default {
         },
         reject: {
           type: 'reject',
-          title: '驳回',
+          label: '驳回',
           api: this.rejectApi,
           columns: [],
           approvalResult: '2',
@@ -187,7 +196,7 @@ export default {
         },
         unpass: {
           type: 'unpass',
-          title: '不通过',
+          label: '不通过',
           api: this.unpassApi,
           columns: [],
           approvalResult: '3',
@@ -197,7 +206,7 @@ export default {
         },
         revoke: {
           type: 'revoke',
-          title: '撤回',
+          label: '撤回',
           api: this.revokeApi,
           columns: [],
           approvalResult: '4',
@@ -207,7 +216,7 @@ export default {
         },
         close: {
           type: 'close',
-          title: '关闭',
+          label: '关闭',
           api: this.closeApi,
           columns: [],
           approvalResult: '7',
@@ -215,9 +224,19 @@ export default {
           reasonTitle: '关闭原因:',
           opreationTips: '关闭成功'
         },
+        cancel: {
+          type: 'cancel',
+          label: '作废',
+          api: this.cancelApi,
+          columns: [],
+          approvalResult: '7',
+          listTitle: '作废项目:',
+          reasonTitle: '作废原因:',
+          opreationTips: '作废成功'
+        },
         abandon: {
           type: 'abandon',
-          title: '放弃',
+          label: '放弃',
           api: this.abandonApi,
           columns: [],
           approvalResult: '10',
@@ -227,7 +246,7 @@ export default {
         },
         transfer: {
           type: 'transfer',
-          title: '转审',
+          label: '转审',
           api: this.transferApi,
           columns: [],
           approvalResult: '8',
@@ -237,7 +256,7 @@ export default {
         },
         delete: {
           type: 'delete',
-          title: '删除',
+          label: '删除',
           api: this.deleteApi,
           columns: [],
           approvalResult: '1',
@@ -282,8 +301,10 @@ export default {
   },
   methods: {
     fixFields () {
-      // 保持key和dataIndex同时存在
+      // 兼容 title === label、key === dataIndex
       this.searchor && this.searchor.forEach((item) => {
+        item.label = item.label || item.title
+        item.title = item.label || item.title
         item.key = item.key || item.dataIndex
         item.dataIndex = item.key || item.dataIndex
         item.componentName = item.component ? (item.component.name ? item.component.name : item.component) : ''
@@ -331,9 +352,9 @@ export default {
       columns && columns.forEach(col => {
         // 支持用 anchor属性 的方式增加详情页的锚点
         if (col.anchor) {
-          const projectApproval = this.bridge.projectApproval
+          const anchorFunction = this.$props.anchorFunction || this.bridge.projectApproval
           col.customRender = function (text, record) {
-            return <a onClick={() => projectApproval(record)}>{ text }</a>
+            return <a onClick={() => anchorFunction(record)}>{ text }</a>
           }
         }
         if (col.slots || col.slotsRender) {
@@ -371,28 +392,12 @@ export default {
           content: '请至少勾选一项！'
         })
       }
-      if (hasEndStation.call(this)) {
-        return this.$modal.warning({
-          title: '提示',
-          content: '选项中有已结束的项目，请重新选择！'
-        })
-      } else {
-        this.modal.form.setFieldsValue({
-          approvalContent: '',
-          transfer: []
-        })
-        this.modal.info = this.modalinfomap[type]
-        this.modal.show = true
-      }
-      function hasEndStation () {
-        let yes = false
-        this.selectedRows.forEach((row) => {
-          if (row[this.recordStatusField] === 'end') {
-            yes = true
-          }
-        })
-        return yes
-      }
+      this.modal.form.setFieldsValue({
+        approvalContent: '',
+        transfer: []
+      })
+      this.modal.info = this.modalinfomap[type]
+      this.modal.show = true
     },
     modalSubmitEvent () {
       this.modal.form.validateFields(async (err, values) => {
@@ -504,9 +509,9 @@ export default {
       }
 
       // value = 'Array', optionItem = 'Array' => Select multi, RangPicker
-      if (utils.isArray(value) && utils.isArray(optionItem)) {
+      if (utils.isArray(value)) {
         searchItem.keys.forEach((key, index) => {
-          this.queryParams[key] = optionItem[index] || null
+          this.queryParams[key] = utils.isArray(optionItem) ? optionItem[index] : value[index]
         })
       }
     },
@@ -594,6 +599,9 @@ export default {
           }
           // 置空 default，避免重新渲染的时候会进行默认赋值
           this.resetByFieldType(searchItem, 'default')
+          setTimeout(() => {
+            this.setComponentView(searchItem, null)
+          })
         }
       })
       this.pagination.current = 1
@@ -675,7 +683,7 @@ export default {
       this.fetchData()
     },
     formatQueryParams (injectparams) {
-      const queryParams = JSON.parse(JSON.stringify({ ...this.queryParams }))
+      const queryParams = utils.clone(this.queryParams)
       // 处理 UserSelect 组件的取值
       // UserSelect 有两种用法
       // 1. searchItem.key 只获取一个值，选中项是个数据，需要format处理，默认只获取code
@@ -729,8 +737,8 @@ export default {
     // 最后交给定制的回调参数进行调整
     handleParamsByCustom (finalParams) {
       this.searchor.forEach((searchItem) => {
-        if (searchItem.beforeSubmit) {
-          searchItem.beforeSubmit(finalParams, this.scope)
+        if (searchItem.paramTransfer && utils.isFunction(searchItem.paramTransfer)) {
+          searchItem.paramTransfer(finalParams, searchItem, this.scope)
         }
       })
       return finalParams
@@ -776,9 +784,8 @@ export default {
     },
     evalHandle (data) {
       let res = {}
-      if (this.$props.dataDir &&
-        utils.isString(this.$props.dataDir)) {
-        res = eval('data' + '.' + this.$props.dataDir)
+      if (this.$props.dataDir && utils.isString(this.$props.dataDir)) {
+        res = eval(this.$props.dataDir)
       } else {
         res = data
       }
@@ -786,15 +793,16 @@ export default {
     },
     detectTotal (data) {
       let pageObj = data
-      if (this.$props.dataDir &&
-        utils.isString(this.$props.dataDir)) {
+      if (this.$props.dataDir && utils.isString(this.$props.dataDir)) {
         // 一般后端的模型，都把分页数据放在了实例数据的同一层结构
         // 比如：res.data.pageinfo.records
         // 那么：res.data.pageinfo.total
         const dicts = this.$props.dataDir.split('.')
         if (dicts && dicts.length > 1) {
           dicts.pop()
-          pageObj = eval('data' + '.' + dicts.join())
+          if (dicts.length > 1) {
+            pageObj = eval(dicts.join('.'))
+          }
         }
       }
       return pageObj.total || 0
@@ -880,7 +888,7 @@ function buildBatchHandleButtons (h) {
     if (buttonItem.api) {
       return (
         <a-button ghost type={'primary'} onClick={() => this.showmodal(buttonItem.type)}>
-          <span>{ buttonItem.title }</span>
+          <span>{ buttonItem.label || buttonItem.title }</span>
         </a-button>
       )
     } else {
@@ -913,7 +921,7 @@ function buildsummaryBaseButtons (h) {
   if (this.exportApi && this.dataList.length > 0) {
     buttons.push(
       <span style="padding: 0 0.5rem">
-        <ExportExcel api={this.exportApi} params={() => this.exportParams()} file-name={this.moduleName} />
+        <ExportExcel api={this.exportApi} params={() => this.exportParams()} file-name={this.tableName} />
       </span>
     )
   }
@@ -1046,7 +1054,7 @@ function buildSearchorGroup (h) {
           return (
             <a-col span={ searchItem.layout ? searchItem.layout.span : 6 } >
               <a-form-item
-                label={searchItem.title}
+                label={searchItem.label || searchItem.title}
                 label-col={{ span: searchItem.layout ? searchItem.layout.label : 8 }}
                 wrapper-col={{ span: searchItem.layout ? searchItem.layout.wrapper : 16 }}
               >
@@ -1064,9 +1072,9 @@ function buildSearchorGroup (h) {
   function createFormItem (searchItem) {
     if (searchItem.component) {
       return <searchItem.component
-        props={searchItem.props}
-        attrs={searchItem.attrs}
-        dom-attrs={searchItem.domAttrs}
+        props={utils.isFunction(searchItem.props) ? searchItem.props(this.scope) : searchItem.props}
+        attrs={utils.isFunction(searchItem.attrs) ? searchItem.attrs(this.scope) : searchItem.attrs}
+        dom-attrs={utils.isFunction(searchItem.domAttrs) ? searchItem.domAttrs(this.scope) : searchItem.domAttrs}
         allow-clear={!searchItem.required}
         value={utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default}
         ref={this.spillComponentRef(searchItem)}
@@ -1089,7 +1097,7 @@ function buildSearchorGroup (h) {
 
   function buildSearchButton () {
     return (
-      <a-col span={this.searchorGroups.length < 4 ? 8 : 24} class={['t-center', 'mt5']}>
+      <a-col span={this.searchorGroups.length < 4 ? 6 : 24} class={['t-center', 'mt5']}>
         <a-button ghost type={'primary'} onClick={() => this.search()}>查询</a-button>
         <a-button style={{ margin: '0 8px' }} onClick={() => this.resetSearch()}>重置</a-button>
         {

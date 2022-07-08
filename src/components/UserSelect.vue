@@ -53,7 +53,7 @@ export default {
     this.searchEvent = utils.debounce(this.searchEvent, 150)
     this.handleChange = utils.debounce(this.handleChange, 150)
     return {
-      valueList: utils.clone(this.value),
+      valueList: utils.clone(this.value || []),
       fetching: false,
       optionList: []
     }

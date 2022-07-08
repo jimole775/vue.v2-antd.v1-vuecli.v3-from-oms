@@ -28,8 +28,8 @@
 
 <script>
 import api from '@/api'
-import Vue from 'vue'
 import utils from '@/utils'
+import loading from '@/utils/loading'
 import { getToken } from '@/utils/auth'
 
 export default {
@@ -148,16 +148,14 @@ export default {
     async beforeUploadEvent (file, files) {
       const pass = utils.verifyUploadType(file.name, this.supportSeries)
       if (pass) {
-        Vue.bus.emit('loading', true) // 显示正在上传
-        Vue.bus.emit('uploadDisabled', true) // 提交按钮禁用
+        loading.mounted() // 显示正在上传
         const form = this.extendsForm(file)
         api[this.action](form).then((res) => this.successHandler(res, file), this.failerHandler)
       }
       return false
     },
     successHandler (res, file) {
-      Vue.bus.emit('uploadDisabled', false)
-      Vue.bus.emit('loading', false)
+      loading.unload()
       if (res.data === null || res.data === undefined) {
         res.message && this.$modal.warning({
           title: '提示',
@@ -179,8 +177,7 @@ export default {
       }
     },
     failerHandler (res) {
-      Vue.bus.emit('uploadDisabled', false)
-      Vue.bus.emit('loading', false)
+      loading.unload()
       this.$modal.error({ title: '上传失败', content: res.message })
     },
     extendsForm (file) {

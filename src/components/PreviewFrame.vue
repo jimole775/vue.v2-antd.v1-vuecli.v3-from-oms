@@ -3,27 +3,22 @@
     v-if="modal.show"
     v-model="modal.show"
     width="80%"
-    style="top: 4rem"
+    :style="{top: '4rem' }"
     :closable="false"
     :footer="null"
   >
-    <iframe
-      v-if="modal.type === 'doc'"
-      class="iframe"
-      :src="modal.data"
-      :style="{ height: this.height }"
-    />
-    <img
-      v-else-if="modal.type === 'img'"
-      class="iframe"
-      :src="modal.data"
-      :style="{ height: this.height }"
-    />
-    <div v-else>不支持的文件类型！</div>
+    <div id="preview-mount" :style="{ width: '100%', height: this.height }">
+      <iframe
+        allow="fullscreen"
+        id="custom-mount"
+        frameborder="0"
+        style="width: 100%; height: 100%;"
+      >
+      </iframe>
+    </div>
   </a-modal>
 </template>
 <script>
-// import api from '@/api'
 export default {
   title: '文件预览弹窗',
   name: 'PreviewFrame',

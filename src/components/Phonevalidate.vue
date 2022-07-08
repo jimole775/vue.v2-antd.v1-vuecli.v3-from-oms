@@ -114,7 +114,11 @@ export default {
         if (error) {
           return
         }
-        const res = await api.doExportDoubleCheck(values.code, this.$props.vtype)
+        // const res = await api.doExportDoubleCheck(values.code, this.$props.vtype)
+        const res = await api.doExportDoubleCheck({
+          verifyCode: values.code,
+          verifyCodeType: this.$props.vtype
+        })
         if (res.code === 200) {
           this.$message.success(res.message || '授权成功')
           this.hideVerifyModal()

@@ -4,34 +4,45 @@
       :bordered="false"
       :active-key="['1','2','3','4','5']"
     >
-      <template v-for="(panel, index) in panels">
+      <template v-for="(panel, index) in activePanels">
         <a-collapse-panel
           v-if="panel.show"
-          :header="panel.title"
           :key="`${index + 1}`"
           class="m-block"
         >
+          <div slot="header">
+            <span>
+              {{ panel.title }}&nbsp;
+              <a-tooltip v-if="panel.tips">
+                <template slot="title">
+                  <span>{{ panel.tips }}</span>
+                </template>
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
+          </div>
           <component
-            :ref="`${panel.panelName}_${index}`"
+            :ref="`${panel.componentName}_${index}`"
             :is="panel.component"
-            :operation-item="panel.operationItem"
+            :option="panel.option"
             :before-render="beforeRender"
             :before-submit="beforeSubmit"
             :form-items="panel.formItems"
-            :panels="panels"
+            :active-panels="activePanels"
             :mode="panel.mode"
             :tab-proxy="tabProxy"
             :bridge="{
               ...bridge,
               panel,
-              panels,
+              apply,
               apimap,
               tabProxy,
-              applyConfig,
+              activePanels,
+              option: panel.option,
               columns: panel.columns,
-              formItems: panel.formItems,
-              operationItem: panel.operationItem,
+              formItems: panel.formItems
             }"
+            @updateRadio="updateRadio"
           />
         </a-collapse-panel>
       </template>
@@ -44,9 +55,10 @@
 <script>
 import api from '@/api'
 import utils from '@/utils'
+import { mapState } from 'vuex'
 export default {
   props: {
-    applyConfig: {
+    apply: {
       type: Object,
       required: true
     },
@@ -58,10 +70,6 @@ export default {
       type: Object,
       required: true
     },
-    bridge: {
-      type: Object,
-      default: () => ({})
-    },
     beforeRender: {
       type: Function,
       default: p => p
@@ -69,39 +77,158 @@ export default {
     beforeSubmit: {
       type: Function,
       default: p => p
+    },
+    bridge: {
+      type: Object,
+      default: () => ({})
     }
   },
   data () {
     return {
       scope: this,
-      panels: []
+      currentRadio: '1',
+      activePanels: []
+    }
+  },
+  computed: {
+    ...mapState({
+      user: state => state.global.user,
+      roleType: state => state.global.userRole.type
+    }),
+    isOutsideStuff () {
+      return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
+    },
+    currentApimap () {
+      return this.apimap.apply || {}
     }
   },
   watch: {
-    applyConfig: {
-      handler (aModulesMap) {
-        const panels = aModulesMap.panels || []
-        this.panels = panels.map((item) => {
-          if (utils.isString(item.component)) {
-            item.panelName = item.component
-          }
-          if (utils.isObject(item.component)) {
-            item.panelName = item.component.name || 'customRender'
-          }
-          if (utils.isNone(item.component)) {
-            item.panelName = 'customRender'
-          }
-          if (item.show === undefined) {
-            item.show = true
-          }
-          return item
-        })
+    apply: {
+      handler (apply) {
+        this.activePanels = this.evalPanels(apply)
       },
-      immediate: true,
-      deep: true
+      immediate: true
     }
   },
   methods: {
+    evalPanels (apply) {
+      const panels = apply.panels || []
+      return panels.map((panel) => {
+        this.evalPanelName(panel)
+        this.$set(panel, 'mode', this.evalModeState(panel))
+        this.$set(panel, 'show', this.evalShowState(panel))
+        this.evalFormItemsProps(panel)
+        return panel
+      })
+    },
+    evalFormItemsProps (panel) {
+      if (panel.formItems && panel.formItems.length) {
+        panel.formItems.forEach((formItem) => {
+          this.extendsPanelProps(panel, formItem)
+          this.$set(formItem, 'mode', this.evalModeState(formItem))
+          this.$set(formItem, 'show', this.evalShowState(formItem))
+          this.cutFieldsByMode(formItem)
+        })
+      }
+    },
+    evalPanelName (panel) {
+      if (utils.isString(panel.component)) {
+        panel.componentName = panel.component
+      }
+      if (utils.isObject(panel.component)) {
+        panel.componentName = panel.component.name || 'customRender'
+      }
+      if (utils.isNone(panel.component)) {
+        panel.componentName = 'customRender'
+      }
+    },
+    extendsPanelProps (panel, formItem) {
+      // 继承 panel 的 editOnNodes
+      if (formItem.editOnNodes === undefined && panel.editOnNodes) {
+        formItem.editOnNodes = panel.editOnNodes
+      }
+      // 继承 panel 的 showOnNodes
+      if (formItem.showOnNodes === undefined && panel.showOnNodes) {
+        formItem.showOnNodes = panel.showOnNodes
+      }
+    },
+    evalModeState (item) {
+      let res = 'readonly'
+      // 如果限定角色，那么其他显示逻辑一律无视
+      if (item.editOnRoles) {
+        res = this.isInEditRole(item) ? 'edit' : 'readonly'
+      } else {
+        if (item.editOnRadios) {
+          res = this.isInEditRadio(item) ? 'edit' : 'readonly'
+        } else if (item.editOnNodes) {
+          res = this.isInEditNode(item) ? 'edit' : 'readonly'
+        }
+      }
+      return res
+    },
+    evalShowState (item) {
+      let res = false
+      // 如果限定角色或环境，那么其他显示逻辑一律无视
+      if (item.showOnRoles || item.showOnEnv) {
+        if (item.showOnRoles && item.showOnEnv) {
+          res = this.isShowByRoles(item) && this.isShowByEnvs(item)
+        }
+        if (item.showOnRoles && !item.showOnEnv) {
+          res = this.isShowByRoles(item)
+        }
+        if (!item.showOnRoles && item.showOnEnv) {
+          res = this.isShowByEnvs(item)
+        }
+      } else if (utils.isValuable(item.show)) {
+        res = !!item.show // 如果用户设置了show，直接取值，不用再进行估算
+      } else {
+        // 只有当前 item 在可显示节点的状态下，才接受 isShowByRadios 的逻辑
+        if (item.showOnRadios && this.isShowByNodes(item)) {
+          res = this.isShowByRadios(item)
+        } else {
+          res = this.isShowByNodes(item)
+        }
+      }
+      return res
+    },
+    cutFieldsByMode (item) {
+      // edit 模式需要删掉 readonly 下的属性
+      if (item.mode === 'edit') {
+      }
+      // readonly 模式需要删掉 edit 下的所有渲染辅助项
+      if (item.mode === 'readonly') {
+        delete item.required
+        delete item.component
+        delete item.paramsTransfer
+        delete item.onChange
+      }
+    },
+    isInEditRole (item) {
+      const roleType = this.isOutsideStuff ? 1 : 0
+      return !!(item.editOnRoles && item.editOnRoles.includes(roleType))
+    },
+    isInEditRadio (item) {
+      return !!(item.editOnRadios && item.editOnRadios.includes(this.currentRadio))
+    },
+    isInEditNode (item) {
+      return !!(item.editOnNodes && item.editOnNodes.includes('apply'))
+    },
+    isShowByRadios (item) {
+      return !!(item.showOnRadios && item.showOnRadios.includes(this.currentRadio))
+    },
+    isShowByEnvs (item) {
+      return !!(item.showOnEnv && item.showOnEnv.includes('handler'))
+    },
+    isShowByRoles (item) {
+      const roleType = this.isOutsideStuff ? 1 : 0
+      return !!(item.showOnRoles && item.showOnRoles.includes(roleType))
+    },
+    isShowByNodes (item) {
+      return !!(item.showOnNodes && item.showOnNodes.includes('apply'))
+    },
+    updateRadio (radio) {
+      this.currentRadio = radio
+    },
     async emitApply () {
       const { successData, failureTips } = await this.getComponentsFieldsValue()
       if (failureTips.length) {
@@ -110,15 +237,12 @@ export default {
           content: failureTips[0]
         })
       }
-      const params = {
-        ...successData
-      }
-      this.startApprove(params)
+      this.startApprove({ ...successData })
     },
     // 发起审批
     async startApprove (params) {
       const cparams = this.$props.beforeSubmit(params, this.scope)
-      const res = await api[this.apimap.apply](cparams)
+      const res = await api[this.currentApimap.submit](cparams)
       if (res.code === 200) {
         this.$message.success('操作成功')
         this.$emit('close')
@@ -133,10 +257,10 @@ export default {
       return new Promise(async (resolve) => {
         let successData = {}
         const failureTips = []
-        for (let index = 0; index < this.panels.length; index++) {
-          const panel = this.panels[index]
+        for (let index = 0; index < this.activePanels.length; index++) {
+          const panel = this.activePanels[index]
           if (panel.show === false) continue
-          const panelDom = await this.$refs[`${panel.panelName}_${index}`][0]
+          const panelDom = await this.$refs[`${panel.componentName}_${index}`][0]
           const editData = await panelDom.getFieldsValue()
           if (editData.type === 'failure') {
             failureTips.push(editData.message)

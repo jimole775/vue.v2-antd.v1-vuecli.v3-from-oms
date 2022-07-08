@@ -53,7 +53,7 @@ export default {
       this.$emit('change', res, utils.date2YMDHM(res))
     },
     disabledDate (current) {
-      let todayTime = utils.moment(new Date(utils.moment().endOf('day')) - (24 * 60 * 60 * 1000))
+      const todayTime = utils.moment(new Date(utils.moment().endOf('day')) - (24 * 60 * 60 * 1000))
       return current && current < todayTime
     }
   }

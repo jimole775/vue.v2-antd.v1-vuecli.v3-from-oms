@@ -1,18 +1,15 @@
 <template>
   <div class="moveBox">
-    <STabs :ref="'STabsRef'" :tab-proxy="tabProxy" />
+    <OmsTabsPlus :ref="'OmsTabsRef'" :tab-proxy="tabProxy" />
     <div v-show="tabProxy.showList">
-      <template v-for="listPane in listPanes">
+      <template v-for="tab in listTabs">
         <ProjectList
-          v-show="listPane.tabId === tabProxy.activeId"
-          :key="listPane.tabId"
-          :apimap="listPane.apimap"
-          :list-data-dir="listPane.apimap.listDataDir || listDataDir"
-          :list-config="listPane.listConfig"
-          :ref="'ProjectList' + listPane.tabId"
+          v-show="tab.tabId === tabProxy.activeId"
+          :key="tab.tabId"
+          :list="tab.list"
+          :apimap="tab.apimap"
+          :ref="'ProjectList' + tab.tabId"
           :transfer-searchor="transferSearchor"
-          :stable-row-key="stableRowKey"
-          :apply-anchor-text="applyAnchorText"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
@@ -22,34 +19,34 @@
       </template>
     </div>
     <div v-show="tabProxy.showApply">
-      <template v-for="applyPane in applyPanes">
+      <template v-for="tab in applyTabs">
         <ProjectApply
-          v-show="applyPane.tabId === tabProxy.activeId"
-          :key="applyPane.tabId"
-          :apimap="applyPane.apimap"
-          :apply-config="applyPane.applyConfig"
-          :ref="'ProjectApply' + applyPane.tabId"
+          v-show="tab.tabId === tabProxy.activeId"
+          :key="tab.tabId"
+          :apply="tab.apply"
+          :apimap="tab.apimap"
+          :ref="'ProjectApply' + tab.tabId"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
-          @close="removePane()"
+          @close="removeTab()"
         />
       </template>
     </div>
     <div v-show="tabProxy.showDetail">
-      <template v-for="approvalPane in approvalPanes">
+      <template v-for="tab in approvalTabs">
         <ProjectApproval
-          v-show="approvalPane.tabId === tabProxy.activeId"
-          :key="approvalPane.tabId"
-          :apimap="approvalPane.apimap"
-          :approval-config="approvalPane.approvalConfig"
-          :ref="'ProjectApproval' + approvalPane.tabId"
+          v-show="tab.tabId === tabProxy.activeId"
+          :key="tab.tabId"
+          :apimap="tab.apimap"
+          :approval="tab.approval"
+          :ref="'ProjectApproval' + tab.tabId"
           :bridge="bridge"
           :tab-proxy="tabProxy"
           :before-render="beforeRender"
           :before-submit="beforeSubmit"
-          @close="removePane()"
+          @close="removeTab()"
         />
       </template>
     </div>
@@ -62,28 +59,19 @@ import todoMixins from '@/mixins/todoMixins'
 import ProjectList from './list'
 import ProjectApply from './apply'
 import ProjectApproval from './approval'
+import OmsTabsPlus from '@/components/OmsTabsPlus'
+const applyNode = 'apply'
 export default {
   name: 'SApprovallor',
   components: {
+    OmsTabsPlus,
     ProjectList,
     ProjectApply,
     ProjectApproval
   },
   mixins: [baseMixins, todoMixins],
   props: {
-    applyAnchorText: {
-      type: String,
-      default: '创建'
-    },
-    stableRowKey: {
-      type: String,
-      default: 'id'
-    },
-    listDataDir: {
-      type: String,
-      default: null
-    },
-    listConfig: {
+    list: {
       type: Object,
       default: () => ({})
     },
@@ -91,11 +79,11 @@ export default {
       type: Object,
       default: () => ({})
     },
-    applyConfig: {
+    apply: {
       type: Object,
       default: () => ({})
     },
-    approvalConfig: {
+    approval: {
       type: Object,
       default: () => ({})
     },
@@ -134,68 +122,81 @@ export default {
         activeId: '0',
         lastListId: '0'
       },
-      listPanes: []
+      listTabs: []
     }
   },
   computed: {
-    applyPanes () {
+    applyTabs () {
       return this.tabProxy.tabs.filter((tab) => {
         const live = /\d_1_.+/.test(tab.tabId)
         if (live) {
           tab.apimap = utils.clone(this.activeApimap)
-          tab.applyConfig = utils.clone(this.activeApplyConfig)
+          tab.apply = utils.clone(this.activeApply)
         }
         return live
       })
     },
-    approvalPanes () {
+    approvalTabs () {
       return this.tabProxy.tabs.filter((tab) => {
         const live = /\d_2_.+/.test(tab.tabId)
         if (live) {
           tab.apimap = utils.clone(this.activeApimap)
-          tab.approvalConfig = utils.clone(this.activeApprovalConfig)
+          tab.approval = utils.clone(this.activeApproval)
         }
         return live
       })
     },
-    activeApplyConfig () {
-      return this.applyConfig[this.tabProxy.lastListId]
+    activeApply () {
+      const activeApproval = this.approval[this.tabProxy.lastListId]
+      const panels = activeApproval.panels || []
+      const res = panels.filter(panel => {
+        return this.isInEditNode(panel) || this.isShowByNode(panel)
+      })
+      return { panels: res }
     },
-    activeApprovalConfig () {
-      return this.approvalConfig[this.tabProxy.lastListId]
+    activeApproval () {
+      return this.approval[this.tabProxy.lastListId]
     },
     activeApimap () {
       return this.apimap[this.tabProxy.lastListId]
     }
   },
   mounted () {
-    // this.listPanes 不能用 computed 构造
+    // this.listTabs 不能用 computed 构造
     // 否则在切换tab的时候，会有性能问题
     // 原因是 STable 比较臃肿，不便于频繁刷新
-    this.listPanes = this.tabProxy.tabs.filter((tab) => {
+    this.listTabs = this.tabProxy.tabs.filter((tab) => {
       const live = tab.type === 'list'
-      const config = this.listConfig[tab.tabId] || {}
+      const list = this.list[tab.tabId] || {}
       const apimap = this.apimap[tab.tabId] || {}
-      if (live && config) {
-        tab.listConfig = utils.clone(config)
+      if (live && list) {
+        tab.list = utils.clone(list)
         tab.apimap = utils.clone(apimap)
       }
       return live
     })
   },
   methods: {
-    async addDetailTab (typeId, recordData) {
-      await this.$refs.STabsRef
-      this.$refs.STabsRef.addDetailTab(typeId, recordData)
+    isInEditNode (item) {
+      return !!(item.editOnNodes && item.editOnNodes.includes(applyNode))
     },
-    async removePane () {
-      await this.$refs.STabsRef
-      this.$refs.STabsRef.removePane(this.tabProxy.activeId)
+    isShowByNode (item) {
+      return !!(item.showOnNodes && item.showOnNodes.includes(applyNode))
+    },
+    async addDetailTab (typeId, recordData) {
+      await this.$refs.OmsTabsRef
+      this.$refs.OmsTabsRef.addDetailTab(typeId, recordData)
+    },
+    async removeTab () {
+      await this.$refs.OmsTabsRef
+      this.$refs.OmsTabsRef.removeTab(this.tabProxy.activeId)
       this.reload()
     },
     async reload () {
-      await this.$refs.ProjectListRef
-      this.$refs.ProjectListRef.reload()
+      const refName = 'ProjectList' + this.tabProxy.activeId
+      const refs = this.$refs[refName] ? this.$refs[refName] : []
+      const tar = refs[0] ? refs[0] : {}
+      tar.reload && tar.reload()
     }
   }
 }

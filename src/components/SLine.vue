@@ -5,6 +5,7 @@ export default {
   forBuilder: true,
   functional: true,
   name: 'SLine',
+  // props提供给componentSelect进行枚举显示
   props: {
     len: {
       type: Number,

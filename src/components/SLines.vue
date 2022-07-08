@@ -5,6 +5,7 @@ export default {
   forBuilder: true,
   functional: true,
   name: 'SLines',
+  // props提供给componentSelect进行枚举显示
   props: {
     len: {
       type: Number,
@@ -62,9 +63,10 @@ function getChildrenText (children = []) {
   return res
 }
 
-function getSentences (content) {
+function getSentences (content = '') {
   // 把所有换行符换成 _||_
   const splitSign = '_||_'
+  content = content + '' // 防止传入的数字类型
   content = content.replace(/(\r\n)/ig, splitSign)
   content = content.replace(/(\r)/ig, splitSign)
   content = content.replace(/(\n)/ig, splitSign)

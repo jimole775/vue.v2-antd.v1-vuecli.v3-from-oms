@@ -56,10 +56,16 @@ export default {
         this.$forceUpdate()
       }
     },
-    value (val) {
-      if (!val || !val.length) {
-        this.reset()
-      }
+    value: {
+      handler (val) {
+        if (val && val.length) {
+          this.attendanceCycleStart = val[0]
+          this.attendanceCycleEnd = val[1]
+        } else {
+          this.reset()
+        }
+      },
+      immediate: true
     }
   },
   model: {
