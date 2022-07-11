@@ -1,6 +1,5 @@
 const fs = require('fs')
-const path = require('path')
-const db = './server/data-base/view-data'
+const removeId = require(global.path.common('remove-id.js'))
 module.exports = function (req, res) {
   const resData = {
     data: '删除成功'
@@ -9,7 +8,8 @@ module.exports = function (req, res) {
     const { name } = req.body
     if (name) {
       try {
-        fs.rmSync(path.join(db, name + '.json'))
+        fs.rmSync(global.path.db('/view-data/', name + '.json'))
+        removeId(name)
         return resolve(resData)
       } catch (error) {
         return resolve(`服务器解析异常: ${error}`)

@@ -1,7 +1,4 @@
-// import mock from './mock.json'
-const { object2file } = require('../../utils')
-// const basePath = 'tabs'
-// buildTabs(mock)
+const { object2file } = require(global.path.utils())
 module.exports = function buildTabs (tabsArray, { name: moduleName, parent: parentName }, basePath) {
   const tabFiles = [
     // {

@@ -1,4 +1,4 @@
-module.exports = function queryParam (getKey) {
+module.exports = function cmdParam (getKey) {
   const res = {}
   if (process.argv && process.argv.length) {
     process.argv.forEach((item) => {

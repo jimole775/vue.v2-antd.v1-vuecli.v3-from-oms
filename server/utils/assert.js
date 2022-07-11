@@ -1,10 +1,10 @@
 module.exports = {
   isArray (likeArray) {
-    return Object.prototype.toString.call(likeArray) === '[object Array]'       
+    return Object.prototype.toString.call(likeArray) === '[object Array]'
   },
 
   isEmptyArray (likeArray) {
-    return isArray(likeArray) && likeArray.length === 0    
+    return Object.prototype.toString.call(likeArray) === '[object Array]' && likeArray.length === 0
   },
 
   isObject(likeObject) {
@@ -12,19 +12,19 @@ module.exports = {
   },
 
   isFunction(likeFunction) {
-    return Object.prototype.toString.call(likeFunction) === '[object Function]'            
+    return Object.prototype.toString.call(likeFunction) === '[object Function]'
   },
 
   isNumber(likeNumber) {
-    return Object.prototype.toString.call(likeNumber) === '[object Number]'            
+    return Object.prototype.toString.call(likeNumber) === '[object Number]'
   },
 
   isEmptyObject(likeObject) {
-    return Object.prototype.toString.call(likeObject) === '[object Object]' && Object.keys(likeObject).length === 0    
+    return Object.prototype.toString.call(likeObject) === '[object Object]' && Object.keys(likeObject).length === 0
   },
 
   isString(likeString) {
-    return Object.prototype.toString.call(likeString) === '[object String]'    
+    return Object.prototype.toString.call(likeString) === '[object String]'
   },
 
   isNone(src) {
@@ -49,9 +49,5 @@ module.exports = {
 
   isJSUrl(src) {
     return /\.(js)(\?.+)?$/.test(src)
-  },
-
-  rangeEqual(a = 0, b = 0, range = 0) {
-    return a >= b && a <= b * (1 + range) || a <= b && a * (1 + range) >= b
   }
 }

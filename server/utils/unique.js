@@ -13,20 +13,21 @@ module.exports = function unique (arrays) {
   for (let leftIndex = 0; leftIndex < arrays.length; leftIndex++) {
     loopIndex = arrays.length
     const leftItem = arrays[leftIndex]
-    kickout (leftIndex, leftItem, arrays, loopIndex)
+    kickout(leftIndex, leftItem, arrays, loopIndex)
   }
   return arrays
 }
 
 function kickout (leftIndex, leftItem, arrays, loopIndex) {
-  while(loopIndex > leftIndex) {
+  while (loopIndex > leftIndex) {
     let rightItem = arrays[loopIndex]
-    leftItem = isObject(leftItem) ? Object.entries(leftItem).toString() : leftItem
-    rightItem = isObject(rightItem) ? Object.entries(rightItem).toString() : rightItem
+    leftItem = isObject(leftItem) ? JSON.stringify(leftItem) : leftItem
+    rightItem = isObject(rightItem) ? JSON.stringify(rightItem) : rightItem
 
     if (leftItem === rightItem) {
       arrays.splice(loopIndex, 1)
-      return kickout(leftIndex, leftItem, arrays, loopIndex -= 1)
+      kickout(leftIndex, leftItem, arrays, loopIndex -= 1)
+      break
     }
 
     loopIndex -= 1

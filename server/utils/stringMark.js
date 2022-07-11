@@ -8,7 +8,7 @@ module.exports = {
   stringMark: {
     /**
      * 如果一个字符串需要在写入文件的时候【去掉双引号】，那么使用这个方法进行标记
-     * @param {String} string 
+     * @param {String} string
      * @returns {String}
      * @template noQuotation('测试') => '_|测试|_'
      */
@@ -17,7 +17,7 @@ module.exports = {
     },
     /**
      * 如果一个字符串需要在写入文件的时候，把【双引号改成单引号】，那么使用这个方法进行标记
-     * @param {String} string 
+     * @param {String} string
      * @returns {String}
      * @template noQuotation('测试') => '-|测试|-'
      */

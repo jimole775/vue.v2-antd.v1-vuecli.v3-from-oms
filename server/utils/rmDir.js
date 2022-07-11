@@ -5,7 +5,7 @@ const fs = require('fs')
  * @param { String } asbFilePath 绝对路径
  * @return { undefined }
  */
-module.exports = async function removeDir (asbFilePath) {
+module.exports = async function rmDir (asbFilePath) {
   console.log('asbFilePath:', asbFilePath)
   const isExist = fs.existsSync(asbFilePath)
   if (!isExist) return false

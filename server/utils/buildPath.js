@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const getPathSeparator = require('./get-path-separator')
+const getPathSeparator = require('./getPathSeparator')
 /**
  * 不用担心无目录的错误
  * @param { String } asbFilePath 绝对路径

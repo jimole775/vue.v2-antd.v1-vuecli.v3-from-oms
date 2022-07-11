@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "@babel/standalone": "^7.17.6",
+    "@vue/babel-plugin-transform-vue-jsx": "^1.2.1",
     "ant-design-vue": "^1.4.4",
     "axios": "^0.18.0",
-    "babel-plugin-transform-vue-jsx": "github:vuejs/babel-plugin-transform-vue-jsx",
     "core-js": "^2.6.5",
     "echarts": "^4.2.1",
     "js-cookie": "^2.2.0",
