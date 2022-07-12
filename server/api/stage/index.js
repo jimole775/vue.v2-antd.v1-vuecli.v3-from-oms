@@ -8,11 +8,13 @@ module.exports = function (req, res) {
         return resolve('请确认项目名再暂存！')
       }
       try {
+        let midPath = 'view-data'
         if (viewData.name === 'builder-demo') {
+          // midPath = 'demo'
           return resolve('“builder-demo”属于样例项目，只支持预览功能！')
         }
         viewData.id = recordId(viewData.name)
-        writeFileSync(global.path.db('view-data/', viewData.name + '.json'), viewData)
+        writeFileSync(global.path.db(midPath, viewData.name + '.json'), viewData)
         return resolve({
           name: viewData.name
         })

@@ -5,7 +5,7 @@ const resHandler = require('./res-handler')
 const app = new Express()
 const bodyParser = require('body-parser')
 const currentDir = __dirname
-
+const port = 8888
 function resolve (base, args) {
   args = Array.from(args)
   args.unshift(base)
@@ -43,4 +43,6 @@ app.post('/builder/delete', resHandler(require('./api/delete')))
 app.get('/builder/view-data', resHandler(require('./api/view-data')))
 app.get('/builder/projects', resHandler(require('./api/projects')))
 app.get('/builder/branchs', resHandler(require('./api/branchs')))
-app.listen(cmdParam('port') || 8888)
+app.listen(cmdParam('port') || port)
+
+console.info('app is start! port: ', port)

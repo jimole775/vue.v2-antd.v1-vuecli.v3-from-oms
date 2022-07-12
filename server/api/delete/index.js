@@ -8,7 +8,7 @@ module.exports = function (req, res) {
     const { name } = req.body
     if (name) {
       try {
-        fs.rmSync(global.path.db('/view-data/', name + '.json'))
+        fs.rmSync(global.path.db('view-data', name))
         removeId(name)
         return resolve(resData)
       } catch (error) {

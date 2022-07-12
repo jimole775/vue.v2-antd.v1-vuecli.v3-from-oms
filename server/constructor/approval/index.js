@@ -1,6 +1,6 @@
 // import mock from './mock.json'
 const buildPanels = require('../common/buildPanels')
-const buildOperation = require('../common/buildOperation')
+const buildOperator = require('../common/buildOperator')
 const buildTabsLoader = require('../common/buildTabsLoader')
 module.exports = function buildApproval (tabsTree, router, basePath) {
   let approvalFiles = [
@@ -13,7 +13,7 @@ module.exports = function buildApproval (tabsTree, router, basePath) {
     const tabFolder = `${basePath}/tab${(tabIndex * 1 + 1)}`
 
     const panelsFiles = buildPanels(tabFolder, curTab)
-    const operationFiles = buildOperation(tabFolder, curTab)
+    const operationFiles = buildOperator(tabFolder, curTab)
 
     const curTabLoader = buildCurTabLoader(tabFolder, panelsFiles)
 
@@ -35,11 +35,11 @@ function buildCurTabLoader (tabFolder, panelsFiles) {
   })
   return {
     path: `${tabFolder}/index.js`,
-    content: `import operation from './operation'
+    content: `import operator from './operator'
     ${panelsModules.map(i => i.code).join('\n')}
     export default {
       panels: [${panelsModules.map(i => i.vari).join(',')}],
-      operation: operation
+      operator: operator
     }`
   }
 }

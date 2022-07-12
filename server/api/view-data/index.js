@@ -9,7 +9,7 @@ module.exports = function (req, res) {
         if (name === 'builder-demo') {
           viewData = readFileSync(demoDb)
         } else {
-          viewData = readFileSync(global.path.db('/view-data/', name + '.json'))
+          viewData = readFileSync(global.path.db('view-data', name))
         }
         return resolve({ viewData })
       } catch (error) {
