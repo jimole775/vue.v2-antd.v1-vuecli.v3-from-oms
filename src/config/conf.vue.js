@@ -7,4 +7,3 @@ Vue.prototype.$message = Message
 Vue.prototype.$utils = utils
 Vue.prototype.$modal = Modal
 Vue.prototype.$confirm = Modal.confirm
-

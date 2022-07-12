@@ -1,6 +1,6 @@
 <template>
   <div class="moveBox">
-    <OmsTabsPlus :ref="'OmsTabsRef'" :tab-proxy="tabProxy" />
+    <STabs :ref="'STabsRef'" :tab-proxy="tabProxy" />
     <div v-show="tabProxy.showList">
       <template v-for="tab in listTabs">
         <ProjectList
@@ -59,12 +59,12 @@ import todoMixins from '@/mixins/todoMixins'
 import ProjectList from './list'
 import ProjectApply from './apply'
 import ProjectApproval from './approval'
-import OmsTabsPlus from '@/components/OmsTabsPlus'
+import STabs from '@/components/STabs'
 const applyNode = 'apply'
 export default {
   name: 'SApprovallor',
   components: {
-    OmsTabsPlus,
+    STabs,
     ProjectList,
     ProjectApply,
     ProjectApproval
@@ -184,12 +184,12 @@ export default {
       return !!(item.showOnNodes && item.showOnNodes.includes(applyNode))
     },
     async addDetailTab (typeId, recordData) {
-      await this.$refs.OmsTabsRef
-      this.$refs.OmsTabsRef.addDetailTab(typeId, recordData)
+      await this.$refs.STabsRef
+      this.$refs.STabsRef.addDetailTab(typeId, recordData)
     },
     async removeTab () {
-      await this.$refs.OmsTabsRef
-      this.$refs.OmsTabsRef.removeTab(this.tabProxy.activeId)
+      await this.$refs.STabsRef
+      this.$refs.STabsRef.removeTab(this.tabProxy.activeId)
       this.reload()
     },
     async reload () {

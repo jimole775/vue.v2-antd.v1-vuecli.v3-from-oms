@@ -138,7 +138,7 @@ export default {
       const list = listmap[this.selected.mode] || []
       const res = []
       limit = limit < list.length ? limit : list.length
-      while (limit --) {
+      while (limit--) {
         res.push(list[limit].path)
       }
       return res

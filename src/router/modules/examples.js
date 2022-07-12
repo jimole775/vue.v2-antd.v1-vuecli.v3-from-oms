@@ -71,19 +71,9 @@ export default [
         component: () => import('@/helper/examples/pages/range-month-picker/index.vue')
       },
       {
-        path: '/helper/examples/range-picker',
-        name: 'RangePicker',
-        component: () => import('@/helper/examples/pages/range-picker/index.vue')
-      },
-      {
         path: '/helper/examples/user-select',
         name: 'UserSelect',
         component: () => import('@/helper/examples/pages/user-select/index.vue')
-      },
-      {
-        path: '/helper/examples/import-excel',
-        name: 'ImportExcel',
-        component: () => import('@/helper/examples/pages/import-excel/index.vue')
       }
     ]
   }
