@@ -15,9 +15,11 @@ export default {
   created () {
     this.loadUser()
     this.loadDictList()
+    this.loadBuilderMenus()
+    this.loadRegistedComponentsList()
   },
   methods: {
-    ...mapActions(['loadDictList', 'loadUser'])
+    ...mapActions(['loadDictList', 'loadUser', 'loadBuilderMenus', 'loadRegistedComponentsList'])
   }
 }
 </script>

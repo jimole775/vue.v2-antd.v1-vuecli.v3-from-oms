@@ -33,26 +33,20 @@
 </template>
 <script>
 import utils from '@/utils'
-import mixins from '@builder/mixins'
+import { mapActions } from 'vuex'
+import ProjectList from './list'
+import ProjectApproval from './approval'
+import builder from '@builder/mixins/builder'
 import baseMixins from '@/mixins/baseMixins'
 import todoMixins from '@/mixins/todoMixins'
-import ProjectList from './list'
-import ProjectApply from './apply'
-import ProjectApproval from './approval'
-import { mapActions } from 'vuex'
-import ApiButton from '@builder/config-modules/api-button'
-import CustomParams from '@builder/config-modules/custom-params'
 import ConfigTab from '@builder/config-modals/config-tab'
 export default {
   components: {
-    ApiButton,
     ConfigTab,
-    CustomParams,
     ProjectList,
-    ProjectApply,
     ProjectApproval
   },
-  mixins: [baseMixins, mixins, todoMixins],
+  mixins: [baseMixins, builder, todoMixins],
   data () {
     return {
       editModal: {
@@ -66,9 +60,8 @@ export default {
         // tabId: 输出给SApproval组件
         // rank: 用来标记是第几套审批流程，一套审批流程有['列表', '申请', '审批']三个tab
         // type: 用来标记 list, apply, approval
-        { tabName: '列表', key: '0_0', tabId: '0', rank: 0, type: '0', component: ProjectList, api: {}, permission: { roles: [], config: '' } },
-        { tabName: '申请', key: '0_1', tabId: '0_1', rank: 0, type: '1', component: ProjectApply, api: {} },
-        { tabName: '审批', key: '0_2', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval, api: {} }
+        { tabName: '列表', key: '0_0', tabId: '0', rank: 0, type: '0', component: ProjectList },
+        { tabName: '审批', key: '0_2', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval }
       ]
     }
   },
@@ -98,9 +91,6 @@ export default {
         data.tabs.forEach((tab) => {
           if (tab.type === '0') {
             tab.component = utils.clone(ProjectList)
-          }
-          if (tab.type === '1') {
-            tab.component = utils.clone(ProjectApply)
           }
           if (tab.type === '2') {
             tab.component = utils.clone(ProjectApproval)
@@ -173,7 +163,6 @@ export default {
         delete item.component
       })
       this.setViewData({ key: 'tabs', value: copyData })
-      this.setBuildData({ key: 'tabs', value: copyData })
     }
   }
 }

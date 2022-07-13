@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="builder-menu">
     <div class="logo-text pd-x" style="max-height:50px;">
       <div class="logo-image">
         <span class="logo-desc">新模块配置</span>
@@ -15,13 +15,11 @@
       theme="light"
       mode="inline"
       class="menu"
+      :selected-keys="menuSelectedKeys"
     >
-      <a-menu-item :disabled="!hasDisabled('views')">
-        <a style="color: #333;" @click="() => showConfigRouteModal('views')">顶层菜单</a>
-      </a-menu-item>
-      <template v-for="item in menus">
-        <a-menu-item :disabled="!hasDisabled(item)" :key="item">
-          <a style="color: #333;" @click="() => showConfigRouteModal(item)">{{ item }}</a>
+      <template v-for="module in menus">
+        <a-menu-item :disabled="!hasDisabled(module.path)" :key="module.path" :value="module.path">
+          <a style="color: #333;" @click="() => showConfigRouteModal(module.path)">{{ module.name }}</a>
         </a-menu-item>
       </template>
     </a-menu>
@@ -31,12 +29,11 @@
 
 <script>
 import utils from '@/utils'
-import { mapActions } from 'vuex'
-import mixins from '@builder/mixins'
+import { mapState } from 'vuex'
+import builder from '@builder/mixins/builder'
 import ConfigRoute from '../config-modals/config-route'
-const modules = require.context('../../../views', true, /(\.vue)$/)
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   name: 'Menu',
   components: {
     ConfigRoute
@@ -50,18 +47,14 @@ export default {
     }
   },
   computed: {
-    menus () {
-      const vues = modules.keys()
-      const menus = vues.map(i => i.split('/')[1])
-      return menus
+    ...mapState({
+      menus: state => state.builder.menus
+    }),
+    menuSelectedKeys () {
+      return this.viewData.router.parent ? [this.viewData.router.parent] : []
     }
   },
-  created: function () {
-    this.loadMenus()
-    this.loadDictList()
-  },
   methods: {
-    ...mapActions(['loadMenus', 'loadDictList']),
     hasDisabled (name) {
       return this.viewData.router.parent === name
     },
@@ -74,7 +67,6 @@ export default {
     },
     configRouteConfirm (data) {
       this.setViewData({ key: 'router', value: data })
-      this.setBuildData({ key: 'router', value: data })
     }
   }
 }
@@ -91,5 +83,9 @@ export default {
 // 菜单栏展开状态时，选中项的背景色
 .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
   background: linear-gradient(90deg, #F4F9F5 0%, #E5FAE9 100%);
+}
+.builder-menu {
+  overflow: auto;
+  height: 100%;
 }
 </style>

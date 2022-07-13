@@ -8,18 +8,17 @@
   >
     <SApprovallor
       :tabs="tabs"
+      :list="list"
       :apimap="apimap"
-      :list-config="listConfig"
-      :apply-config="applyConfig"
-      :approval-config="approvalConfig"
+      :approval="approval"
     />
   </a-modal>
 </template>
 <script>
 import utils from '@/utils'
-import http from '@/utils/http'
-import { jsx2vue } from '../utils'
+import { jsx2vue, string2func } from '@builder/utils'
 import SApprovallor from '@/components/SApprovallor'
+import makeApiMethod from '@builder/utils/make-api-method'
 export default {
   name: 'Preview',
   components: {
@@ -34,10 +33,9 @@ export default {
   data () {
     return {
       tabs: [],
+      list: {},
       apimap: {},
-      listConfig: {},
-      applyConfig: {},
-      approvalConfig: {}
+      approval: {}
     }
   },
   watch: {
@@ -48,10 +46,9 @@ export default {
           const scopeData = utils.clone(data)
           this.transferFunction(scopeData)
           this.tabs = scopeData.tabs
-          this.apimap = this.diggingApiUrl(scopeData.apimap)
-          this.listConfig = scopeData.listConfig
-          this.applyConfig = scopeData.applyConfig
-          this.approvalConfig = scopeData.approvalConfig
+          this.list = scopeData.list
+          this.approval = this.reconstructsOperator(scopeData.approval)
+          this.apimap = makeApiMethod(scopeData.apimap)
         }
       },
       deep: true,
@@ -59,68 +56,57 @@ export default {
     }
   },
   methods: {
-    diggingApiUrl (apimap = {}) {
-      const tabIndexs = Object.keys(apimap)
-      tabIndexs.forEach((tabIndex) => {
-        const apimapItem = apimap[tabIndex]
-        const apiNames = Object.keys(apimapItem)
-        apiNames.forEach((apiName) => {
-          const apiItem = apimapItem[apiName]
-          apimap[tabIndex][apiName] = packageApi(apiItem)
-        })
+    reconstructsOperator (approval) {
+      const res = {}
+      Object.keys(approval).forEach(tabIndex => {
+        const currentTab = approval[tabIndex]
+        res[tabIndex] = {
+          panels: utils.clone(currentTab.panels),
+          operator: {
+            title: '审批操作',
+            component: 'Operator',
+            option: utils.clone(currentTab.operator)
+          }
+        }
       })
-      return apimap
+      return res
     },
     // 把jsx类型的render函数字符串转成vue类型的render
     // 使eval执行不会报错
     transferFunction (data) {
-      // listConfig: {},
-      // // “申请页面” 配置项
-      // applyConfig: {},
-      // // “审批详情” 配置项
-      // approvalConfig: {},
       let allFormItems = []
-      let { listConfig, applyConfig, approvalConfig } = data
-      let tabIndexs = Object.keys(listConfig)
+      let { list, approval } = data
+      let tabIndexs = Object.keys(list)
       tabIndexs.forEach((tabIndex) => {
-        const list = listConfig[tabIndex]
-        const { columns, searchor } = list
+        const curList = list[tabIndex]
+        const { columns, searchor } = curList
         allFormItems = [...allFormItems, ...columns, ...searchor]
       })
 
-      tabIndexs = Object.keys(applyConfig)
+      tabIndexs = Object.keys(approval)
       tabIndexs.forEach((tabIndex) => {
-        const apply = applyConfig[tabIndex]
-        apply.panels.forEach((panel) => {
-          allFormItems = [...allFormItems, ...panel.formItems]
+        const curAppr = approval[tabIndex]
+        const panels = curAppr.panels
+        const inputs = curAppr.operator.inputs || []
+        const radios = curAppr.operator.radios || []
+        panels.forEach((panel) => {
+          const formItems = panel.formItems
+          if (formItems) {
+            allFormItems = [...allFormItems, ...formItems]
+          }
         })
-      })
-
-      tabIndexs = Object.keys(approvalConfig)
-      tabIndexs.forEach((tabIndex) => {
-        const approval = approvalConfig[tabIndex]
-        const nodes = Object.keys(approval)
-        nodes.forEach((node) => {
-          const { permission, dispermission } = approval[node].panels
-          permission.concat(dispermission).forEach((panel) => {
-            const formItems = panel.formItems
-            const operationItem = panel.operationItem
-            if (formItems) {
-              allFormItems = [...allFormItems, ...formItems]
-            }
-            if (operationItem) {
-              const { radios, inputs } = operationItem
-              allFormItems = [...allFormItems, ...radios, ...inputs]
-            }
-          })
-        })
+        allFormItems = [...allFormItems, ...inputs, radios]
       })
 
       allFormItems.forEach((formItem) => {
         const keys = Object.keys(formItem)
         keys.forEach((key) => {
-          if (isFuncStr(formItem[key]) && isNodeRender(formItem[key])) {
-            formItem[key] = utils.string2func(jsx2vue(formItem[key]))
+          if (isFuncStr(formItem[key])) {
+            if (isNodeRender(formItem[key])) {
+              formItem[key] = string2func(jsx2vue(formItem[key]))
+            } else {
+              formItem[key] = string2func(formItem[key])
+            }
           }
         })
       })
@@ -144,20 +130,6 @@ function isFuncStr (string) {
     return true
   } else {
     return false
-  }
-}
-// 尝试获取样例数据
-function packageApi (apiItem) {
-  if (apiItem.url) {
-    const fn = http[apiItem.method.toLocaleLowerCase()] || function () {}
-    const defaultParams = apiItem.params || {}
-    const injectParams = apiItem.method === 'GET' ? { params: defaultParams } : defaultParams
-    return (params = {}) => {
-      return fn.apply(http, [apiItem.url, {
-        ...params,
-        ...injectParams
-      }])
-    }
   }
 }
 

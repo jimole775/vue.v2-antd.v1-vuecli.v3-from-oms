@@ -31,13 +31,13 @@
 <script>
 import api from '@/api'
 import utils from '@/utils'
-import mixins from '@builder/mixins'
+import builder from '@builder/mixins/builder'
 import ConfigRoute from '../config-modals/config-route'
 const level1 = 2 * 3
 const level2 = 3 * 6
 // const level3 = 4 * 8
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   name: 'Projects',
   components: {
     ConfigRoute
@@ -48,7 +48,8 @@ export default {
       viewMatrix: [[], []],
       configRouteModal: {
         show: false,
-        data: {}
+        data: {},
+        already: []
       }
     }
   },
@@ -71,7 +72,7 @@ export default {
       if (res.code === 200) {
         this.projects = res.data.projects || []
       }
-      this.projects.push('__addition__')
+      this.projects.push({ name: '__addition__' })
       this.buildMatrix()
     })
   },
@@ -97,7 +98,7 @@ export default {
         this.viewMatrix[rowIndex][colIndex] = {
           x: rowIndex,
           y: colIndex,
-          name: pro
+          name: pro.name
         }
       })
     },
@@ -105,48 +106,45 @@ export default {
       this.configRouteModal.show = true
       // 放开parent的编辑权限
       this.configRouteModal.mode = 'add'
+      this.configRouteModal.data.already = utils.clone(this.projects)
       this.resetViewData()
     },
     configRouteConfirm (data) {
       this.setViewData({ key: 'name', value: data.name })
-      this.setBuildData({ key: 'name', value: data.name })
       this.setViewData({ key: 'router', value: data })
-      this.setBuildData({ key: 'router', value: data })
-      this.$emit('update', data.name)
+      this.setProjectName(data.name)
     },
     takeJob (proItem) {
       this.loadViewData(proItem.name)
+      this.setProjectName(proItem.name)
       this.setEditType('modify')
     },
     createJob () {
       this.showConfigRouteModal()
       this.setEditType('new')
-    },
-    loadViewData (name) {
-      api.getbuilderviewdata(name).then(res => {
-        if (res.code === 200) {
-          const keysOfRank = ['apply', 'approval', 'list', 'apimap']
-          const data = res.data.viewData || {}
-          Object.keys(data).forEach(key => {
-            const module = data[key]
-            if (utils.isValuable(module)) {
-              if (keysOfRank.includes(key)) {
-                Object.keys(module).forEach((rank) => {
-                  this.setViewData({ key, rank, value: module[rank] })
-                  this.setBuildData({ key, rank, value: module[rank] })
-                })
-              } else {
-                this.setViewData({ key, value: module })
-                this.setBuildData({ key, value: module })
-              }
-            }
-          })
-          this.$emit('update', name)
-        } else {
-          this.$message.warning(res.message)
-        }
-      })
     }
+    // loadViewData (name) {
+    //   api.getbuilderviewdata(name).then(res => {
+    //     if (res.code === 200) {
+    //       const keysOfRank = ['approval', 'list', 'apimap']
+    //       const data = res.data.viewData || {}
+    //       // Object.keys(data).forEach(key => {
+    //       //   const module = data[key]
+    //       //   if (utils.isValuable(module)) {
+    //       //     if (keysOfRank.includes(key)) {
+    //       //       Object.keys(module).forEach((rank) => {
+    //       //         this.setViewData({ key, rank, value: module[rank] })
+    //       //       })
+    //       //     } else {
+    //       //       this.setViewData({ key, value: module })
+    //       //     }
+    //       //   }
+    //       // })
+    //     } else {
+    //       this.$message.warning(res.message)
+    //     }
+    //   })
+    // }
   }
 }
 
@@ -186,22 +184,24 @@ function createMatrixItem (rowLen, colLen) {
   height: 100%;
   background: #333;
 }
-.layout-project-list [class~='ant-col'] {
-  display: flex;
-  align-items: center;
-  background: transparent;
-  height: 100%;
-  border-right: 1px solid #222;
-  border-bottom: 1px solid #222;
-  border-top: 1px solid #444;
-  border-left: 1px solid #444;
-  > div {
-    margin: 0 auto;
-  }
-  p.project-name {
-    margin-top: 5px;
-    text-align: center;
-    font-size: 1rem;
+.layout-project-list {
+  .project-item {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    height: 100%;
+    border-right: 1px solid #222;
+    border-bottom: 1px solid #222;
+    border-top: 1px solid #444;
+    border-left: 1px solid #444;
+    > div {
+      margin: 0 auto;
+    }
+    p.project-name {
+      margin-top: 5px;
+      text-align: center;
+      font-size: 1rem;
+    }
   }
 }
 

@@ -1,0 +1,39 @@
+{
+  name: ''
+
+  apimap:
+    0:
+      list:
+        table:
+          dataApi: { api: '', permission: ''}
+          dataDir: ''
+
+        summary:
+          pass: {}
+          reject: {}
+          ...: {}
+
+      apply:
+        submit: { api: '', permission: ''}
+        detail: { api: '', permission: ''}
+
+      approval:
+        submit: { api: '', permission: ''}
+        detail: { api: '', permission: ''}
+        businessType: ''
+
+  list:
+    0:
+      columns: []
+      searchor: []
+
+  approval:
+    0:
+      panels: [],
+      operator: {}
+
+  tabs: []
+
+  router: {}
+
+}

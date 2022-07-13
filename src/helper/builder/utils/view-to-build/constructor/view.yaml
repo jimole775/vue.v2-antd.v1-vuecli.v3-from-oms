@@ -1,0 +1,29 @@
+{
+  name: ''
+
+  list:
+    0:
+      summary:
+        batch: {}
+        dataApi: {}
+        applySubmitApi: {}
+
+      table:
+        columns: []
+        searchor: []
+
+  approval:
+    0:
+      logInfo: {}
+      operator: {}
+      baseInfoPanel: {}
+      collapsePanels: []
+      detailApi: {}
+      approvalSubmitApi: {}
+      nodes: []
+
+  tabs: []
+
+  router: {}
+
+}

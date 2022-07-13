@@ -23,76 +23,23 @@
           </a-form-item>
         </a-col>
       </a-row>
-      <a-row :span="24">
-        <a-col>
-          <a-form-item :label="modal.data.type === '0' ? '列表接口' : '详情数据接口'" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-row>
-              <a-col :span="18">
-                <a-input placeholder="/api/xxx/xxx" v-model="modal.data.api.url" />
-              </a-col>
-              <a-col :span="6">
-                <a-select placeholder="请选择" v-model="modal.data.api.method">
-                  <a-select-option value="GET">GET</a-select-option>
-                  <a-select-option value="POST">POST</a-select-option>
-                  <a-select-option value="PUT">PUT</a-select-option>
-                  <a-select-option value="DELETE">DELETE</a-select-option>
-                </a-select>
-              </a-col>
-            </a-row>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row v-if="modal.data.type === '0'">
-        <a-col :span="24">
-          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <template slot="label">
-              数据路径
-              <a-tooltip title="接口返回的数据的路径，比如：data.records.list，就可以设置为'records.list'">
-                <span><a-icon type="question-circle-o" /></span>
-              </a-tooltip>
-            </template>
-            <a-input v-model="modal.data.api.dataDir" />
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <CustomParams v-model="modal.data.api.customParams" />
     </a-form>
   </a-modal>
 </template>
 <script>
-// import utils from '@/utils'
-import mixins from '@builder/mixins'
-import CustomParams from '@builder/config-modules/custom-params'
+import builder from '@builder/mixins/builder'
 export default {
-  mixins: [mixins],
-  components: {
-    CustomParams
-  },
+  mixins: [builder],
   props: {
     modal: {
       type: Object,
       default: () => ({})
     }
   },
-  data () {
-    return {
-    }
-  },
   methods: {
     editConfirm () {
-      const { api, type } = this.modal.data
-      if (api.url) {
-        const key = type === '0' ? 'list' : 'detail'
-        const label = type === '0' ? '列表' : '详情'
-        const data = { [key]: { ...api, key, label } }
-        this.handupApimap(data)
-      }
       this.$emit('update', this.modal.data)
       this.modal.show = false
-    },
-    handupApimap (data) {
-      this.setViewData({ key: 'apimap', value: data })
-      this.setBuildData({ key: 'apimap', value: data })
     }
   }
 }

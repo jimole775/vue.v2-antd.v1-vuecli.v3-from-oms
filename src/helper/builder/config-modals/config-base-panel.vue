@@ -7,6 +7,9 @@
   >
     <a-form :form="form">
       <a-row>
+        <a-col class="sub-title">
+          板块信息：
+        </a-col>
         <a-col :span="24">
           <a-form-item label="表头" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-input v-decorator="['title', {rules: [{ required: true, message: '请确认表头' }]}]" />
@@ -20,14 +23,14 @@
         <a-col :span="24">
           <a-form-item label="板块组件" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-input
-              :disabled="isDisabledComponent"
+              disabled
               v-decorator="['component', { initialValue: 'FormItemRender', rules: [{ required: true }] }]"
             />
           </a-form-item>
         </a-col>
         <a-col :span="24">
           <a-form-item label="默认展开" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-radio-group v-decorator="['extend', {rules: [{ required: false }]}]">
+            <a-radio-group disabled v-decorator="['extend', { initialValue: true, rules: [{ required: false }] }]">
               <a-radio :value="true">
                 是
               </a-radio>
@@ -46,7 +49,8 @@
               </a-tooltip>
             </span>
             <a-checkbox-group
-              v-decorator="['showOnNodes', {rules: [{ required: false }]}]"
+              v-decorator="['showOnNodes']"
+              disabled
             >
               <a-checkbox
                 v-for="node in nodes"
@@ -81,63 +85,43 @@
             </a-checkbox-group>
           </a-form-item>
         </a-col>
-        <a-col v-if="radios && radios.length" :span="24">
-          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <span slot="label">
-              可显示操作项
-              <a-tooltip title="一般当用户选择了“驳回”操作的时候，不需要校验数据，可以使用此选项来操作某些字段或者板块不显示，这样就可以忽略校验过程。">
-                <a-icon type="question-circle-o" />
-              </a-tooltip>
-            </span>
-            <a-checkbox-group
-              v-decorator="['showOnRadios', {rules: [{ required: false }]}]"
-            >
-              <a-checkbox
-                v-for="radio in radios"
-                :key="radio.key"
-                :value="radio.key"
-                :disabled="radio.disabled"
-              >
-                {{ radio.label }}
-              </a-checkbox>
-            </a-checkbox-group>
-          </a-form-item>
+        <a-col class="sub-title">
+          详情接口：
         </a-col>
+        <ApiDeclaration v-model="apiConfig" />
       </a-row>
     </a-form>
   </a-modal>
 </template>
 <script>
 import utils from '@/utils'
+import ApiDeclaration from '@/components/ApiDeclaration'
 export default {
+  components: {
+    ApiDeclaration
+  },
   props: {
-    componentAble: { type: Boolean, default: false },
     modal: { type: Object, default: () => ({}) },
-    nodes: { type: Array, default: () => [] },
-    radios: { type: Array, default: () => [] } // 显示operations的radio选项
+    nodes: { type: Array, default: () => [] }
   },
   data () {
     return {
+      apiConfig: {},
       form: this.$form.createForm(this)
-    }
-  },
-  computed: {
-    isDisabledComponent () {
-      return !this.componentAble
     }
   },
   watch: {
     modal: {
-      handler ({ data, show }) {
+      handler ({ data: { panel, detail }, show }) {
         if (show) {
           this.$nextTick(() => {
-            if (data) {
-              if (data.showOnNodes === undefined) {
-                data.showOnNodes = this.nodes.map(i => i.value)
-                data.showOnRadios = []
-                data.editOnNodes = []
+            if (panel) {
+              if (panel.showOnNodes === undefined) {
+                panel.showOnNodes = this.nodes.map(i => i.value)
+                panel.showOnRadios = []
+                panel.editOnNodes = []
               }
-              this.form.setFieldsValue(data)
+              this.form.setFieldsValue(panel)
             } else {
               this.form.setFieldsValue({
                 extend: true,
@@ -147,7 +131,11 @@ export default {
               })
             }
           })
+          if (detail) {
+            this.apiConfig = utils.clone(detail)
+          }
         } else {
+          this.apiConfig = {}
           this.form.resetFields()
         }
       },
@@ -162,7 +150,10 @@ export default {
           return false
         }
         this.modal.show = false
-        this.$emit('update', utils.clone(values))
+        this.$emit('update', {
+          panel: utils.clone(values),
+          detail: utils.clone(this.apiConfig)
+        })
       })
     }
   }
@@ -170,11 +161,9 @@ export default {
 
 </script>
 <style lang="less" scoped>
-.object-ctrl {
-  display: flex;
-  padding: 4px;
-  button {
-    margin-left: 4px;
-  }
+.sub-title {
+  border-bottom: 1px solid #cfcfcf;
+  padding: 0.2rem 0.5rem;
+  margin-bottom: 0.5rem;
 }
 </style>

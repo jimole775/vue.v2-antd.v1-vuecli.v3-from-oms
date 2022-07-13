@@ -1,51 +1,67 @@
 <template>
   <div>
-    <StepBar :data-source="stepNodes" @update="nodesUpdate" />
-    <BuildCollapsePanels :key="current" :data-source="collapsePanels" @update="panelsUpdate" />
-    <a-collapse
-      :bordered="false"
-      :active-key="['101', '102']"
-    >
-      <a-collapse-panel
-        header="审批操作"
-        key="101"
-        class="m-block"
-      >
-        <OperationBar :key="current" :data-source="operation" @update="operationUpdate" />
-      </a-collapse-panel>
-      <LogBar :key="'102'" :data-source="log" @update="logUpdate" />
-    </a-collapse>
+    <StepNodePanel
+      :value="nodes"
+      @update="nodesUpdate"
+    />
+    <BaseInfoPanel
+      :nodes="availNodes"
+      :radios="operator.radios"
+      :value="{ panel: baseInfoPanel, detail: detailApi, columns }"
+      @modify="baseInfoModify"
+      @increase="panelsIncrease"
+    />
+    <CollapsePanels
+      :nodes="availNodes"
+      :radios="operator.radios"
+      :value="collapsePanels"
+      @update="panelsUpdate"
+    />
+    <LogInfoPanel
+      :value="logInfo"
+      @update="logUpdate"
+    />
+    <OperationPanel
+      :value="{ operator, approvalSubmitApi }"
+      :nodes="availNodes"
+      @update="operationUpdate"
+    />
   </div>
 </template>
 <script>
 import utils from '@/utils'
-import { mapGetters } from 'vuex'
-import mixins from '@builder/mixins'
-import LogBar from './modules/log-bar'
-import StepBar from './modules/step-bar'
-import OperationBar from './modules/operation-bar'
-import BuildCollapsePanels from '@builder/config-modules/build-collapse-panels.vue'
+import { mapActions } from 'vuex'
+import builder from '@builder/mixins/builder'
+import LogInfoPanel from './modules/log-info-panel'
+import BaseInfoPanel from './modules/base-info-panel'
+import StepNodePanel from './modules/step-node-panel'
+import OperationPanel from './modules/operator-panel'
+import CollapsePanels from './modules/collapse-panels'
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   components: {
-    LogBar,
-    StepBar,
-    OperationBar,
-    BuildCollapsePanels
+    LogInfoPanel,
+    BaseInfoPanel,
+    StepNodePanel,
+    OperationPanel,
+    CollapsePanels
   },
-  // props: {
-  //   rank: {
-  //     type: Number,
-  //     default: 0
-  //   }
-  // },
   data () {
     return {
-      log: {},
-      operation: {},
+      logInfo: {},
+      columns: [],
+      operator: {},
+      detailApi: {},
+      baseInfoPanel: {},
       collapsePanels: [],
-      current: 0,
-      stepNodes: [
+      approvalSubmitApi: {},
+      nodes: [
+        {
+          fixed: true,
+          edit: true,
+          value: 'apply',
+          label: '申请'
+        },
         {
           fixed: true,
           edit: true,
@@ -68,9 +84,11 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getStepNodes', 'getTabType']),
-    currentNode () {
-      return this.stepNodes[this.current] || {}
+    availNodes () {
+      const nodes = this.nodes.filter((node) => {
+        return node.value !== '__addition__'
+      })
+      return nodes
     }
   },
   watch: {
@@ -78,54 +96,81 @@ export default {
       handler (data) {
         if (data.approval) {
           const currentModule = data.approval[this.currentRank]
-          this.log = currentModule.log
-          this.operation = currentModule.operation
-          this.collapsePanels = currentModule.collapsePanels
-          this.stepNodes = currentModule.stepNodes
+          if (currentModule.nodes) {
+            this.nodes = utils.clone(currentModule.nodes)
+          }
+          if (currentModule.logInfo) {
+            this.logInfo = utils.clone(currentModule.logInfo)
+          }
+          if (currentModule.operator) {
+            this.operator = utils.clone(currentModule.operator)
+          }
+          if (currentModule.baseInfoPanel) {
+            this.baseInfoPanel = utils.clone(currentModule.baseInfoPanel)
+          }
+          if (currentModule.detailApi) {
+            this.detailApi = utils.clone(currentModule.detailApi)
+          }
+          if (currentModule.approvalSubmitApi) {
+            this.approvalSubmitApi = utils.clone(currentModule.approvalSubmitApi)
+          }
+          if (currentModule.collapsePanels) {
+            this.collapsePanels = utils.clone(currentModule.collapsePanels)
+          }
+        }
+        if (data.list) {
+          const curList = data.list[this.currentRank]
+          this.columns = curList.table.columns || []
         }
       },
       immediate: true
     }
   },
   methods: {
+    ...mapActions(['setNodes']),
     operationUpdate (data) {
-      this.operation = data
-      this.handup()
+      this.operator = data.operator
+      this.approvalSubmitApi = data.approvalSubmitApi
+      this.handupData()
     },
     logUpdate (data) {
-      this.log = data
-      this.handupApimap(this.log)
+      this.logInfo = data
+      this.handupData()
+    },
+    baseInfoModify (data) {
+      if (data.panel) {
+        this.baseInfoPanel = data.panel
+        this.handupData()
+      }
+      if (data.detail) {
+        this.detailApi = data.detail
+        this.handupData()
+      }
+    },
+    panelsIncrease (data) {
+      this.collapsePanels.push(data)
+      this.handupData()
     },
     panelsUpdate (data) {
       this.collapsePanels = data
-      // 从基础信息配置的信息，获取detail的接口
-      const baseItem = this.collapsePanels[0]
-      this.handupApimap({
-        detail: {
-          url: baseItem.url,
-          method: baseItem.method,
-          params: {}
-        }
-      })
-      this.handup()
+      this.handupData()
     },
-    nodesUpdate (current, stepNodes) {
-      this.current = current
-      this.stepNodes = stepNodes
+    nodesUpdate (nodes) {
+      this.nodes = nodes
+      this.setNodes(nodes)
+      this.handupData()
     },
-    handupApimap (data) {
-      this.setViewData({ key: 'apimap', value: data })
-      this.setBuildData({ key: 'apimap', value: data })
-    },
-    handup () {
+    handupData () {
       const cacheData = {
-        log: utils.clone(this.log),
-        stepNodes: utils.clone(this.stepNodes),
-        operation: utils.clone(this.operation),
-        collapsePanels: utils.clone(this.collapsePanels)
+        nodes: utils.clone(this.nodes),
+        logInfo: utils.clone(this.logInfo),
+        operator: utils.clone(this.operator),
+        detailApi: utils.clone(this.detailApi),
+        baseInfoPanel: utils.clone(this.baseInfoPanel),
+        collapsePanels: utils.clone(this.collapsePanels),
+        approvalSubmitApi: utils.clone(this.approvalSubmitApi)
       }
       this.setViewData({ key: 'approval', value: cacheData })
-      this.setBuildData({ key: 'approval', value: cacheData })
     }
   }
 }

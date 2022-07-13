@@ -1,31 +1,45 @@
 <template>
   <div>
     <div class="panel-content">
-      <BuildFormItems :config="{ anchorText: '配置查询表单' }" @update="updateSearchor" />
+      <ConfigFormItems
+        :key="table.searchor.length"
+        :value="table.searchor"
+        anchor-text="配置查询表单"
+        @update="updateSearchor"
+      />
     </div>
     <div class="panel-content">
-      <TableSummary :data-source="summaryObject" @update="updateSummary" />
+      <TableSummary
+        :key="table.columns.length"
+        :value="summary"
+        @updateBatchButton="updateBatchButton"
+        @updateListDataApi="updateListDataApi"
+        @updateApplySubmitApi="updateApplySubmitApi"
+      />
     </div>
-    <div v-if="canShowTable" class="panel-content">
-      <TableColumns :data-source="listData" @projectApproval="projectApproval" @update="updateColumns" />
-    </div>
-    <div v-else class="panel-content btn-wrap">
+    <div class="panel-content">
+      <TableColumns
+        :key="table.columns.length"
+        :data-api="summary.dataApi"
+        :value="table.columns"
+        :bridge="{ projectApproval }"
+        @update="updateColumns"
+      />
     </div>
   </div>
 </template>
 <script>
 import utils from '@/utils'
-import http from '@/utils/http'
-import mixins from '@builder/mixins'
+import builder from '@builder/mixins/builder'
 import TableSummary from './modules/table-summary'
-import BuildFormItems from '@builder/config-modules/build-form-items'
 import TableColumns from './modules/table-columns'
+import ConfigFormItems from '@builder/config-modules/config-form-items'
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   components: {
     TableSummary,
     TableColumns,
-    BuildFormItems
+    ConfigFormItems
   },
   props: {
     rank: {
@@ -39,39 +53,27 @@ export default {
   },
   data () {
     return {
-      listData: [],
-      summaryObject: {},
-      listConfig: {
+      summary: {
+        batch: {},
+        dataApi: {},
+        applySubmitApi: {}
+      },
+      table: {
         columns: [],
         searchor: []
       }
     }
   },
-  computed: {
-    canShowTable () {
-      return this.tab.type === '0' && this.tab.api && this.tab.api.url
-    },
-    isListTab () {
-      return this.tab.type === '0'
-    }
-  },
   watch: {
-    tab: {
-      handler (tab) {
-        if (this.canShowTable) {
-          this.testFetch(tab.api)
-        }
-      },
-      deep: true,
-      immediate: true
-    },
     viewData: {
       handler (data) {
-        if (data.list) {
-          const currentModule = data.list[this.currentRank]
-          this.listData = currentModule.listData
-          this.summaryObject = currentModule.summaryObject
-          this.listConfig = currentModule.listConfig
+        if (data.list && data.list[this.currentRank]) {
+          const { table = {}, summary = {} } = data.list[this.currentRank] || {}
+          table.columns && (this.table['columns'] = utils.clone(table.columns))
+          table.searchor && (this.table['searchor'] = utils.clone(table.searchor))
+          summary.batch && (this.summary['batch'] = utils.clone(summary.batch))
+          summary.dataApi && (this.summary['dataApi'] = utils.clone(summary.dataApi))
+          summary.applySubmitApi && (this.summary['applySubmitApi'] = utils.clone(summary.applySubmitApi))
         }
       },
       immediate: true
@@ -81,46 +83,35 @@ export default {
     projectApproval () {
       this.$emit('switchTab', '2')
     },
-    // 尝试获取样例数据
-    async testFetch (api) {
-      if (api.url) {
-        const fn = http[api.method.toLocaleLowerCase()] || function () {}
-        const params = api.method === 'GET' ? { params: api.params } : api.params
-        try {
-          const res = await fn.apply(http, [api.url, params])
-          if (res.code === 200) {
-            this.listData = res.data
-          }
-        } catch (error) {
-          console.log(error)
-        }
-      }
-    },
     updateSearchor (data) {
-      this.listConfig.searchor = data
+      this.table.searchor = data
       this.handup()
     },
     updateColumns (data) {
-      this.listConfig.columns = data
+      this.table.columns = data
       this.handup()
     },
-    updateSummary (data) {
-      this.summaryObject = data
+    updateApplySubmitApi (data) {
+      this.summary.applySubmitApi = data
       this.handup()
-      this.handupApimap(this.summaryObject)
+    },
+    updateListDataApi (data) {
+      this.summary.dataApi = data
+      this.handup()
+    },
+    updateBatchButton (data) {
+      this.summary.batch = data
+      this.handup()
     },
     handup () {
       const cacheData = {
-        listData: utils.clone(this.listData),
-        listConfig: utils.clone(this.listConfig),
-        summaryObject: utils.clone(this.summaryObject)
+        table: utils.clone(this.table),
+        summary: utils.clone(this.summary)
+        // batch: utils.clone(this.batch),
+        // dataApi: utils.clone(this.dataApi),
+        // applySubmitApi: utils.clone(this.applySubmitApi)
       }
       this.setViewData({ key: 'list', value: cacheData })
-      this.setBuildData({ key: 'list', value: cacheData })
-    },
-    handupApimap (data) {
-      this.setViewData({ key: 'apimap', value: data })
-      this.setBuildData({ key: 'apimap', value: data })
     }
   }
 }

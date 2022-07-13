@@ -1,48 +1,61 @@
 // import utils from '@/utils'
-import applyViewToBuild from './view-to-build/apply'
-import approvalViewToBuild from './view-to-build/approval'
-import { columnsViewToBuild, searchorViewToBuild } from './view-to-build/list'
-import tabsViewToBuild from './view-to-build/tabs'
+// import applyViewToBuild from '@builder/utils/view-to-build/apply'
+// import approvalViewToBuild from '@builder/utils/view-to-build/approval'
+// import { columnsViewToBuild, searchorViewToBuild } from '@builder/utils/view-to-build/list'
+// import tabsViewToBuild from '@builder/utils/view-to-build/tabs'
+import Vue from 'vue'
+import api from '@/api'
+// import utils from '@/utils'
+import routes from '@/router/routes.js'
+import { camel2dash, dash2camel } from '@builder/utils'
 export default {
   state: {
     tabType: '0',
     editType: 'new', // new | modify
     currentRank: 0,
     projectName: '',
-    stepNodes: {},
+    nodes: {},
     projects: [],
-    buildData: {
-      name: '',
-      listConfig: {},
-      applyConfig: {},
-      approvalConfig: {},
-      apimapConfig: {},
-      routerConfig: {},
-      tabsConfig: []
+    menus: [],
+    apiBaseProps: {
+      url: undefined,
+      name: undefined,
+      path: undefined,
+      method: undefined,
+      params: undefined,
+      arguments: undefined
     },
+    // buildData: {
+    //   name: '',
+    //   list: {},
+    //   tabs: [],
+    //   router: {},
+    //   apimap: {},
+    //   approval: {}
+    // },
     viewData: {
       name: '',
       isEmpty: true,
+      list: {},
       tabs: [],
       router: {},
-      list: {},
-      apply: {},
-      apimap: {},
+      // apimap: {},
       approval: {}
-    }
+    },
+    globalComponentNames: []
   },
   getters: {
+    getMenus (state) {
+      return state.menus || []
+    },
     getCurrentRank (state) {
       return state.currentRank
     },
-    getStepNodes (state) {
-      return state.stepNodes[state.currentRank]
+    getNodes (state) {
+      return state.nodes[state.currentRank] || []
     },
     getTabType (state) {
       return state.tabType
-    },
-    getBuildData (state) {
-      return state.buildData
     },
     getViewData (state) {
       return state.viewData
@@ -58,8 +71,8 @@ export default {
     }
   },
   mutations: {
-    commitStepNodes (state, nodes = []) {
-      state.stepNodes[state.currentRank] = nodes
+    commitNodes (state, nodes = []) {
+      Vue.set(state.nodes, state.currentRank, nodes)
     },
     commitTabType (state, type) {
       state.tabType = type
@@ -67,59 +80,18 @@ export default {
     commitEditType (state, type) {
       state.editType = type
     },
-    commitBuildData (state, { key, rank = state.currentRank, value }) {
-      if (!state.buildData[key]) {
-        state.buildData[key] = {}
-      }
-      switch (key) {
-        case 'list':
-          const { listConfig = {} } = value
-          const columns = columnsViewToBuild(listConfig.columns)
-          const searchor = searchorViewToBuild(listConfig.searchor)
-          state.buildData['listConfig'][rank] = { columns, searchor }
-          break
-        case 'apply':
-          const applyBuild = applyViewToBuild(value.collapsePanels)
-          state.buildData['applyConfig'][rank] = applyBuild
-          break
-        case 'approval':
-          const approvalBuild = approvalViewToBuild(value.stepNodes, value.collapsePanels)
-          state.buildData['approvalConfig'][rank] = approvalBuild
-          break
-        case 'apimap':
-          const already = state.buildData[key][rank] || {}
-          state.buildData['apimapConfig'][rank] = {
-            ...already,
-            ...value
-          }
-          break
-        case 'tabs':
-          const tabs = value
-          const tabsBuild = tabsViewToBuild(tabs)
-          state.buildData['tabsConfig'] = tabsBuild
-          break
-        case 'router':
-          state.buildData['routerConfig'] = value
-          break
-      }
+    commitViewData (state, data) {
+      state.viewData = data
     },
-    commitViewData (state, { key, rank = state.currentRank, value }) {
+    commitViewDataByRank (state, { key, rank = state.currentRank, value }) {
       state.viewData.isEmpty = false
       if (!state.viewData[key]) {
         state.viewData[key] = {}
       }
       switch (key) {
         case 'list':
-        case 'apply':
         case 'approval':
           state.viewData[key][rank] = value
-          break
-        case 'apimap':
-          const already = state.viewData[key][rank] || {}
-          state.viewData['apimap'][rank] = {
-            ...already,
-            ...value
-          }
           break
         case 'tabs':
         case 'router':
@@ -129,6 +101,12 @@ export default {
           state.viewData[key] = value
           break
       }
+    },
+    commitComponentNames (state, data) {
+      state.globalComponentNames = data
+    },
+    commitBuilderMenus (state, data) {
+      state.menus = data
     },
     commitProjects (state, data) {
       state.projects.push(data)
@@ -141,44 +119,88 @@ export default {
     }
   },
   actions: {
-    setCurrentRank ({ commit, state }, nodes) {
-      commit('commitCurrentRank', nodes)
+    setCurrentRank ({ commit }, rank) {
+      commit('commitCurrentRank', rank)
     },
-    setStepNodes ({ commit, state }, nodes) {
-      commit('commitStepNodes', nodes)
+    setNodes ({ commit }, nodes) {
+      commit('commitNodes', nodes)
     },
-    setTabType ({ commit, state }, type) {
+    setTabType ({ commit }, type) {
       commit('commitTabType', type)
     },
-    setBuildData ({ commit, state }, data) {
-      commit('commitBuildData', data)
+    setViewData ({ commit }, data) {
+      commit('commitViewDataByRank', data)
     },
-    setViewData ({ commit, state }, data) {
-      commit('commitViewData', data)
+    loadViewData ({ commit }, name) {
+      api.getbuilderviewdata(name).then(res => {
+        if (res.code === 200) {
+          const data = res.data.viewData || {}
+          commit('commitViewData', data)
+          // const keysOfRank = ['approval', 'list', 'apimap']
+          // const data = res.data.viewData || {}
+          // Object.keys(data).forEach(key => {
+          //   const module = data[key]
+          //   if (utils.isValuable(module)) {
+          //     if (keysOfRank.includes(key)) {
+          //       Object.keys(module).forEach((rank) => {
+          //         commit('commitViewDataByRank', { key, rank, value: module[rank] })
+          //       })
+          //     } else {
+          //       commit('commitViewDataByRank', { key, value: module })
+          //     }
+          //   }
+          // })
+        }
+      })
     },
-    resetBuildData ({ commit, state }) {
-      commit('commitBuildData', { key: 'tabsConfig', value: [] })
-      commit('commitBuildData', { key: 'listConfig', value: {} })
-      commit('commitBuildData', { key: 'routerConfig', value: {} })
-      commit('commitBuildData', { key: 'applyConfig', value: {} })
-      commit('commitBuildData', { key: 'apimapConfig', value: {} })
-      commit('commitBuildData', { key: 'approvalConfig', value: {} })
+    resetViewData ({ commit }) {
+      commit('commitViewData', {
+        name: '',
+        isEmpty: true,
+        tabs: [],
+        list: {},
+        router: {},
+        approval: {}
+      })
     },
-    resetViewData ({ commit, state }) {
-      commit('commitViewData', { key: 'tabs', value: [] })
-      commit('commitViewData', { key: 'list', value: {} })
-      commit('commitViewData', { key: 'router', value: {} })
-      commit('commitViewData', { key: 'apimap', value: {} })
-      commit('commitViewData', { key: 'apply', value: {} })
-      commit('commitViewData', { key: 'approval', value: {} })
+    loadRegistedComponentsList ({ commit }) {
+      const globalPlugins = Vue._installedPlugins || []
+      const names = globalPlugins.map(i => i.name).filter(i => i)
+      const dashNames = names.map(i => camel2dash(i))
+      const camelNames = names.map(i => dash2camel(i))
+      const wholeNames = dashNames.concat(camelNames) // 保持两种命名方式都有
+      commit('commitComponentNames', wholeNames)
     },
-    setEditType ({ commit, state }, type) {
+    loadBuilderMenus ({ commit }, data) {
+      const res = []
+      const cache = Object.create(null)
+      if (!cache['views']) {
+        cache['views'] = true
+        res.push({
+          path: 'views',
+          name: '顶层菜单'
+        })
+      }
+      routes.forEach(i => {
+        if (i.module) {
+          if (!cache[i.module.path]) {
+            cache[i.module.path] = true
+            res.push(i.module)
+          }
+        }
+      })
+      commit('commitBuilderMenus', res)
+    },
+    setEditType ({ commit }, type) {
       commit('commitEditType', type)
     },
     setProjectName ({ commit, state }, name) {
       if (state.projectName !== name) {
         commit('commitProjectName', name)
       }
+    },
+    resetProjectName ({ commit }) {
+      commit('commitProjectName', '')
     }
   }
 }

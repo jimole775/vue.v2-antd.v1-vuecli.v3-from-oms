@@ -16,7 +16,7 @@
         <a-layout-content class="pd">
           <slot name="content" />
         </a-layout-content>
-        <!-- <a-layout-footer class="oms-footer">
+        <a-layout-footer class="oms-footer">
           <a-row>
             <a-col :span="16">
               <span style="color:gray">(请注意信息安全)</span>
@@ -33,33 +33,36 @@
               </span>
             </a-col>
           </a-row>
-        </a-layout-footer> -->
+        </a-layout-footer>
       </a-layout>
     </a-layout>
-    <Projects v-else @update="checkedProject" />
+    <Projects v-else />
   </div>
 </template>
 <script>
 import Menu from './menu'
 import Header from './header'
-import mixins from '@builder/mixins'
+import builder from '@builder/mixins/builder'
 import Projects from './projects'
 export default {
-  mixins: [mixins],
+  mixins: [builder],
   name: 'Layout',
   components: {
     Menu,
     Header,
     Projects
   },
-  computed: {
-    showProjectFactory () {
-      return !!this.projectName
+  data () {
+    return {
+      showProjectFactory: false
     }
   },
-  methods: {
-    checkedProject (name) {
-      this.setProjectName(name)
+  watch: {
+    projectName: {
+      handler (name) {
+        this.showProjectFactory = !!name
+      },
+      immediate: true
     }
   }
 }
@@ -82,11 +85,13 @@ export default {
   border-left: 1px solid #e8e8e8;
   background: #FFFFFF;
 }
+
 .layout, .layout-project-list {
   width: 100%;
   height: 100%;
   background: #333;
 }
+
 .layout-project-list [class~='ant-col'] {
   display: flex;
   align-items: center;

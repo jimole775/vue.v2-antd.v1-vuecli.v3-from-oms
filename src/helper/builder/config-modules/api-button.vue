@@ -2,7 +2,7 @@
   <span class="api-button">
     <a-button
       type="primary"
-      :class="modal.data.url ? '' : 'summary-disabled'"
+      :class="isValible ? '' : 'summary-disabled'"
       @click="edit"
     >
       {{ modal.data.label }}
@@ -11,7 +11,7 @@
       <slot name="custom" slot="custom">
         <a-col :span="24">
           <a-form-item label="后台配置权限" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input placeholder="$services.com.xxx.xxx" v-decorator="['permission']" />
+            <a-input placeholder="$services.com.xxx.xxx" v-model="modal.data.permission" />
           </a-form-item>
         </a-col>
       </slot>
@@ -19,6 +19,7 @@
   </span>
 </template>
 <script>
+import utils from '@/utils'
 import ConfigApi from '../config-modals/config-api.vue'
 export default {
   components: {
@@ -28,10 +29,6 @@ export default {
     value: {
       type: Object,
       default: () => ({
-        url: undefined,
-        method: undefined,
-        params: undefined,
-        permission: undefined,
         label: '提交'
       })
     }
@@ -42,6 +39,11 @@ export default {
         show: false,
         data: {}
       }
+    }
+  },
+  computed: {
+    isValible () {
+      return this.modal.data && this.modal.data.url && this.modal.data.url.length > 1
     }
   },
   watch: {
@@ -58,11 +60,8 @@ export default {
     edit () {
       this.modal.show = true
     },
-    update (data) {
-      this.modal.data.url = data.url
-      this.modal.data.method = data.method
-      this.modal.data.params = data.params
-      this.$emit('update', this.modal.data)
+    update (apiInfo) {
+      this.$emit('update', utils.clone({ ...this.modal.data, ...apiInfo }))
     }
   }
 }

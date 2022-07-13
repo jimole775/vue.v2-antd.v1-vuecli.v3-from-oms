@@ -11,75 +11,65 @@
         <a-col :span="24">
           <a-form-item label="key" :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <a-input
-              v-decorator="['key',
-                            {
-                              rules: [
-                                { required: true, message: '请确认关键字' },
-                                { pattern: /^[a-zA-Z]([a-zA-Z0-9]*)$/g, message: '只支持大小写英文字母、数字'}
-                              ]
-                            }]"
+              v-decorator="['key', {
+                rules: [
+                  { required: true, message: '请确认关键字' },
+                  { pattern: /^[a-zA-Z]([a-zA-Z0-9]*)$/g, message: '只支持大小写英文字母、数字'}
+                ]
+              }]"
             />
           </a-form-item>
         </a-col>
         <a-col :span="24">
           <a-form-item label="label" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <a-input v-decorator="['title', {rules: [{ required: true, message: '请确认字段标签' }]}]" />
+            <a-input v-decorator="['label', {rules: [{ required: true, message: '请确认字段标签' }]}]" />
           </a-form-item>
         </a-col>
         <a-col :span="24">
           <a-form-item label="宽度调整" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <div class="width-adjust" style="display: flex;">
-              <span class="width-adjust-label">span: </span>
-              <a-input-number v-decorator="['span', { rules: [{ required: false }]}]" />
-              <span class="width-adjust-label">label: </span>
-              <a-input-number v-decorator="['label', { rules: [{ required: false }]}]" />
-              <span class="width-adjust-label">wrapper: </span>
-              <a-input-number v-decorator="['wrapper', { rules: [{ required: false }]}]" />
-            </div>
+            <a-row>
+              <a-col span="8">
+                <span class="width-adjust-label">全长: </span>
+                <a-input style="width: 100px" v-decorator="['layoutSpan', { rules: [{ required: false }]}]" addon-after="/24" />
+              </a-col>
+              <a-col span="8">
+                <span class="width-adjust-label">左: </span>
+                <a-input style="width: 100px" v-decorator="['layoutLabel', { rules: [{ required: false }]}]" addon-after="/24" />
+              </a-col>
+              <a-col span="8">
+                <span class="width-adjust-label">右: </span>
+                <a-input style="width: 100px" v-decorator="['layoutWrapper', { rules: [{ required: false }]}]" addon-after="/24" />
+              </a-col>
+            </a-row>
           </a-form-item>
         </a-col>
+      </a-row>
+      <ConfigVisibleEditable
+        v-if="nodes && nodes.length"
+        :nodes="nodes"
+        :radios="radios"
+        v-model="veConfig"
+      />
+      <a-row>
         <a-col :span="24">
           <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
             <span slot="label">
-              提交字段调整
-              <a-tooltip title="当一个组件需要提交至少两个字段时，可以使用。">
+              提交字段调整函数
+              <a-tooltip title="当一个组件需要提交至少两个字段时，可以使用">
                 <a-icon type="question-circle-o" />
               </a-tooltip>
             </span>
-            <code v-if="showParamTransfer">
+            <FunctionBuilder
+              v-decorator="['paramTransferFunction', {
+                rules: [{ required: false }]
+              }]"
+            />
+            <!-- <code v-if="showParamTransfer">
               <span>paramTransfer (params, vm) {</span>
               <a-textarea v-decorator="['paramTransfer', {rules: [{ required: false }]}]" />
               <span>}</span>
             </code>
-            <a v-else @click="showParamTransfer = true"><a-icon type="plus-circle" /></a>
-          </a-form-item>
-        </a-col>
-        <a-col v-if="getTabType === '2'" :span="24">
-          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <span slot="label">
-              展示节点
-              <a-tooltip title="勾选即显示">
-                <a-icon type="question-circle-o" />
-              </a-tooltip>
-            </span>
-            <a-checkbox-group
-              v-decorator="['stepNodes', {rules: [{ required: false }]}]"
-              :options="stepNodesOptions"
-            />
-          </a-form-item>
-        </a-col>
-        <a-col v-if="config.operations && config.operations.length" :span="24">
-          <a-form-item :label-col="{span: 6}" :wrapper-col="{span: 16}">
-            <span slot="label">
-              操作项
-              <a-tooltip title="勾选即显示">
-                <a-icon type="question-circle-o" />
-              </a-tooltip>
-            </span>
-            <a-checkbox-group
-              v-decorator="['operations', {rules: [{ required: false }]}]"
-              :options="config.operations"
-            />
+            <a v-else @click="showParamTransfer = true"><a-icon type="plus-circle" /></a> -->
           </a-form-item>
         </a-col>
         <a-col :span="24">
@@ -96,17 +86,22 @@
         </a-col>
       </a-row>
       <div v-if="configType === 'selection'">
-        <ComponentConfig v-model="componentInfo" />
+        <ConfigComponent v-model="componentInfo" />
       </div>
       <a-row>
         <div v-if="configType === 'function'">
           <a-col :span="24">
             <a-form-item label="自定义组件" :label-col="{span: 6}" :wrapper-col="{span: 16}">
-              <code>
+              <!-- <code>
                 <span>wrapperCustomRender (h, formItem, vm) {</span>
                 <a-textarea v-decorator="['wrapperCustomRender', {rules: [{ required: true, message: '请输入函数实体' }]}]" />
                 <span>}</span>
-              </code>
+              </code> -->
+              <FunctionBuilder
+                v-decorator="['wrapperCustomRenderFunction', {
+                  rules: [{ required: false }]
+                }]"
+              />
             </a-form-item>
           </a-col>
         </div>
@@ -116,52 +111,66 @@
 </template>
 <script>
 import utils from '@/utils'
-import { mapGetters } from 'vuex'
-import ComponentConfig from '../config-modules/component-config'
+import FunctionBuilder from '@/components/FunctionBuilder'
+import ConfigComponent from '@builder/config-modules/config-component'
+import ConfigVisibleEditable from '@builder/config-modules/config-visible-editable.vue'
 export default {
   components: {
-    ComponentConfig
+    FunctionBuilder,
+    ConfigComponent,
+    ConfigVisibleEditable
   },
   props: {
-    modal: {
-      type: Object,
-      default: () => ({})
-    },
-    config: {
-      type: Object,
-      default: () => ({
-        anchorTips: '',
-        anchorText: '配置表单',
-        layout: 'h',
-        operations: [] // 显示operation的radio选项
-      })
-    }
+    modal: { type: Object, default: () => ({}) },
+    nodes: { type: Array, default: () => [] },
+    radios: { type: Array, default: () => [] } // 显示operations的radio选项
   },
   data () {
     return {
       form: this.$form.createForm(this),
-      componentInfo: {},
+      componentInfo: {
+        props: {},
+        component: '',
+        originProps: {}
+      },
+      veConfig: {
+        showOnEnv: [],
+        showOnRoles: [],
+        editOnRoles: [],
+        showOnRadios: [],
+        showOnNodes: [],
+        editOnNodes: []
+      },
       configType: 'selection',
-      showParamTransfer: false
-    }
-  },
-  computed: {
-    ...mapGetters(['getStepNodes', 'getTabType']),
-    stepNodesOptions () {
-      const res = []
-      const isOperation = !!(this.config.operations && this.config.operations.length)
-      this.getStepNodes && this.getStepNodes.forEach((node) => {
-        // 如果有审批项，就代表是在编辑【审批内容】
-        // 【审批内容】不需要在结束节点显示
-        if (isOperation) {
-          if (node.value !== 'end') {
-            res.push(node)
-          }
-        } else {
-          res.push(node)
+      defaultProps: {
+        paramTransferFunction: {
+          functionType: 'arrow',
+          arguments: ['params', 'formItem', 'vm'],
+          fixedLines: {
+            front: [],
+            behind: ['return params']
+          },
+          defaultLines: {
+            front: ['const dataSource = vm.dataSource \/\/ 详情接口数据'],
+            behind: []
+          },
+          expression: ''
+        },
+        wrapperCustomRenderFunction: {
+          functionType: 'arrow',
+          arguments: ['h', 'formItem', 'vm'],
+          fixedLines: {
+            front: [],
+            behind: []
+          },
+          defaultLines: {
+            front: ['const dataSource = vm.dataSource \/\/ 详情接口数据'],
+            behind: []
+          },
+          expression: ''
         }
-      })
-      return res
+      },
+      showParamTransfer: false
     }
   },
   watch: {
@@ -183,49 +192,63 @@ export default {
   },
   methods: {
     editInitialize (data) {
-      const operations = this.config.operations || []
-      const stepNodesOptions = this.stepNodesOptions || []
+      // this.defaultProps.paramTransferFunction.expression
       const itemInfo = {
         key: data.key,
-        title: data.title,
-        span: data.layout ? data.layout.span : 6,
-        label: data.layout ? data.layout.label : 6,
-        wrapper: data.layout ? data.layout.wrapper : 16,
-        operations: data.operations || operations.map(i => i.value),
-        stepNodes: data.stepNodes || stepNodesOptions.map(i => i.value),
-        paramTransfer: data.paramTransfer && getFunctionBody(data.paramTransfer)
+        label: data.label,
+        layoutSpan: data.layout ? data.layout.span : 6,
+        layoutLabel: data.layout ? data.layout.label : 8,
+        layoutWrapper: data.layout ? data.layout.wrapper : 16,
+        // showOnRadios: data.showOnRadios || [],
+        // editOnNodes: data.editOnNodes || [],
+        // showOnNodes: data.showOnNodes || this.nodes.map(i => i.value), // 默认全部节点都显示
+        // paramTransfer: data.paramTransfer && getFunctionBody(data.paramTransfer),
+        paramTransferFunction: data.paramTransferFunction || this.defaultProps.paramTransferFunction
       }
-      if (data.wrapperCustomRender) {
+      this.initVEConfig(data)
+      if (data.wrapperCustomRenderFunction) {
         this.configType = 'function'
-        itemInfo.wrapperCustomRender = getFunctionBody(data.wrapperCustomRender)
+        // itemInfo.paramTransferFunction = getFunctionBody(data.wrapperCustomRender)
+        itemInfo.wrapperCustomRenderFunction = data.wrapperCustomRenderFunction || this.defaultProps.wrapperCustomRenderFunction
       } else {
+        // console.log('bind component info', this.componentInfo)
         this.configType = 'selection'
         this.componentInfo.props = data.props
         this.componentInfo.component = data.component
         this.componentInfo.originProps = data.originProps
       }
-      this.$nextTick(() => {
+      setTimeout(() => {
         this.form.setFieldsValue(itemInfo)
       })
     },
     addInitialize () {
-      const operations = this.config.operations || []
-      const stepNodesOptions = this.stepNodesOptions || []
       this.$nextTick(() => {
         this.form.setFieldsValue({
           span: 6,
-          label: 6,
-          wrapper: 16,
-          operations: operations.map(i => i.value),
-          stepNodes: stepNodesOptions.map(i => i.value)
+          label: 8,
+          wrapper: 16
         })
+        this.initVEConfig()
       })
+    },
+    initVEConfig (data) {
+      this.veConfig.showOnRadios = (data && data.showOnRadios) || []
+      this.veConfig.showOnRoles = (data && data.showOnRoles) || []
+      this.veConfig.editOnNodes = (data && data.editOnNodes) || []
+      this.veConfig.showOnNodes = (data && data.showOnNodes) || this.nodes.map(i => i.value) // 默认全部节点都显示
+      this.veConfig.showOnEnv = (data && data.showOnEnv) || []
+      this.veConfig.editOnRoles = (data && data.editOnRoles) || []
     },
     reset () {
       this.form.resetFields()
+      this.initVEConfig()
       this.showParamTransfer = false
       this.configType = 'selection'
-      this.componentInfo = {}
+      this.componentInfo = {
+        props: {},
+        component: '',
+        originProps: {}
+      }
     },
     confirm () {
       this.form.validateFields((err, values) => {
@@ -234,27 +257,29 @@ export default {
         }
         this.modal.show = false
         const model = {
+          ...this.veConfig,
           key: values.key,
-          title: values.title,
-          stepNodes: values.stepNodes,
-          operations: values.operations,
+          label: values.label,
           configType: this.configType,
           layout: {
-            span: values.span,
-            label: values.label,
-            wrapper: values.wrapper
+            span: values.layoutSpan,
+            label: values.layoutLabel,
+            wrapper: values.layoutWrapper
           }
         }
         if (values.paramTransfer) {
-          model.paramTransfer = buildFunction('paramTransfer (params, vm) {', values.paramTransfer)
+          // model.paramTransfer = buildFunction('paramTransfer (params, vm) {', values.paramTransfer)
+          model.paramTransferFunction = values.paramTransferFunction
         }
         if (this.configType === 'selection') {
+          model.props = this.componentInfo.props
           model.component = this.componentInfo.component
           model.originProps = this.componentInfo.originProps
-          model.props = this.componentInfo.props
         } else {
-          model.wrapperCustomRender = buildFunction('wrapperCustomRender (h, formItem, vm) {', values.wrapperCustomRender)
+          model.wrapperCustomRenderFunction = values.wrapperCustomRenderFunction
+          // model.wrapperCustomRender = buildFunction('wrapperCustomRender (h, formItem, vm) {', values.wrapperCustomRender)
         }
+        // console.log('formItem confirm:', model)
         this.$emit('update', utils.clone(model))
       })
     }
@@ -262,37 +287,31 @@ export default {
 }
 
 // 从函数字符串中，获取函数实体
-function getFunctionBody (string) {
-  let regTail = /\}$/
-  // 普通函数
-  let regHead = /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/
-  let head = string.match(regHead)
-  if (!head) {
-    // 箭头函数
-    regHead = /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/
-    head = string.match(regHead)
-  }
-  if (head) {
-    head = head[0]
-  }
-  return string.replace(regHead, '').replace(regTail, '')
-}
+// function getFunctionBody (string) {
+//   let regTail = /\}$/
+//   // 普通函数
+//   let regHead = /^(async\s)?function\s?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?{/
+//   let head = string.match(regHead)
+//   if (!head) {
+//     // 箭头函数
+//     regHead = /^(async\s)?([\w\$][\w\d\$]*?)*\s?\([(\r\n)\R\N\t\T]?([\w\d\$]*?,?\s?)*\)\s?=>\s?{/
+//     head = string.match(regHead)
+//   }
+//   if (head) {
+//     head = head[0]
+//   }
+//   return string.replace(regHead, '').replace(regTail, '')
+// }
 
 // 把函数body构造成函数字符串
-function buildFunction (functionHead, functionBody) {
-  return `${functionHead}\n${functionBody}\n}`
-}
+// function buildFunction (functionHead, functionBody) {
+//   return `${functionHead}\n${functionBody}\n}`
+// }
 
 </script>
 <style lang="less" scoped>
-.width-adjust {
-  display: flex;
-  span.width-adjust-label {
-    padding: 0 1rem;
-  }
-  /deep/.ant-input-number {
-    top: 4px;
-  }
+span.width-adjust-label {
+  padding: 0 1rem;
 }
 .object-ctrl {
   display: flex;

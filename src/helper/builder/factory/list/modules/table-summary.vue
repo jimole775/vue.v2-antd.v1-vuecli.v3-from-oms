@@ -1,118 +1,142 @@
 <template>
   <div>
     <div class="btn-wrap clearfix summary">
-      <template v-for="key in Object.keys(summaryObject)">
+      <ApiButton
+        :key="99"
+        :value="dataApi"
+        @update="dataApiConfirm"
+      />
+      <ApiButton
+        key="apply"
+        style="padding-right: 1rem"
+        :value="applySubmitApi"
+        @update="applySubmitApiUpdate"
+      />
+      <template v-for="key in Object.keys(batchButtonsMap)">
         <ApiButton
           :key="key"
-          :value="summaryObject[key]"
-          @update="summaryItemConfirm"
+          :value="batchButtonsMap[key]"
+          @update="batchButtonConfirm"
         />
       </template>
     </div>
   </div>
 </template>
 <script>
+import utils from '@/utils'
 import ApiButton from '@builder/config-modules/api-button'
 export default {
   components: {
     ApiButton
   },
   props: {
-    dataSource: {
+    value: {
       type: Object,
       default: () => ({})
     }
   },
-  watch: {
-    dataSource: {
-      handler (data) {
-        if (!this.$utils.isEmptyObject(data)) {
-          Object.keys(data).forEach((key) => {
-            this.$set(this.summaryObject, key, data[key])
-          })
-        }
-      },
-      immediate: true
-    }
-  },
   data () {
+    const baseProps = this.$store.state.builder.apiBaseProps
     return {
-      summaryObject: {
-        approval: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
-          key: 'approval',
-          label: '审批'
+      applySubmitApi: {
+        ...baseProps,
+        key: 'applyApi',
+        label: '创建|申请'
+      },
+      dataApi: {
+        ...baseProps,
+        key: 'dataApi',
+        label: '列表'
+      },
+      batchButtonsMap: {
+        pass: {
+          ...baseProps,
+          key: 'pass',
+          label: '通过'
         },
         transfer: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
+          ...baseProps,
           key: 'transfer',
           label: '转审'
         },
         revoke: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
+          ...baseProps,
           key: 'revoke',
           label: '撤回'
         },
         reject: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
+          ...baseProps,
           key: 'reject',
           label: '驳回'
         },
         abandon: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
+          ...baseProps,
           key: 'abandon',
           label: '废弃'
         },
         close: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
+          ...baseProps,
           key: 'close',
           label: '关闭'
         },
         delete: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
+          ...baseProps,
           key: 'delete',
           label: '删除'
         },
         export: {
-          url: undefined,
-          method: undefined,
-          params: undefined,
+          ...baseProps,
           key: 'export',
           label: '导出'
         }
-      },
-      modal: {
-        show: false,
-        data: undefined
       }
     }
   },
-  methods: {
-    editSummaryItem (item) {
-      this.modal.show = true
-      this.modal.data = item
+  computed: {
+    nodes () {
+      return this.$store.getters.getNodes
+    }
+  },
+  watch: {
+    value: {
+      handler ({ batch, dataApi, applySubmitApi }) {
+        if (!utils.isEmptyObject(batch)) {
+          Object.keys(batch).forEach((key) => {
+            this.$set(this.batchButtonsMap, key, batch[key])
+          })
+        }
+        if (!utils.isEmptyObject(dataApi)) {
+          this.dataApi = dataApi
+        }
+        if (!utils.isEmptyObject(applySubmitApi)) {
+          this.applySubmitApi = applySubmitApi
+        }
+      },
+      immediate: true
     },
-    summaryItemConfirm (summaryInfo) {
-      const item = this.summaryObject[summaryInfo.key]
-      item.url = summaryInfo.url
-      item.method = summaryInfo.method
-      item.params = summaryInfo.params
-      item.permission = summaryInfo.permission
-      this.$emit('update', this.summaryObject)
+    nodes: {
+      handler (nodes) {
+        if (nodes[0]) {
+          this.applySubmitApi.label = nodes[0].label || '创建|申请'
+          this.$emit('updateApplySubmitApi', this.applySubmitApi)
+        }
+      },
+      immediate: true,
+      deep: true
+    }
+  },
+  methods: {
+    applySubmitApiUpdate (apiInfo) {
+      this.applySubmitApi = utils.clone(apiInfo)
+      this.$emit('updateApplySubmitApi', this.applySubmitApi)
+    },
+    batchButtonConfirm (buttonInfo) {
+      this.batchButtonsMap[buttonInfo.key] = utils.clone(buttonInfo)
+      this.$emit('updateBatchButton', this.batchButtonsMap)
+    },
+    dataApiConfirm (buttonInfo) {
+      this.dataApi = utils.clone(buttonInfo)
+      this.$emit('updateListDataApi', this.dataApi)
     }
   }
 }
