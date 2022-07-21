@@ -50,19 +50,23 @@ export default {
     ...mapState({
       menus: state => state.builder.menus
     }),
+    routerInfo () {
+      return this.viewData.router || {}
+    },
     menuSelectedKeys () {
-      return this.viewData.router.parent ? [this.viewData.router.parent] : []
+      const parent = this.routerInfo.parent || ''
+      return parent ? [parent] : []
     }
   },
   methods: {
     hasDisabled (name) {
-      return this.viewData.router.parent === name
+      return this.routerInfo.parent === name
     },
     showConfigRouteModal (menuName) {
-      if (this.viewData.router.parent === menuName) {
+      if (this.routerInfo.parent === menuName) {
         this.configRouteModal.show = true
         this.configRouteModal.mode = 'modify'
-        this.configRouteModal.data = utils.clone(this.viewData.router)
+        this.configRouteModal.data = utils.clone(this.routerInfo)
       }
     },
     configRouteConfirm (data) {

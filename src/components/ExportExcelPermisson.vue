@@ -10,11 +10,11 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
 import axios from 'axios'
 import utils from '@/utils'
 import { mapActions } from 'vuex'
 import { getToken } from '@/utils/auth'
+import loading from '@/utils/loading'
 import Phonevalidate from '@/components/Phonevalidate'
 export default {
   name: 'ExportExcelPermission',
@@ -52,7 +52,7 @@ export default {
   methods: {
     ...mapActions(['pushExportingList']),
     downloadHandler (res) {
-      Vue.bus.emit('loading', true)
+      loading.mounted()
       try {
         // 转成文件流，主要为了兼容下载接口
         const blob = new Blob([res.data], { type: 'application/octet-stream' })
@@ -71,10 +71,10 @@ export default {
           content: error.toString()
         })
       }
-      Vue.bus.emit('loading', false)
+      loading.unload()
     },
     async sniffExports () {
-      Vue.bus.emit('loading', true)
+      loading.mounted()
       this.$refs.PhonevalidateRef.validate(axios, {
         method: 'post',
         url: this.api,
@@ -82,7 +82,7 @@ export default {
         responseType: 'blob',
         headers: { 'x-token': getToken() }
       }).then(async (res) => {
-        Vue.bus.emit('loading', false)
+        loading.unload()
         if (!res) return
         // 兼容mock工具在dev环境对数据的重构
         if (process.env.NODE_ENV === 'development') {

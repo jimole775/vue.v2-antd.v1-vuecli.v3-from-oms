@@ -169,6 +169,9 @@ export default {
     },
     alreadyProjects () {
       return this.modal.data.already || []
+    },
+    loading () {
+      return this.$store.state.global.loading
     }
   },
   // watch: {

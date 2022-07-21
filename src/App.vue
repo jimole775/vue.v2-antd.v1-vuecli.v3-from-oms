@@ -13,8 +13,7 @@ export default {
   data () {
     return {
       locale: zhCN,
-      menusList: [],
-      canShow: false
+      menusList: []
     }
   },
   computed: {
