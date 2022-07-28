@@ -88,7 +88,7 @@ export default {
     viewData: {
       handler (data) {
         const tabs = []
-        data.tabs.forEach((tab) => {
+        data.tabs && data.tabs.forEach((tab) => {
           if (tab.type === '0') {
             tab.component = utils.clone(ProjectList)
           }
