@@ -22,7 +22,7 @@
   "dependencies": {
     "@babel/standalone": "^7.17.6",
     "@vue/babel-plugin-transform-vue-jsx": "^1.2.1",
-    "ant-design-vue": "^1.4.4",
+    "ant-design-vue": "^1.7.8",
     "axios": "^0.18.0",
     "core-js": "^2.6.5",
     "echarts": "^4.2.1",
