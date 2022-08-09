@@ -1,5 +1,5 @@
+import './config/conf.init'
 import './config/load.styles'
 import './config/load.modules'
 import './config/conf.dev'
 import './config/conf.vue'
-import './config/conf.init'
