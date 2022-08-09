@@ -70,7 +70,7 @@
 import api from '@/api'
 import utils from '@/utils'
 export default {
-  name: 'OperatorFlow',
+  name: 'SOperatorFlow',
   props: {
     bridge: {
       type: Object

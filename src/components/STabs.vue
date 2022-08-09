@@ -16,7 +16,6 @@
 </template>
 <script>
 import utils from '@/utils'
-import { mapActions } from 'vuex'
 import baseMixins from '@/mixins/baseMixins'
 const panelmodel = {
   tabName: '',
@@ -99,20 +98,10 @@ export default {
     this.initialize()
   },
   methods: {
-    ...mapActions(['loadMenuButtons']),
     async initialize () {
       // 直接show activeId
-      // 默认一定要加载按钮权限列表
-      await this.getMenuButtons()
       // 根据权限列表裁剪有效的panes
       this.queryPermissionPanes()
-      return Promise.resolve()
-    },
-    async getMenuButtons () {
-      const menuButtons = this.$store.state.global.menuButtons || []
-      if (menuButtons.length === 0) {
-        await this.loadMenuButtons()
-      }
       return Promise.resolve()
     },
     queryPermissionPanes () {

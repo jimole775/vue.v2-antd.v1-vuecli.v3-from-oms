@@ -1,15 +1,21 @@
 <template>
   <a-locale-provider :locale="locale">
-    <router-view />
+    <SLayout>
+      <router-view />
+    </SLayout>
   </a-locale-provider>
 </template>
 <script>
 import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN'
 import watermark from 'watermark-dom'
 import { getJumpInfo, removeJumpInfo } from '@/utils/auth'
-import jumper from '@/utils/jumper'
+import SLayout from '@/components/SLayout.vue'
+import jumper from '@/router/jumper'
 import utils from '@/utils'
 export default {
+  components: {
+    SLayout
+  },
   data () {
     return {
       locale: zhCN,

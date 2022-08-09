@@ -18,7 +18,6 @@
 </template>
 <script>
 import SApprovallor from '@/components/SApprovallor'
-import ApprovalOperation from '@/components/ApprovalOperation'
 import code from './code.md'
 export default {
   title: '审批样例',
@@ -147,7 +146,7 @@ export default {
                   ]
                 },
                 {
-                  component: ApprovalOperation,
+                  component: 'SOperator',
                   title: '审批操作',
                   mode: 'edit',
                   show: true,

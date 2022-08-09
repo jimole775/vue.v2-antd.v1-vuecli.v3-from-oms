@@ -1,10 +1,25 @@
 import api from '@/api'
 import router from '@/router'
+import utils from '@/utils'
 import store from '@/store'
-import base64 from './base64'
+import base64 from '@/utils/base64'
 
 const jumper = {}
 const allRoutes = router.matcher.getRoutes()
+/** 直接跳转地址的参数模型：
+ * meta: {
+ *    directConnection: { # 固定字段
+ *      [category]: { # 待办的类型
+ *        businessType: [0 || 1] # 0: 匹配旧流程，1：匹配新流程
+ *        idFrom: ''  # 获取当条跳转数据的id的接口，一般是详情接口
+ *        __params__: {} # 对应 jumper.go() 参数
+ *        __tabType__: '' # 对应 jumper.go() 参数
+ *        __tabIndex__: '' # 对应 jumper.go() 参数
+ *        __todoType__: '' # 对应 jumper.go() 参数
+ *      }
+ *    }
+ * }
+ */
 const directRoutes = allRoutes.filter((r) => r.meta && r.meta.directConnection)
 const directRouteMap = routes2map(directRoutes)
 
@@ -12,12 +27,13 @@ const directRouteMap = routes2map(directRoutes)
 * 通用跳转方法
 * @param {Object} item
 * @template go({
-*  【必填】__key__: 'RECRUITION', # 业务类型
+*  【必填1】__key__: 'RECRUITION', # 业务类型【“__key__” 和 “path” 二选一】
+*  【必填2】path: '/xx/xx', # 跳转地址【“__key__” 和 “path” 二选一】
 *  【可选】__id__: 1004, # 流程id 注意区分【流程实例id】
-*  【可选】__tabType__: 'list'|'detail', # 对应《OmsTab.vue》或者《OmsTabPlus.vue》的tab类型
+*  【可选】__tabType__: ['list'|'detail'], # 对应《OmsTab.vue》或者《OmsTabPlus.vue》的tab类型
 *  【可选】__tabIndex__: '0', # 对应《OmsTab.vue》或者《OmsTabPlus.vue》的tab下标
-*  【可选】__todoType__: 'apply'|'approval', # 对应《主页待办》的 “我的申请” 或 “我的审批”
-*  【可选】__params__: {}
+*  【可选】__todoType__: ['apply'|'approve'|'approved'], # 对应《主页待办》的 “我的申请” 或 “我的审批” “我的已审”
+*  【可选】__params__: {} # 查询项参数
 * })
 */
 jumper.go = async function (item) {
@@ -27,9 +43,10 @@ jumper.go = async function (item) {
   const category = (item.__key__ || '').trim().toLocaleLowerCase()
 
   // 【流程实例id】，主要用来查询审批日志的
-  if (!item.id) {
-    const apiName = directRouteMap[category].idFrom
-    item.id = await loadIdByApi(item, apiName)
+  // 有些流程的ID并非都是businessId, 需要通过详情接口重新获取
+  if (item.__tabType__ === 'detail') {
+    const route = directRouteMap[category] || {}
+    item.id = await loadIdByApi(item, route.idFrom) || item.id
   }
 
   dispatchTodoParams(category, item)
@@ -64,7 +81,7 @@ function depolyCommonProperty (item) {
   // 现在mo都是在审批阶段才跳到oms处理，所以在跳转链接中缺省了待办类型
   item.__tabType__ = item.__tabType__ || 'detail'
 
-  // 待办类型 => "apply": 我的申请，"approve": 我的审批，为了区分查询字段的默认赋值“申请人”，“当前处理人”
+  // 待办类型 => "apply": 我的申请，"approve": 我的审批，"none": 无，为了区分查询字段的默认赋值“申请人”，“当前处理人”
   // 默认为 'approve'，理由和 __tabType__ 相同
   item.__todoType__ = item.__todoType__ || 'approve'
 
@@ -72,18 +89,20 @@ function depolyCommonProperty (item) {
   item.handler = spillUserSelectValue()
 
   // 默认参数
+  item.id = item.id || item.businessId
   item.prNo = item.prNo || item.title
   item.flowNo = item.flowNo || item.title
   item.flowNode = item.flowNode || item.statusCode
-  item.instanceId = item.instanceId || item.businessId || item.__id__
-  item.flowInstanceId = item.flowInstanceId || item.businessId || item.__id__
-  item.projectFlowInstanceId = item.projectFlowInstanceId || item.businessId || item.__id__
-  item.purchaseFlowInstanceId = item.purchaseFlowInstanceId || item.businessId || item.__id__
+  item.businessId = item.businessId || item.__id__
+  item.instanceId = item.instanceId || item.businessId
+  item.flowInstanceId = item.flowInstanceId || item.businessId
+  item.projectFlowInstanceId = item.projectFlowInstanceId || item.businessId
+  item.purchaseFlowInstanceId = item.purchaseFlowInstanceId || item.businessId
   return item
 }
 
 // 匹配路由，并进行跳转
-function matchRouterPath (category, item) {
+function matchRouterPath (category, param) {
   if ([
     'project_purchase_flow',
     'tm_project_purchase_flow',
@@ -98,13 +117,12 @@ function matchRouterPath (category, item) {
       router.push({ path: '/pp-project/purchase' })
     }
   } else {
-    const params = directRouteMap[category]
+    const route = utils.clone(directRouteMap[category] || {})
+    const routeQuery = utils.clone(route.query || {}) // 获取跳转的query字段
+    const paramQuery = utils.clone(param.query || {}) // 获取跳转的query字段
     router.push({
-      path: params.path,
-      query: {
-        ...params,
-        path: undefined // 清掉path字段，避免转译问题
-      }
+      path: route.path || param.path,
+      query: { ...routeQuery, ...paramQuery }
     })
   }
 }
@@ -112,21 +130,22 @@ function matchRouterPath (category, item) {
 // 保存跳转参数到全局
 // businessType：0：保存到 localStorage
 // businessType：1：保存到 Vuex
-function dispatchTodoParams (category, item) {
-  const params = directRouteMap[category]
+function dispatchTodoParams (category, item = {}) {
+  const route = directRouteMap[category] || {}
+  const params = { ...utils.clone(route), ...utils.clone(item) }
   const businessType = params.businessType
   // 旧业务类型
   if (businessType === 0) {
     if (item.__tabType__ === 'list') {
-      localStorage.setItem('fromHomeTodoCount', JSON.stringify({ ...params, ...item }))
+      localStorage.setItem('fromHomeTodoCount', JSON.stringify(params))
     }
     if (item.__tabType__ === 'detail') {
-      localStorage.setItem('fromHomeTodoDetail', JSON.stringify({ ...params, ...item }))
+      localStorage.setItem('fromHomeTodoDetail', JSON.stringify(params))
     }
   }
   // 新业务类型
   if (businessType === 1) {
-    store.commit('setTodoParams', { ...params, ...item })
+    store.commit('setTodoParams', params)
   }
 }
 
@@ -140,13 +159,13 @@ function loadIdByApi (item, apiName) {
         resolve(res.data.id)
       } else {
         resolve('')
-        throw new Error('操作日志获取流程id失败！')
+        throw new Error(`跳转中，"详情id" 获取失败，请检查 "${apiName}" 接口！`)
       }
     } else {
       resolve('')
-      if (item.__tabType__ === 'detail') {
-        throw new Error('操作日志丢失流程id查询接口，请完善businessApiMap！')
-      }
+      // if (item.__tabType__ === 'detail') {
+      //   throw new Error(`"详情id" 的查询接口未配置，请到路由中配置 "${item.__key__}" 的 "idFrom" 字段！`)
+      // }
     }
   })
 }

@@ -1,45 +1,50 @@
+import Vue from 'vue'
+import VueBus from 'vue-bus'
 import {
   Card, Button, Layout, Menu,
   Pagination, DatePicker, Upload,
   Icon, Row, Col, Avatar, Badge,
   Table, List, Breadcrumb, Tabs,
   Input, Form, Select, Popconfirm,
-  Modal, Collapse, Radio, Divider,
-  Message, Tree, Spin, TimePicker,
+  Collapse, Radio, Divider,
+  Tree, Spin, TimePicker,
   InputNumber, Steps, Tooltip,
   LocaleProvider, AutoComplete,
   Checkbox, Empty, Carousel,
-  Progress, Calendar
+  Progress, Calendar, Message, Modal,
+  Dropdown, Timeline, Popover
 } from 'ant-design-vue'
 
-import Vue from 'vue'
+import Confidential from '@/components/Confidential'
 import ExportExcel from '@/components/ExportExcel'
+import ImportExcel from '@/components/ImportExcel'
 import YearPicker from '@/components/YearPicker'
-import RangeDatePicker from '@/components/RangeDatePicker'
-import SBreadcrumb from '@/components/SBreadcrumb'
+import RangePicker from '@/components/RangePicker'
 import DictSelect from '@/components/DictSelect'
-import DictRadio from '@/components/DictRadio'
-import SDownload from '@/components/SDownload'
+import UserSelect from '@/components/UserSelect'
 import SUpload from '@/components/SUpload'
+import SDownload from '@/components/SDownload'
 import CitySelect from '@/components/CitySelect'
-import SMoney from '@/components/SMoney'
 import WorkplaceSelect from '@/components/WorkplaceSelect'
 import HandlerTableCell from '@/components/HandlerTableCell'
 import RangeMonthPicker from '@/components/RangeMonthPicker'
-import FormItemRender from '@/components/FormItemRender'
 import SLine from '@/components/SLine'
 import SLines from '@/components/SLines'
-import STabs from '@/components/STabs'
-
+import FormItemRender from '@/components/FormItemRender'
+import SOperator from '@/components/SApprovallor/operator'
+import ApprovalStepBar from '@/components/ApprovalStepBar'
+import SOperatorFlow from '@/components/SOperatorFlow'
+Vue.use(VueBus)
 Vue.use(Button)
 Vue.use(Card)
 Vue.use(Layout)
 Vue.use(Menu)
 Vue.use(Pagination)
 Vue.use(DatePicker)
-Vue.use(RangeDatePicker)
+Vue.use(RangePicker)
 Vue.use(TimePicker)
 Vue.use(Upload)
+Vue.use(Popover)
 Vue.use(Icon)
 Vue.use(Row)
 Vue.use(Col)
@@ -54,11 +59,9 @@ Vue.use(InputNumber)
 Vue.use(Form)
 Vue.use(Select)
 Vue.use(Popconfirm)
-Vue.use(Modal)
 Vue.use(Collapse)
 Vue.use(Radio)
 Vue.use(Divider)
-Vue.use(Message)
 Vue.use(Tree)
 Vue.use(Spin)
 Vue.use(Steps)
@@ -67,33 +70,43 @@ Vue.use(LocaleProvider)
 Vue.use(AutoComplete)
 Vue.use(Checkbox)
 Vue.use(Empty)
+Vue.use(Timeline)
 Vue.use(Carousel).use(Progress)
 Vue.use(Calendar)
-Vue.use(SMoney)
 Vue.use(HandlerTableCell)
 Vue.use(RangeMonthPicker)
 Vue.use(SLine)
 Vue.use(SLines)
-Vue.use(STabs)
 Vue.use(ExportExcel)
-Vue.use(FormItemRender)
-Vue.use(SDownload)
+Vue.use(ImportExcel)
+Vue.use(Modal)
+Vue.use(Message)
 Vue.use(SUpload)
+Vue.use(SDownload)
+Vue.use(FormItemRender)
+Vue.use(ApprovalStepBar)
+Vue.use(SOperator)
+Vue.use(SOperatorFlow)
+Vue.use(Confidential)
 
-Vue.component(SMoney.name, SMoney)
-Vue.component(ExportExcel.name, ExportExcel)
+Vue.component(Confidential.name, Confidential)
+Vue.component(Dropdown.name, Dropdown)
+Vue.component(ApprovalStepBar.name, ApprovalStepBar)
+Vue.component(SOperator.name, SOperator)
+Vue.component(SOperatorFlow.name, SOperatorFlow)
 Vue.component(FormItemRender.name, FormItemRender)
+Vue.component(ExportExcel.name, ExportExcel)
+Vue.component(ImportExcel.name, ImportExcel)
 Vue.component(SLine.name, SLine)
 Vue.component(SLines.name, SLines)
-Vue.component(STabs.name, STabs)
 Vue.component(HandlerTableCell.name, HandlerTableCell)
 Vue.component(RangeMonthPicker.name, RangeMonthPicker)
-Vue.component(RangeDatePicker.name, RangeDatePicker)
+Vue.component(RangePicker.name, RangePicker)
 Vue.component(YearPicker.name, YearPicker)
-Vue.component(SBreadcrumb.name, SBreadcrumb)
 Vue.component(DictSelect.name, DictSelect)
-Vue.component(DictRadio.name, DictRadio)
-Vue.component(SDownload.name, SDownload)
-Vue.component(SUpload.name, SUpload)
+Vue.component(UserSelect.name, UserSelect)
+// Vue.component(InterviewsDemand.name, InterviewsDemand)
 Vue.component(CitySelect.name, CitySelect)
 Vue.component(WorkplaceSelect.name, WorkplaceSelect)
+Vue.component(SUpload.name, SUpload)
+Vue.component(SDownload.name, SDownload)

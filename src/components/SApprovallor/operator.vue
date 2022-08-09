@@ -3,7 +3,7 @@ import utils from '@/utils'
 import { mapState } from 'vuex'
 export default {
   title: '审批模块',
-  name: 'Operator',
+  name: 'SOperator',
   props: {
     dataSource: {
       type: Object,

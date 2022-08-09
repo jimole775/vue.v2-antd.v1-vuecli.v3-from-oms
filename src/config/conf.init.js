@@ -2,11 +2,16 @@ import Vue from 'vue'
 import App from '@/App.vue'
 import router from '@/router'
 import store from '@/store'
+import http from '@/utils/http'
 
-store.dispatch('loadMenus').then(() => {
-  new Vue({
-    router,
-    store,
-    render: h => h(App)
-  }).$mount('#app')
+http.get('/api/ping').then(async res => {
+  if (res.code === 200) {
+    // 实例化前，加载菜单权限，否则判断无权限，会被重定向到 401
+    await store.dispatch('loadMenus')
+    new Vue({
+      router,
+      store,
+      render: h => h(App)
+    }).$mount('#app')
+  }
 })

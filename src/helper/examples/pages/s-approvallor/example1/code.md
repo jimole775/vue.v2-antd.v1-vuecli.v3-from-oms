@@ -1,7 +1,6 @@
 ``` html
 <script>
 import SApprovallor from '@/components/SApprovallor'
-import ApprovalOperation from '@/components/ApprovalOperation'
 export default {
   data () {
     return {
@@ -112,7 +111,7 @@ export default {
                   ]
                 },
                 {
-                  component: ApprovalOperation, title: '审批操作', mode: 'edit', show: true,
+                  component: 'SOperator', title: '审批操作', mode: 'edit', show: true,
                   operationItem:  {
                     // 提交的选项
                     radios: [

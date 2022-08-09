@@ -213,7 +213,7 @@ export default {
       const operator = this.approval.operator || {}
       utils.isNone(operator.show) && (operator.show = true)
       utils.isNone(operator.mode) && (operator.mode = 'edit')
-      utils.isNone(operator.componentName) && (operator.componentName = 'Operator')
+      utils.isNone(operator.componentName) && (operator.componentName = 'SOperator')
       return operator
     },
     evalPanelsProps () {

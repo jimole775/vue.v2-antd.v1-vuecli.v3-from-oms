@@ -35,7 +35,7 @@ export default function viewToBuild (getStepNodes = [], collapsePanels = [], ope
 
 function transferOperation (nodeKey, operation) {
   const panel = {
-    component: 'ApprovalOperation',
+    component: 'SOperator',
     title: '审批操作',
     mode: 'edit',
     show: true,

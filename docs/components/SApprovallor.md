@@ -13,7 +13,6 @@
 <script>
 import SApprovallor from '@/components/SApprovallor'
 import FormItemViewRender from '@/components/FormItemViewRender'
-import ApprovalOperation from '@/components/ApprovalOperation'
 const FormItemRenderFormItems = [
   {
     layout: {
@@ -142,7 +141,6 @@ const listmodel = {
 }
 const BaseInfoEdit = { component: 'FormItemRender', title: '基本信息', mode: 'edit', show: true, formItems: FormItemRenderFormItems }
 const BaseInfoView = { component: FormItemViewRender, title: '基本信息', mode: 'readonly', show: true, columns: FormItemViewRenderFormItems }
-const ApprovalOperationEdit = { component: ApprovalOperation, title: '审批操作', mode: 'edit', show: true, operationItem: ApprovalOperationItems }
 const applymodel = {
   components: [BaseInfoEdit]
 }
@@ -150,7 +148,7 @@ const approvalmodel = {
   start: {
     components: {
       dispermission: [BaseInfoView],
-      permission: [BaseInfoEdit, ApprovalOperationEdit]
+      permission: [BaseInfoEdit]
     }
   }
 }

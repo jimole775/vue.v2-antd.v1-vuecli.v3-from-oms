@@ -46,11 +46,6 @@ export default [
         component: () => import('@/helper/examples/pages/export-excel/index.vue')
       },
       {
-        path: '/helper/examples/approval-operation',
-        name: 'ApprovalOperation',
-        component: () => import('@/helper/examples/pages/approval-operation/index.vue')
-      },
-      {
         path: '/helper/examples/approval-nodes-map',
         name: 'ApprovalNodesMap',
         component: () => import('@/helper/examples/pages/approval-nodes-map/index.vue')

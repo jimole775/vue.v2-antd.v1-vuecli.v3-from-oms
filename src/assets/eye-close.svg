@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>1.通用/2.Icon图标/线/Close 2</title>
+    <defs>
+        <filter id="filter-1">
+            <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0.588235 0 0 0 0 0.592157 0 0 0 0 0.600000 0 0 0 1.000000 0"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="视觉模板" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="1.1-登录页面" transform="translate(-1326.000000, -502.000000)">
+            <g id="编组-3" transform="translate(504.000000, 220.000000)">
+                <g id="大-已输入-带角标备份" transform="translate(514.000000, 272.000000)">
+                    <g id="不可见" transform="translate(308.000000, 10.000000)">
+                        <rect id="矩形" opacity="0" x="0" y="0" width="20" height="20"></rect>
+                        <g filter="url(#filter-1)" id="编组-17">
+                            <g transform="translate(3.043270, 6.250000)">
+                                <path d="M0.0268446584,-4.73695157e-14 C0.704885151,3.20487506 3.54993978,5.60995178 6.95673018,5.60995178 C10.3566887,5.60995178 13.1971623,3.21451145 13.8825104,0.019271071" id="路径" stroke="#323233" stroke-width="1.66666667"></path>
+                                <line x1="5.29006351" y1="5.19328511" x2="4.45673018" y2="8.10995178" id="路径-52" stroke="#323233" stroke-width="1.66666667"></line>
+                                <line x1="2.18002117" y1="3.4667878" x2="4.73695157e-14" y2="5.57602856" id="路径-52" stroke="#323233" stroke-width="1.66666667"></line>
+                                <line x1="9.63167725" y1="5.14640818" x2="8.79834392" y2="8.06307485" id="路径-52" stroke="#323233" stroke-width="1.66666667" transform="translate(9.215011, 6.604742) rotate(-30.000000) translate(-9.215011, -6.604742) "></line>
+                                <line x1="11.8968995" y1="3.30332745" x2="14.0061403" y2="5.48334862" id="路径-52备份" stroke="#323233" stroke-width="1.66666667"></line>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

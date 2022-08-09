@@ -1,18 +1,14 @@
 <template>
-  <SLayout>
-    <Phonevalidate ref="PhonevalidateRef" vtype="clock" />
-  </SLayout>
+  <Phonevalidate ref="PhonevalidateRef" vtype="clock" />
 </template>
 
 <script>
 import baseMixins from '@/mixins/baseMixins.js'
 import Phonevalidate from '@/components/Phonevalidate.vue'
-import SLayout from '@/components/SLayout.vue'
 export default {
   name: 'Home',
   mixins: [baseMixins],
   components: {
-    SLayout,
     Phonevalidate
   },
   data () {

@@ -1,12 +1,6 @@
-import utils from '@/utils'
-import { mapActions, mapState } from 'vuex'
+import { mapState } from 'vuex'
 
 export default {
-  created () {
-    if (utils.isNone(this.$store.state.global.menuButtons)) {
-      this.loadMenuButtons()
-    }
-  },
   computed: {
     ...mapState({
       currentName: state => state.global.user.name,
@@ -23,8 +17,6 @@ export default {
     }
   },
   methods: {
-    // 加载按钮权限
-    ...mapActions(['loadMenuButtons']),
     hasCatalogButton (btnKey) {
       let btnArr = this.$store.state.global.menuButtons
       return btnArr.includes(btnKey)

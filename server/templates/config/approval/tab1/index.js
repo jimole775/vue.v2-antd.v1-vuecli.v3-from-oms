@@ -24,7 +24,7 @@ const panel3ReadViewer = { component: 'FormItemRender', title: '调查结果', m
 const panel4EditRender = { component: 'FormItemRender', title: '处理结果', mode: 'edit', show: true, formItems: panel3Edit }
 const panel4ReadViewer = { component: 'FormItemRender', title: '处理结果', mode: 'readonly', show: true, formItems: panel3Read }
 
-const operationRender = { component: 'ApprovalOperation', title: '审批操作', mode: 'edit', show: true, operationItem: operation }
+const operationRender = { component: 'SOperator', title: '审批操作', mode: 'edit', show: true, operationItem: operation }
 
 const approveLogViewer = { component: 'PPApproveLog', title: '操作日志', mode: 'readonly', show: true }
 
