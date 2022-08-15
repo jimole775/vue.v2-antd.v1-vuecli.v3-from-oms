@@ -22,6 +22,7 @@
           :type="collapsed ? 'menu-unfold' : 'menu-fold'"
           @click="collapsedTriger"
         />
+        <SBreadcrumb />
         <div class="pull-right">
           <a-avatar icon="user" class="mr5" :src="user.image" />
           <span class="black" v-text="user.name" />
@@ -69,11 +70,13 @@ import SMenu from './SMenu'
 import utils from '@/utils'
 import api from '@/api'
 import ExportExcelManager from '@/components/ExportExcelManager.vue'
+import SBreadcrumb from '@/components/SBreadcrumb.vue'
 let collapsed = false
 export default {
   name: 'SLayout',
   components: {
     SMenu,
+    SBreadcrumb,
     ExportExcelManager
   },
   data () {

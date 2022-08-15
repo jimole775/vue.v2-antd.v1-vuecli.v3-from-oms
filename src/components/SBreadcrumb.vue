@@ -1,15 +1,13 @@
 <template>
-  <div class="pt30">
-    <a-breadcrumb class="oms-breadcrumb" separator="/">
-      <a-breadcrumb-item href="/">
-        <!-- <a-icon type="home" @click="toHome" /> -->
-        <a @click="toHome">首页</a>
-      </a-breadcrumb-item>
-      <a-breadcrumb-item v-for="(item, index) in pathArr" :key="index">
-        <span>{{ item.breadcrumbName }}</span>
-      </a-breadcrumb-item>
-    </a-breadcrumb>
-  </div>
+  <a-breadcrumb class="oms-breadcrumb" separator="/">
+    <a-breadcrumb-item href="/">
+      <!-- <a-icon type="home" @click="toHome" /> -->
+      <a @click="toHome">首页</a>
+    </a-breadcrumb-item>
+    <a-breadcrumb-item v-for="(item, index) in pathRoads" :key="index">
+      <span>{{ item.breadcrumbName }}</span>
+    </a-breadcrumb-item>
+  </a-breadcrumb>
 </template>
 
 <script>
@@ -19,7 +17,7 @@ export default {
   name: 'SBreadcrumb',
   data () {
     return {
-      pathArr: []
+      pathRoads: []
     }
   },
   computed: {
@@ -28,20 +26,21 @@ export default {
     }
   },
   watch: {
-    menus () {
-      this.getPathArr()
+    '$route': {
+      handler () {
+        this.getPathRoads()
+      },
+      immediate: true,
+      deep: true
     }
   },
-  created () {
-    this.getPathArr()
-  },
   methods: {
-    getPathArr () {
+    getPathRoads () {
       if (!this.menus || this.menus.length === 0) {
         return
       }
       let arr = utils.findPathDFS(this.menus, this.$router.history.current.path)
-      this.pathArr = arr.map((item) => {
+      this.pathRoads = arr.map((item) => {
         return {
           path: item.path,
           breadcrumbName: item.title
@@ -59,10 +58,11 @@ export default {
 
 <style lang="less" scoped>
 .oms-breadcrumb {
-  position: absolute;
+  position: relative;
   left: 0;
   top: 0;
-  width: 100%;
+  width: auto;
+  display: inline-block;
   height: 45px;
   line-height: 45px;
   padding: 0 15px;

@@ -1,12 +1,18 @@
 <template>
   <a-menu
-    v-if="menus.length"
     theme="light"
     mode="inline"
     :class="['menu']"
+    :key="menuSelectedKeys.join()"
     :default-selected-keys="menuSelectedKeys"
     :default-open-keys="submenuSelectedKeys"
   >
+    <div v-if="!menus || !menus.length">
+      <!-- 没有数据前，渲染动画视图 -->
+      <a-button :loading="loading" class="loading-animate">
+        &nbsp;
+      </a-button>
+    </div>
     <template v-for="item in menus">
       <a-menu-item v-if="!item.children" :key="item.id">
         <router-link :to="item.path">
@@ -25,7 +31,6 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import SubMenu from './SubMenu'
 import utils from '@/utils'
 
@@ -39,28 +44,39 @@ export default {
   components: {
     'sub-menu': SubMenu
   },
-  created: function () {
-    this.loadMenus()
-    this.loadDictList()
-  },
   data () {
-    return {}
+    return {
+      menuSelectedKeys: [],
+      submenuSelectedKeys: []
+    }
   },
   computed: {
-    submenuSelectedKeys () {
-      const arr = utils.findPathDFS(this.menus, document.location.pathname)
-      return !this.collapsed && arr.map(item => item.id)
-    },
-    menuSelectedKeys () {
-      const arr = utils.findPathDFS(this.menus, document.location.pathname)
-      return arr.map(item => item.id)
-    },
     menus () {
       return this.$store.state.global.menus
+    },
+    loading () {
+      return this.$store.state.global.loading
+    }
+  },
+  watch: {
+    '$route': {
+      handler () {
+        this.getMenuSelectedKeys()
+        this.getSubmenuSelectedKeys()
+      },
+      deep: true,
+      immediate: true
     }
   },
   methods: {
-    ...mapActions(['loadMenus', 'loadDictList', 'loadUser'])
+    getMenuSelectedKeys () {
+      const arr = utils.findPathDFS(this.menus, document.location.pathname)
+      this.submenuSelectedKeys = arr.map(item => item.id)
+    },
+    getSubmenuSelectedKeys () {
+      const arr = utils.findPathDFS(this.menus, document.location.pathname)
+      this.menuSelectedKeys = !this.collapsed && arr.map(item => item.id)
+    }
   }
 }
 </script>
