@@ -13,7 +13,7 @@ const STORE_NAME = cmd('git remote show -n')
 const BRANCH_NAME = cmd('git rev-parse --abbrev-ref HEAD')
 const VERSION_LIMIT = '99.99.99'
 const VERSION_REGEXP = /\d{1,2}\.\d{1,2}\.\d{1,2}/
-// const VERSION_TYPES = ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch']
+// const VERSION_TYPES = ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease']
 const PARAMETER_ACCESS = ['v', 'version', 'm', 'message']
 const CHANGELOG_TYPE = { WHOLE: 0, DEFAULT: 1, APPEND: 2 }
 const CURRENT_VERSION = getCurrentVersion()
@@ -69,6 +69,7 @@ async function updateChangelog () {
     }
   }
   await callPackage('commitizen')
+
   cmd(`commitizen init cz-conventional-changelog --save --save-exact`)
   cmd(`conventional-changelog -p angular -i ${CHANGELOG} -s -r ${logType}`)
   cmd(`git add ${CHANGELOG}`)
@@ -88,6 +89,8 @@ function updateTag () {
 }
 
 function growupVersionNumber (v) {
+  // todo 重新考虑【预】发版类型 prexxx 的版本号的处理逻辑
+  // 参考：https://blog.csdn.net/weixin_35665584/article/details/112885247
   const limitArray = VERSION_LIMIT.split('.')
   const majorLimit = Number(limitArray[0])
   const minorLimit = Number(limitArray[1])
@@ -277,6 +280,12 @@ function configUserInfo () {
     }
   })
 }
+
+// todo 版本是否重复的判断，应该从最后一个 commit 的内容开始判断
+// function isDupVersion () {
+//   // if (CURRENT_VERSION)
+//   console.log('That is duplicate version number, maybe has not featrue to be update!')
+// }
 
 function isWindows () {
   const platform = os.platform()
