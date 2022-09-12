@@ -1,22 +1,17 @@
 {
   "name": "temp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
+  "engines": { "node": "16.x" },
   "scripts": {
-    "init:commitizen": "npm install -g commitizen && commitizen init cz-conventional-changelog --save --save-exact",
+    "init:commitizen": "commitizen init cz-conventional-changelog --save --save-exact",
     "init": "npm install && npm run init:commitizen",
     "serve": "vue-cli-service serve --mode native",
     "build": "vue-cli-service build",
     "build:test": "vue-cli-service build --mode test",
     "build:dev": "vue-cli-service build --mode dev",
     "lint": "vue-cli-service lint",
-    "update:version": "node ./tag.version.js --version && git add package.json && git commit package.json -m \"chore: update project's version\"",
-    "make:tag": "node ./tag.version.js --tag",
-    "make:CHANGELOG": "conventional-changelog -p angular -i docs/CHANGELOG.md -s -r 2",
-    "track:CHANGELOG": "git add docs/CHANGELOG.md",
-    "handup:CHANGELOG": "git commit docs/CHANGELOG.md -m \"chore: 创建周迭代CHANGELOG\"",
-    "version": "git pull && npm run update:version && npm run make:CHANGELOG && npm run track:CHANGELOG && npm run handup:CHANGELOG",
-    "postversion": "npm run make:tag && git push && git push --tags",
+    "version":"node ./version.js",
     "builder": "node ./server/index.js"
   },
   "dependencies": {
@@ -40,7 +35,6 @@
     "watermark-dom": "^2.3.0"
   },
   "devDependencies": {
-    "axios-mock-adapter": "^1.16.0",
     "@babel/preset-env": "^7.5.5",
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
@@ -49,9 +43,11 @@
     "@vue/cli-plugin-eslint": "^3.7.0",
     "@vue/cli-service": "^3.7.0",
     "@vue/eslint-config-standard": "^4.0.0",
+    "axios-mock-adapter": "^1.16.0",
     "babel-eslint": "^10.0.1",
     "babel-plugin-import": "^1.11.2",
     "body-parser": "^1.19.2",
+    "commitizen": "^4.2.5",
     "conventional-changelog-cli": "^2.1.1",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^5.16.0",
@@ -74,17 +70,8 @@
     "pre-commit": "lint-staged",
     "commit-msg": "commitlint --edit ./.git/COMMIT_EDITMSG"
   },
-  "lint-staged": {
-    "*.{js,vue}": [
-      "vue-cli-service lint",
-      "git add"
-    ]
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
+  "lint-staged": { "*.{js,vue}": ["vue-cli-service lint", "git add"] },
+  "commitlint": { "extends": ["@commitlint/config-conventional"] },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
@@ -92,8 +79,6 @@
     }
   },
   "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
+    "commitizen": { "path": "./node_modules/cz-conventional-changelog" }
   }
 }
