@@ -2,6 +2,10 @@
 
 
 
+## [1.0.2](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/compare/v1.0.1...v1.0.2) (2022-09-12)
+
+
+
 ## [1.0.1](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/compare/1a334df1b642e1a2bf77999e6edbe2b3d668d0a1...v1.0.1) (2022-09-12)
 
 
