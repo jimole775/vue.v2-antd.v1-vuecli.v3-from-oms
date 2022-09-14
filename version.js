@@ -398,7 +398,7 @@ async function getDuplicateVersion () {
         resolve(line)
       }
     })
-    rl.on('end', () => {
+    rl.on('close', () => {
       resolve('')
       rl.close()
       readmeStream.close()
