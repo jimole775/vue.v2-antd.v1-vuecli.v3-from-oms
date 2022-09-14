@@ -384,16 +384,10 @@ function configUserInfo () {
 }
 
 // 版本是否重复的判断，应该从最后一个 commit 的内容开始判断
-function getDuplicateVersion () {
-  const fixCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="fix:"')
-  const featCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="feat:"')
-  const prefCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="pref:"')
-  const revertCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="Revert "')
-  const fixHash = fixCommit.substring(0, HASH_LENGTH)
-  const featHash = featCommit.substring(0, HASH_LENGTH)
-  const prefHash = prefCommit.substring(0, HASH_LENGTH)
-  const revertHash = revertCommit.substring(0, HASH_LENGTH)
-  const regx = new RegExp(`\\[(${fixHash}|${featHash}|${prefHash}|${revertHash})\\]`, 'ig')
+async function getDuplicateVersion () {
+  const lastLine = await getLastFeatCommit()
+  const revertHash = lastLine.substring(0, HASH_LENGTH)
+  const regx = new RegExp(`\\[${revertHash}\\]`, 'ig')
   const readmeStream = createReadStream(CHANGELOG)
   const rl = readline.createInterface({ input: readmeStream })
   return new Promise((resolve) => {
@@ -410,6 +404,22 @@ function getDuplicateVersion () {
       readmeStream.close()
     })
   })
+}
+
+function getLastFeatCommit (n) {
+  return new Promise((resolve) => {
+    loop(resolve, 1)
+  })
+
+  function loop (resolve, n) {
+    const lineString = cmd(`git log -n ${n} --pretty=format:"%h|%s"`)
+    const lastLine = lineString.split('\n').pop()
+    if (/(fix:|feat:|pref:|Revert)\s/.test(lastLine)) {
+      return resolve(lastLine)
+    } else {
+      loop(resolve, ++n)
+    }
+  }
 }
 
 function isWindows () {
