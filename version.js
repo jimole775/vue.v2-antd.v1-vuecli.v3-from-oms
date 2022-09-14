@@ -45,13 +45,18 @@ async function main () {
   await updateChangelog()
   await updateTag()
   await distashGitWorkspace()
+  resetRollbackStack()
+  process.exit(0)
 }
 
-async function cmdRevert () {
+async function cmdRevert (message) {
+  console.log(message)
   await revertTag()
   await revertChangelog()
   await revertVersion()
   await distashGitWorkspace()
+  resetRollbackStack()
+  process.exit(0)
 }
 
 function monitor () {
@@ -59,6 +64,13 @@ function monitor () {
   process.on('SIGKILL', cmdRevert)
   process.on('unhandledRejection', cmdRevert)
   process.on('uncaughtException', cmdRevert)
+}
+
+function resetRollbackStack () {
+  rollbackStack.stash = []
+  rollbackStack.version = []
+  rollbackStack.changelog = []
+  rollbackStack.tag = []
 }
 
 async function updateVersion () {
@@ -371,10 +383,8 @@ function configUserInfo () {
   })
 }
 
-// todo 版本是否重复的判断，应该从最后一个 commit 的内容开始判断
+// 版本是否重复的判断，应该从最后一个 commit 的内容开始判断
 function getDuplicateVersion () {
-  // console.log('That is duplicate version number, maybe has not featrue to be update!')
-  // todo 搞第一个fix featrue pref去匹配当前的CHANGELOG.md
   const fixCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="fix:"')
   const featCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="feat:"')
   const prefCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="pref:"')
@@ -407,7 +417,7 @@ function isWindows () {
   return /^win/.test(platform)
 }
 
-// todo 中间报错需要帮助用户进行操作回滚
+// 中间报错需要帮助用户进行操作回滚
 function callRollbackStack (stack = []) {
   return new Promise(async (resolve) => {
     let item = null
