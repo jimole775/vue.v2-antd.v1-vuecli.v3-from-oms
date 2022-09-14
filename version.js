@@ -61,7 +61,7 @@ async function cmdRevert (message) {
 
 function monitor () {
   process.on('SIGINT', cmdRevert)
-  process.on('SIGKILL', cmdRevert)
+  process.on('SIGTERM', cmdRevert)
   process.on('unhandledRejection', cmdRevert)
   process.on('uncaughtException', cmdRevert)
 }
