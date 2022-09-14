@@ -2,25 +2,43 @@ const os = require('os')
 const { execSync } = require('child_process')
 const readline = require('readline')
 const {
-  existsSync, rmSync, mkdirSync, writeFileSync
+  existsSync, rmSync, mkdirSync, writeFileSync, createReadStream
 } = require('fs')
+const HASH_LENGTH = 7
 const PACKAGE_FILE = './package.json'
 const PACKAGE_FILE_LOCK = './package-lock.json'
 const DOCUMENT_DIST = 'docs'
 const CHANGELOG = `${DOCUMENT_DIST}/CHANGELOG.md`
-const CMD_PARAMS = getCmdParams()
+const VERSION_LIMIT = '99.99.99-999'
+const VERSION_REGEXP = /\d{1,2}\.\d{1,2}\.\d{1,2}(-\d{1,})/
+// const VERSION_TYPES = ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease']
+const PARAMETER_ACCESS = ['v', 'version', 'm', 'message', 't', 'test']
+const CHANGELOG_TYPE = { WHOLE: 0, DEFAULT: 1, APPEND: 2 }
+
 const STORE_NAME = cmd('git remote show -n')
 const BRANCH_NAME = cmd('git rev-parse --abbrev-ref HEAD')
-const VERSION_LIMIT = '99.99.99'
-const VERSION_REGEXP = /\d{1,2}\.\d{1,2}\.\d{1,2}/
-// const VERSION_TYPES = ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease']
-const PARAMETER_ACCESS = ['v', 'version', 'm', 'message']
-const CHANGELOG_TYPE = { WHOLE: 0, DEFAULT: 1, APPEND: 2 }
+
+const CMD_PARAMS = getCmdParams()
 const CURRENT_VERSION = getCurrentVersion()
 const NEXT_VERSION = growupVersionNumber(CURRENT_VERSION)
 
-main()
+const MESSAGE = {
+  DUCPLICATE: 'that is a commit version already in CHANGLOG.md, maybe has not featrue to be update.',
+  VERSION: `"chore: updates version ${CURRENT_VERSION} to ${NEXT_VERSION}"`,
+  CHANGELOG: `"chore: creates CHANGELOG.md of iteration version which ${NEXT_VERSION}"`
+}
+
+const rollbackStack = {
+  stash: [],
+  version: [],
+  changelog: [],
+  tag: []
+}
+
+!CMD_PARAMS.t && main()
+
 async function main () {
+  monitor()
   await configUserInfo()
   await stashGitWorkspace()
   await updateVersion()
@@ -29,9 +47,37 @@ async function main () {
   await distashGitWorkspace()
 }
 
+async function cmdRevert () {
+  await revertTag()
+  await revertChangelog()
+  await revertVersion()
+  await distashGitWorkspace()
+}
+
+function monitor () {
+  process.on('SIGINT', cmdRevert)
+  process.on('SIGKILL', cmdRevert)
+  process.on('unhandledRejection', cmdRevert)
+  process.on('uncaughtException', cmdRevert)
+}
+
 async function updateVersion () {
+  const dupLine = await getDuplicateVersion()
+  if (dupLine) {
+    const message = `${MESSAGE.DUCPLICATE}\nduplicate commit: ${dupLine}.\n`
+    return Promise.reject(new Error(message))
+  }
   await modifyFileVersoion(PACKAGE_FILE)
   await modifyFileVersoion(PACKAGE_FILE_LOCK)
+  rollbackStack.version.push([cmd, `git checkout -q ${PACKAGE_FILE}`])
+  rollbackStack.version.push([cmd, `git checkout -q ${PACKAGE_FILE_LOCK}`])
+
+  cmd('git add .')
+  rollbackStack.version.push([cmd, 'git reset -q HEAD'])
+
+  cmd(`git commit -m ${MESSAGE.VERSION}`)
+  rollbackStack.version.push([cmd, 'git reset --soft HEAD~'])
+
   return Promise.resolve()
 }
 
@@ -40,8 +86,11 @@ function modifyFileVersoion (fileName) {
     if (!existsSync(fileName)) return resolve('')
     const json = require(fileName)
     json.version = NEXT_VERSION
-    const depend = json.dependencies[json.name]
-    if (depend) depend.version = NEXT_VERSION
+    // 针对 package-lock 的packages的version属性的变更
+    const packages = json.packages || {}
+    if (packages['']) packages[''].version = NEXT_VERSION
+    if (packages[json.name]) packages[json.name].version = NEXT_VERSION
+
     const pertyCodes = await codesPretting(JSON.stringify(json))
     writeFileSync(fileName, pertyCodes, { encoding: 'utf8' })
     resolve('')
@@ -68,33 +117,40 @@ async function updateChangelog () {
       logType = CHANGELOG_TYPE.APPEND
     }
   }
-  await callPackage('commitizen')
 
+  await callPackage('commitizen')
   cmd(`commitizen init cz-conventional-changelog --save --save-exact`)
+
   cmd(`conventional-changelog -p angular -i ${CHANGELOG} -s -r ${logType}`)
+  // clean 和 checkout 一起使用，确保“新增”和“变更”都能还原
+  rollbackStack.changelog.push([cmd, `git clean -f -q -- ${CHANGELOG}`])
+  rollbackStack.changelog.push([cmd, `git checkout -q -- ${CHANGELOG}`])
+
   cmd(`git add ${CHANGELOG}`)
-  cmd(`git commit ${CHANGELOG} -m \"chore: 创建周迭代CHANGELOG\"`)
+  rollbackStack.changelog.push([cmd, `git reset -q HEAD -- ${CHANGELOG}`])
+
+  cmd(`git commit ${CHANGELOG} -m ${CHANGELOG}`)
+  rollbackStack.changelog.push([cmd, `git reset --soft HEAD~`])
+
   return Promise.resolve()
 }
 
 function updateTag () {
   const date = getDate()
   const message = CMD_PARAMS.m || CMD_PARAMS.message
-  cmd('git add .')
-  cmd(`git commit -m "chore: update version to ${NEXT_VERSION}"`)
   cmd(`git tag -a v${NEXT_VERSION} -m "${message || date}"`)
-  cmd(`git push ${STORE_NAME} ${BRANCH_NAME}`)
+  rollbackStack.tag.push([cmd, `git tag -d v${NEXT_VERSION}`])
   cmd(`git push --tags`)
+  rollbackStack.tag.push([cmd, `git push ${STORE_NAME} :refs/tags/v${NEXT_VERSION}`])
   return Promise.resolve()
 }
 
 function growupVersionNumber (v) {
-  // todo 重新考虑【预】发版类型 prexxx 的版本号的处理逻辑
-  // 参考：https://blog.csdn.net/weixin_35665584/article/details/112885247
+  // 重新考虑【预】发版类型 prexxx 的版本号的处理逻辑
   const limitArray = VERSION_LIMIT.split('.')
   const majorLimit = Number(limitArray[0])
   const minorLimit = Number(limitArray[1])
-  const patchLimit = Number(limitArray[2])
+  const patchLimit = Number(limitArray[2].split('-')[0])
 
   let growType = CMD_PARAMS.v || CMD_PARAMS.version
   // 如果 growType 为版本号，直接返回
@@ -104,30 +160,54 @@ function growupVersionNumber (v) {
   growType = growType || 'patch'
   let majorVersion = Number(v.split('.')[0])
   let minorVersion = Number(v.split('.')[1])
-  let patchVersion = Number(v.split('.')[2])
-  let operator = getOperator(growType)
-  if (['patch', 'prepatch'].includes(growType)) {
-    updatePatch(operator)
-  }
+  let patchVersion = Number(v.split('.')[2].split('-')[0])
+  let preVersion = Number(v.split('.')[2].split('-')[1])
+  if (growType === 'prerelease') {
+    if (Number.isNaN(preVersion)) {
+      patchVersion = patchVersion + 1
+      preVersion = 0
+    } else {
+      preVersion = preVersion + 1
+    }
+  } else {
+    // prepatch preminor premajor 都视为 preVersion === NaN
+    // 这样就可以让 updatePatch() updateMinor() updateMajor() 直接升级对应的版本号
+    if (/^pre/.test(growType)) {
+      preVersion = NaN
+    }
 
-  if (['minor', 'preminor'].includes(growType)) {
-    updateMinor(operator)
-  }
+    if (['patch', 'prepatch'].includes(growType)) {
+      updatePatch()
+    }
 
-  if (['major', 'premajor'].includes(growType)) {
-    updateMajor(operator)
+    if (['minor', 'preminor'].includes(growType)) {
+      updateMinor()
+    }
+
+    if (['major', 'premajor'].includes(growType)) {
+      updateMajor()
+    }
+
+    // prepatch preminor premajor 不管如何计算，预版本号都会置为 0
+    if (/^pre/.test(growType)) {
+      preVersion = 0
+    }
   }
 
   return `${majorVersion}.${minorVersion}.${patchVersion}`
 
-  function updateMajor (opr) {
-    patchVersion = 0
-    minorVersion = 0
-    majorVersion = eval(`majorVersion${opr}1`)
-    if (majorVersion < 0) {
+  function updateMajor () {
+    if (Number.isNaN(preVersion)) {
+      majorVersion = majorVersion + 1
       patchVersion = 0
       minorVersion = 0
-      majorVersion = 0
+    } else {
+      if (patchVersion !== 0 || minorVersion !== 0) {
+        majorVersion = majorVersion + 1
+        patchVersion = 0
+        minorVersion = 0
+      }
+      preVersion = NaN
     }
     if (majorVersion > majorLimit) {
       patchVersion = patchLimit
@@ -135,28 +215,32 @@ function growupVersionNumber (v) {
       majorVersion = majorLimit
     }
   }
-  function updateMinor (opr) {
-    minorVersion = eval(`minorVersion${opr}1`)
-    patchVersion = 0
-    if (minorVersion < 0) minorVersion = 0
-    if (minorVersion > minorLimit) updateMajor('+')
-  }
-  function updatePatch (opr) {
-    patchVersion = eval(`patchVersion${opr}1`)
-    if (patchVersion < 0) patchVersion = 0
-    if (patchVersion > patchLimit) updateMinor('+')
-  }
-  function getOperator (desc) {
-    if (/^pre/.test(desc)) {
-      return '-'
+  function updateMinor () {
+    if (Number.isNaN(preVersion)) {
+      minorVersion = minorVersion + 1
+      patchVersion = 0
     } else {
-      return '+'
+      if (patchVersion !== 0) {
+        minorVersion = minorVersion + 1
+        patchVersion = 0
+      }
+      preVersion = NaN
     }
+    if (minorVersion > minorLimit) updateMajor()
+  }
+  function updatePatch () {
+    if (Number.isNaN(preVersion)) {
+      patchVersion = patchVersion + 1
+    } else {
+      preVersion = NaN
+    }
+    if (patchVersion > patchLimit) updateMinor()
   }
 }
 
 function getCurrentVersion () {
-  const tag = cmd('git describe --tags')
+  // todo 需要判断远程 tag 和 本地 tag
+  const tag = cmd('git describe --tags --abbrev=0')
   if (VERSION_REGEXP.test(tag)) {
     return tag.replace('v', '')
   } else {
@@ -164,25 +248,17 @@ function getCurrentVersion () {
   }
 }
 
-// function renameFile (fileName) {
-//   try {
-//     rmSync(fileName)
-//     renameSync('tmp.' + fileName, fileName)
-//     return Promise.resolve()
-//   } catch (error) {
-//     return Promise.reject(error)
-//   }
-// }
-
 function getCmdParams () {
   const res = {}
   const paramReg = /^-\w[\w-_]*&/ig
   const args = process.argv || []
   args.forEach((item, index) => {
     if (item && paramReg.test(item)) {
-      const key = item.replace('-', '')
-      const val = args[index + 1] || ''
+      let key = item.replace('-', '')
+      let val = args[index + 1]
       if (PARAMETER_ACCESS.includes(key)) {
+        if (paramReg.test(val)) val = true
+        if (!val) val = true
         res[key] = val
       }
     }
@@ -202,21 +278,35 @@ function stashGitWorkspace() {
   const status = cmd('git status -s')
   if (status && status.length) {
     cmd('git add .')
+    rollbackStack.stash.push([cmd, 'git reset -q HEAD'])
     cmd('git stash save "for update version"')
-    global.$hasdStash = true
+    rollbackStack.stash.push([cmd, 'git stash pop 0'])
   }
   // 先push一次，防止当前分支是未推送过的分支
   cmd(`git push --set-upstream ${STORE_NAME} ${BRANCH_NAME}`)
   // 保持最新，避免冲突
   cmd(`git pull ${STORE_NAME} ${BRANCH_NAME}`)
+
   return Promise.resolve()
 }
 
-function distashGitWorkspace() {
-  if (global.$hasdStash) {
-    cmd('git stash pop 0')
-    delete global.$hasdStash
-  }
+async function revertVersion() {
+  await callRollbackStack(rollbackStack.version)
+  return Promise.resolve()
+}
+
+async function revertChangelog() {
+  await callRollbackStack(rollbackStack.changelog)
+  return Promise.resolve()
+}
+
+async function revertTag() {
+  await callRollbackStack(rollbackStack.tag)
+  return Promise.resolve()
+}
+
+async function distashGitWorkspace() {
+  await callRollbackStack(rollbackStack.stash)
   return Promise.resolve()
 }
 
@@ -282,10 +372,35 @@ function configUserInfo () {
 }
 
 // todo 版本是否重复的判断，应该从最后一个 commit 的内容开始判断
-// function isDupVersion () {
-//   // if (CURRENT_VERSION)
-//   console.log('That is duplicate version number, maybe has not featrue to be update!')
-// }
+function getDuplicateVersion () {
+  // console.log('That is duplicate version number, maybe has not featrue to be update!')
+  // todo 搞第一个fix featrue pref去匹配当前的CHANGELOG.md
+  const fixCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="fix:"')
+  const featCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="feat:"')
+  const prefCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="pref:"')
+  const revertCommit = cmd('git log -n 1 --pretty=format:"%h|%s" --grep="Revert "')
+  const fixHash = fixCommit.substring(0, HASH_LENGTH)
+  const featHash = featCommit.substring(0, HASH_LENGTH)
+  const prefHash = prefCommit.substring(0, HASH_LENGTH)
+  const revertHash = revertCommit.substring(0, HASH_LENGTH)
+  const regx = new RegExp(`\\[(${fixHash}|${featHash}|${prefHash}|${revertHash})\\]`, 'ig')
+  const readmeStream = createReadStream(CHANGELOG)
+  const rl = readline.createInterface({ input: readmeStream })
+  return new Promise((resolve) => {
+    rl.on('line', (line) => {
+      if (regx.test(line)) {
+        rl.close()
+        readmeStream.close()
+        resolve(line)
+      }
+    })
+    rl.on('end', () => {
+      resolve('')
+      rl.close()
+      readmeStream.close()
+    })
+  })
+}
 
 function isWindows () {
   const platform = os.platform()
@@ -293,3 +408,16 @@ function isWindows () {
 }
 
 // todo 中间报错需要帮助用户进行操作回滚
+function callRollbackStack (stack = []) {
+  return new Promise(async (resolve) => {
+    let item = null
+    while ((item = stack.pop())) {
+      const func = item[0]
+      const param = item[1]
+      if (typeof func === 'function') {
+        await func.apply(null, typeof param === 'string' ? [param] : param)
+      }
+    }
+    resolve('')
+  })
+}
