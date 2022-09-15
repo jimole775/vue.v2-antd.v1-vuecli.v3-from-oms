@@ -422,6 +422,7 @@ function installPackage (packzip) {
     if (hasModule(`./node_modules/${packzip}`)) {
       resolve()
     } else {
+      console.log(`attempting to install ${packzip}...`)
       execSync(`npm install --save-dev ${packzip}`)
       loop(packzip, resolve)
     }
