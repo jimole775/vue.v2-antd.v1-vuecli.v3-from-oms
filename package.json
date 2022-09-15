@@ -1,6 +1,6 @@
 {
   "name": "temp",
-  "version": "1.0.1",
+  "version": "v1.0.1",
   "private": true,
   "engines": { "node": "16.x" },
   "scripts": {
