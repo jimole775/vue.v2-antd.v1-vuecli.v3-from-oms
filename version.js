@@ -2,19 +2,25 @@ const os = require('os')
 const { execSync } = require('child_process')
 const readline = require('readline')
 const {
-  existsSync, rmSync, mkdirSync, writeFileSync, createReadStream
+  accessSync, constants, rmSync, mkdirSync, writeFileSync, createReadStream
 } = require('fs')
+
 const HASH_LENGTH = 7
 const PACKAGE_FILE = './package.json'
 const PACKAGE_FILE_LOCK = './package-lock.json'
+const COMMITLINT_CONFIG = './commitlint.conf.js'
 const DOCUMENT_DIST = 'docs'
 const CHANGELOG = `${DOCUMENT_DIST}/CHANGELOG.md`
 const VERSION_LIMIT = '99.99.99-999'
-const VERSION_REGEXP = /\d{1,2}\.\d{1,2}\.\d{1,2}(-\d{1,})/
-// const VERSION_TYPES = ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease']
+const VERSION_REGEXP = /^v?\d{1,2}\.\d{1,2}\.\d{1,2}(-\d{1,})?$/
+const VERSION_TYPES = ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease']
 const PARAMETER_ACCESS = ['v', 'version', 'm', 'message', 't', 'test']
 const CHANGELOG_TYPE = { WHOLE: 0, DEFAULT: 1, APPEND: 2 }
-
+const DEPEND_PACKAGES = [
+  'prettier', 'commitizen', 'husky', 'lint-staged',
+  '@commitlint/cli', '@commitlint/config-conventional',
+  'conventional-changelog-cli', 'cz-conventional-changelog'
+]
 const STORE_NAME = cmd('git remote show -n')
 const BRANCH_NAME = cmd('git rev-parse --abbrev-ref HEAD')
 
@@ -23,7 +29,7 @@ const CURRENT_VERSION = getCurrentVersion()
 const NEXT_VERSION = growupVersionNumber(CURRENT_VERSION)
 
 const MESSAGE = {
-  DUCPLICATE: 'that is a commit version already in CHANGLOG.md, maybe has not featrue to be update.',
+  DUCPLICATE: 'a commit version already in CHANGLOG.md, maybe has not featrue to be update.',
   VERSION: `"chore: updates version ${CURRENT_VERSION} to ${NEXT_VERSION}"`,
   CHANGELOG: `"chore: creates CHANGELOG.md of iteration version which ${NEXT_VERSION}"`
 }
@@ -38,14 +44,16 @@ const rollbackStack = {
 !CMD_PARAMS.t && main()
 
 async function main () {
-  monitor()
+  await monitor()
+  await loadDepends()
   await configUserInfo()
   await stashGitWorkspace()
   await updateVersion()
+  await configCommitlint()
   await updateChangelog()
   await updateTag()
   await distashGitWorkspace()
-  resetRollbackStack()
+  await resetRollbackStack()
   process.exit(0)
 }
 
@@ -55,7 +63,7 @@ async function cmdRevert (message) {
   await revertChangelog()
   await revertVersion()
   await distashGitWorkspace()
-  resetRollbackStack()
+  await resetRollbackStack()
   process.exit(0)
 }
 
@@ -64,6 +72,7 @@ function monitor () {
   process.on('SIGTERM', cmdRevert)
   process.on('unhandledRejection', cmdRevert)
   process.on('uncaughtException', cmdRevert)
+  return Promise.resolve()
 }
 
 function resetRollbackStack () {
@@ -71,12 +80,13 @@ function resetRollbackStack () {
   rollbackStack.version = []
   rollbackStack.changelog = []
   rollbackStack.tag = []
+  return Promise.resolve()
 }
 
 async function updateVersion () {
   const dupLine = await getDuplicateVersion()
   if (dupLine) {
-    const message = `${MESSAGE.DUCPLICATE}\nduplicate commit: ${dupLine}.\n`
+    const message = `${MESSAGE.DUCPLICATE}\nduplicate commit:\n ${dupLine}.`
     return Promise.reject(new Error(message))
   }
   await modifyFileVersoion(PACKAGE_FILE)
@@ -90,12 +100,15 @@ async function updateVersion () {
   cmd(`git commit -m ${MESSAGE.VERSION}`)
   rollbackStack.version.push([cmd, 'git reset --soft HEAD~'])
 
+  cmd(`git push ${STORE_NAME} ${BRANCH_NAME}`)
+  rollbackStack.version.push([cmd, 'git reset --soft HEAD~'])
+
   return Promise.resolve()
 }
 
 function modifyFileVersoion (fileName) {
   return new Promise(async (resolve) => {
-    if (!existsSync(fileName)) return resolve('')
+    if (!hasModule(fileName)) return resolve('')
     const json = require(fileName)
     json.version = NEXT_VERSION
     // 针对 package-lock 的packages的version属性的变更
@@ -103,7 +116,7 @@ function modifyFileVersoion (fileName) {
     if (packages['']) packages[''].version = NEXT_VERSION
     if (packages[json.name]) packages[json.name].version = NEXT_VERSION
 
-    const pertyCodes = await codesPretting(JSON.stringify(json))
+    const pertyCodes = await codesPretting(JSON.stringify(json), 'json')
     writeFileSync(fileName, pertyCodes, { encoding: 'utf8' })
     resolve('')
   })
@@ -119,21 +132,23 @@ async function updateChangelog () {
   // `conventional-changelog -p angular -i ${CHANGELOG} -s -r ${logType}`
   let logType = CHANGELOG_TYPE.APPEND
 
-  if (!existsSync(DOCUMENT_DIST)) mkdirSync(DOCUMENT_DIST)
-
-  if (!existsSync(CHANGELOG)) {
+  if (!hasModule(DOCUMENT_DIST)) mkdirSync(DOCUMENT_DIST)
+  if (!hasModule(CHANGELOG)) {
     logType = CHANGELOG_TYPE.WHOLE
   } else {
     if (['minor', 'major', 'preminor', 'premajor'].includes(CMD_PARAMS.v || CMD_PARAMS.version)) {
       rmSync(CHANGELOG)
+      rollbackStack.changelog.push([cmd, `git checkout -q -- ${CHANGELOG}`])
       logType = CHANGELOG_TYPE.APPEND
     }
   }
 
-  await callPackage('commitizen')
-  cmd(`commitizen init cz-conventional-changelog --save --save-exact`)
+  if (!hasModule('cz-conventional-changelog')) {
+    cmd(`commitizen init cz-conventional-changelog --save --save-exact`)
+  }
 
   cmd(`conventional-changelog -p angular -i ${CHANGELOG} -s -r ${logType}`)
+
   // clean 和 checkout 一起使用，确保“新增”和“变更”都能还原
   rollbackStack.changelog.push([cmd, `git clean -f -q -- ${CHANGELOG}`])
   rollbackStack.changelog.push([cmd, `git checkout -q -- ${CHANGELOG}`])
@@ -144,16 +159,46 @@ async function updateChangelog () {
   cmd(`git commit ${CHANGELOG} -m ${CHANGELOG}`)
   rollbackStack.changelog.push([cmd, `git reset --soft HEAD~`])
 
+  cmd(`git push ${STORE_NAME} ${BRANCH_NAME}`)
+  rollbackStack.version.push([cmd, 'git reset --soft HEAD~'])
+  return Promise.resolve()
+}
+
+function configCommitlint () {
+  const json = require(PACKAGE_FILE)
+  if (!json['lint-staged']) json['lint-staged'] = {}
+  if (!json['commitlint']) json['commitlint'] = {}
+  if (!json['husky']) json['husky'] = {}
+  if (!json['husky']['hooks']) json['husky']['hooks'] = {}
+  if (!json['config']) json['config'] = {}
+  json['lint-staged'] = { '*.{js,vue}': ['vue-cli-service lint', 'git add'] }
+  json['commitlint'] = { 'extends': ['@commitlint/config-conventional'] }
+  json['husky']['hooks']['pre-commit'] = 'lint-staged'
+  json['husky']['hooks']['commit-msg'] = 'commitlint --edit ./.git/COMMIT_EDITMSG'
+  json['config']['commitizen'] = { 'path': './node_modules/cz-conventional-changelog' }
+  writeFileSync(PACKAGE_FILE, codesPretting(JSON.stringify(json), 'json'), { encoding: 'utf8' })
+
+  if (!hasModule(COMMITLINT_CONFIG)) {
+    const content = `module.exports = {
+      extends: ['@commitlint/configconventional'],
+      rules: {
+        'type-enum': [2, 'always', ['build', 'chore', 'ci', 'docs', 'feat', 'fix', 'perf', 'refactor', 'revert', 'style', 'test']],
+        'subject-full-stop': [0, 'never'],
+        'subjectcase': [0, 'never']
+      }
+    }`
+    writeFileSync(COMMITLINT_CONFIG, codesPretting(content), { encoding: 'utf8' })
+  }
   return Promise.resolve()
 }
 
 function updateTag () {
   const date = getDate()
   const message = CMD_PARAMS.m || CMD_PARAMS.message
-  cmd(`git tag -a v${NEXT_VERSION} -m "${message || date}"`)
-  rollbackStack.tag.push([cmd, `git tag -d v${NEXT_VERSION}`])
+  cmd(`git tag -a ${NEXT_VERSION} -m "${message || date}"`)
+  rollbackStack.tag.push([cmd, `git tag -d ${NEXT_VERSION}`])
   cmd(`git push --tags`)
-  rollbackStack.tag.push([cmd, `git push ${STORE_NAME} :refs/tags/v${NEXT_VERSION}`])
+  rollbackStack.tag.push([cmd, `git push ${STORE_NAME} :refs/tags/${NEXT_VERSION}`])
   return Promise.resolve()
 }
 
@@ -163,17 +208,30 @@ function growupVersionNumber (v) {
   const majorLimit = Number(limitArray[0])
   const minorLimit = Number(limitArray[1])
   const patchLimit = Number(limitArray[2].split('-')[0])
+  // v的默认结构：v1.x.x-xx
+  const versionNo = v.replace('v', '')
 
   let growType = CMD_PARAMS.v || CMD_PARAMS.version
+
   // 如果 growType 为版本号，直接返回
-  if (VERSION_REGEXP.test(growType)) return growType
+  if (VERSION_REGEXP.test(growType)) {
+    console.log('next version:', growType)
+    return growType
+  }
+
+  // 自定义的版本号，比如：vue_v1.0.1-release
+  if (growType && !VERSION_TYPES.includes(growType)) {
+    console.log('next version:', growType)
+    return growType
+  }
+
   // 如果没定义 growType
   // 设置默认升级小版本 patch
   growType = growType || 'patch'
-  let majorVersion = Number(v.split('.')[0])
-  let minorVersion = Number(v.split('.')[1])
-  let patchVersion = Number(v.split('.')[2].split('-')[0])
-  let preVersion = Number(v.split('.')[2].split('-')[1])
+  let majorVersion = Number(versionNo.split('.')[0])
+  let minorVersion = Number(versionNo.split('.')[1])
+  let patchVersion = Number(versionNo.split('.')[2].split('-')[0])
+  let preVersion = Number(versionNo.split('.')[2].split('-')[1])
   if (growType === 'prerelease') {
     if (Number.isNaN(preVersion)) {
       patchVersion = patchVersion + 1
@@ -205,8 +263,10 @@ function growupVersionNumber (v) {
       preVersion = 0
     }
   }
-
-  return `${majorVersion}.${minorVersion}.${patchVersion}`
+  const mainPart = `${majorVersion}.${minorVersion}.${patchVersion}`
+  const prePart = `${Number.isNaN(preVersion) ? '' : '-' + preVersion}`
+  console.log('next version:', 'v' + mainPart + prePart)
+  return 'v' + mainPart + prePart
 
   function updateMajor () {
     if (Number.isNaN(preVersion)) {
@@ -251,18 +311,24 @@ function growupVersionNumber (v) {
 }
 
 function getCurrentVersion () {
-  // todo 需要判断远程 tag 和 本地 tag
-  const tag = cmd('git describe --tags --abbrev=0')
-  if (VERSION_REGEXP.test(tag)) {
-    return tag.replace('v', '')
-  } else {
-    return '1.0.0'
+  cmd(`git fetch ${STORE_NAME} :refs/tag`)
+  let tagString = cmd(`git tag --sort=-taggerdate`)
+  let tags = splitLines(tagString)
+  let res = 'v1.0.0'
+  for (let i = 0; i < tags.length; i++) {
+    const tag = tags[i]
+    if (VERSION_REGEXP.test(tag)) {
+      res = tag
+      break
+    }
   }
+  console.log('current version:', res)
+  return res
 }
 
 function getCmdParams () {
   const res = {}
-  const paramReg = /^-\w[\w-_]*&/ig
+  const paramReg = /^-\w[\w-_]*$/ig
   const args = process.argv || []
   args.forEach((item, index) => {
     if (item && paramReg.test(item)) {
@@ -276,6 +342,14 @@ function getCmdParams () {
     }
   })
   return res
+}
+
+async function loadDepends () {
+  for (let i = 0; i < DEPEND_PACKAGES.length; i++) {
+    const packName = DEPEND_PACKAGES[i]
+    await installPackage(packName)
+  }
+  return Promise.resolve()
 }
 
 function getDate () {
@@ -294,10 +368,14 @@ function stashGitWorkspace() {
     cmd('git stash save "for update version"')
     rollbackStack.stash.push([cmd, 'git stash pop 0'])
   }
-  // 先push一次，防止当前分支是未推送过的分支
-  cmd(`git push --set-upstream ${STORE_NAME} ${BRANCH_NAME}`)
-  // 保持最新，避免冲突
-  cmd(`git pull ${STORE_NAME} ${BRANCH_NAME}`)
+
+  try {
+    // 保持最新，避免冲突
+    cmd(`git pull ${STORE_NAME} ${BRANCH_NAME}`)
+  } catch (error) {
+    // 如果无法pull, 先发布分支
+    cmd(`git push --set-upstream ${STORE_NAME} ${BRANCH_NAME}`)
+  }
 
   return Promise.resolve()
 }
@@ -331,19 +409,19 @@ function cmd (line) {
   }
 }
 
-async function codesPretting (content) {
-  const prettier = await callPackage('prettier')
-  return prettier.format(content, { parser: 'json' })
+function codesPretting (content, type = 'babel') {
+  const prettier = require('prettier')
+  return prettier.format(content, { parser: type })
 }
 
-function callPackage (packzip) {
+function installPackage (packzip) {
   return new Promise((resolve) => {
     loop(packzip, resolve)
   })
   function loop(packzip, resolve) {
-    try {
-      resolve(require(packzip))
-    } catch (error) {
+    if (hasModule(`./node_modules/${packzip}`)) {
+      resolve()
+    } else {
       execSync(`npm install --save-dev ${packzip}`)
       loop(packzip, resolve)
     }
@@ -388,6 +466,7 @@ async function getDuplicateVersion () {
   const lastLine = await getLastFeatCommit()
   const revertHash = lastLine.substring(0, HASH_LENGTH)
   const regx = new RegExp(`\\[${revertHash}\\]`, 'ig')
+  if (!hasModule(CHANGELOG)) return Promise.resolve('')
   const readmeStream = createReadStream(CHANGELOG)
   const rl = readline.createInterface({ input: readmeStream })
   return new Promise((resolve) => {
@@ -422,6 +501,15 @@ function getLastFeatCommit (n) {
   }
 }
 
+function hasModule (path) {
+  try {
+    accessSync(path, constants.F_OK | constants.R_OK | constants.W_OK)
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
 function isWindows () {
   const platform = os.platform()
   return /^win/.test(platform)
@@ -440,4 +528,9 @@ function callRollbackStack (stack = []) {
     }
     resolve('')
   })
+}
+
+function splitLines (src = '') {
+  src = src.replace(/[\r\n]+/g, '|')
+  return src.trim().split('|')
 }

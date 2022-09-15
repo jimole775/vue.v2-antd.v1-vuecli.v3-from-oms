@@ -2,7 +2,9 @@
   "name": "temp",
   "version": "v1.0.3",
   "private": true,
-  "engines": { "node": "16.x" },
+  "engines": {
+    "node": "16.x"
+  },
   "scripts": {
     "init:commitizen": "commitizen init cz-conventional-changelog --save --save-exact",
     "init": "npm install && npm run init:commitizen",
@@ -62,7 +64,7 @@
     "markdown-loader": "^6.0.0",
     "marked": "^0.7.0",
     "mockjs": "^1.1.0",
-    "prettier": "^2.6.2",
+    "prettier": "^2.7.1",
     "vue-template-compiler": "^2.5.21",
     "webpack-bundle-analyzer": "^4.4.2"
   },
@@ -70,8 +72,17 @@
     "pre-commit": "lint-staged",
     "commit-msg": "commitlint --edit ./.git/COMMIT_EDITMSG"
   },
-  "lint-staged": { "*.{js,vue}": ["vue-cli-service lint", "git add"] },
-  "commitlint": { "extends": ["@commitlint/config-conventional"] },
+  "lint-staged": {
+    "*.{js,vue}": [
+      "vue-cli-service lint",
+      "git add"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
@@ -79,6 +90,8 @@
     }
   },
   "config": {
-    "commitizen": { "path": "./node_modules/cz-conventional-changelog" }
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
