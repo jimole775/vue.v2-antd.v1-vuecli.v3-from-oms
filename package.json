@@ -1,10 +1,8 @@
 {
   "name": "temp",
-  "version": "v1.0.3",
+  "version": "1.0.3",
   "private": true,
-  "engines": {
-    "node": "16.x"
-  },
+  "engines": { "node": "16.x" },
   "scripts": {
     "init:commitizen": "commitizen init cz-conventional-changelog --save --save-exact",
     "init": "npm install && npm run init:commitizen",
@@ -72,17 +70,8 @@
     "pre-commit": "lint-staged",
     "commit-msg": "commitlint --edit ./.git/COMMIT_EDITMSG"
   },
-  "lint-staged": {
-    "*.{js,vue}": [
-      "vue-cli-service lint",
-      "git add"
-    ]
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
+  "lint-staged": { "*.{js,vue}": ["vue-cli-service lint", "git add"] },
+  "commitlint": { "extends": ["@commitlint/config-conventional"] },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
@@ -90,8 +79,6 @@
     }
   },
   "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
+    "commitizen": { "path": "./node_modules/cz-conventional-changelog" }
   }
 }
