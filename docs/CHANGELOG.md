@@ -1,3 +1,23 @@
+## [1.0.4](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/compare/v1.0.3...v1.0.4) (2022-09-16)
+
+
+
+## [1.0.3](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/compare/v1.0.2...v1.0.3) (2022-09-16)
+
+
+### Features
+
+* create version.js ([0d3e9a5](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/commit/0d3e9a52e9dae984427dc38ccba18f0eb98ef640))
+* update version feat ([ee5517d](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/commit/ee5517d693816128a356ca7764d79a3064cdab88))
+* update version.js ([5e816ab](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/commit/5e816ab475a6814b20f7dec8174d5a7f9683177b))
+* update version.js ([f9c3c24](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/commit/f9c3c240e0af82c264e9630ac024467d6b2c8048))
+* updates ([eb9b988](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/commit/eb9b988b1d5a10c5126f5a769228c0e25796fcb2))
+* updates ([2543744](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/commit/254374416451546220ff323a2c8e2dc82a32eb9f))
+* updatessss ([03dc482](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/commit/03dc482ad70455321992da05d9d7aef13c71105f))
+* updatessssssssss ([56b733b](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/commit/56b733b93ffbc7d1c73590f52ff4b2bb77801af9))
+
+
+
 ## [1.0.3](https://github.com/jimole775/vue.v2-antd.v1-vuecli.v3-from-oms/compare/v1.0.2...v1.0.3) (2022-09-16)
 
 
