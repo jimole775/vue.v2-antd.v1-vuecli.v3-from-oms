@@ -3,21 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "init:commitizen": "npm install -g commitizen && commitizen init cz-conventional-changelog --save --save-exact",
+    "init:commitizen": "commitizen init cz-conventional-changelog --save --save-exact",
     "init": "npm install && npm run init:commitizen",
     "serve": "vue-cli-service serve --mode native",
     "build": "vue-cli-service build",
     "build:test": "vue-cli-service build --mode test",
     "build:dev": "vue-cli-service build --mode dev",
     "lint": "vue-cli-service lint",
-    "update:version": "node ./tag.version.js --version && git add package.json && git commit package.json -m \"chore: update project's version\"",
-    "make:tag": "node ./tag.version.js --tag",
-    "make:CHANGELOG": "conventional-changelog -p angular -i docs/CHANGELOG.md -s -r 2",
-    "track:CHANGELOG": "git add docs/CHANGELOG.md",
-    "handup:CHANGELOG": "git commit docs/CHANGELOG.md -m \"chore: 创建周迭代CHANGELOG\"",
-    "version": "git pull && npm run update:version && npm run make:CHANGELOG && npm run track:CHANGELOG && npm run handup:CHANGELOG",
-    "postversion": "npm run make:tag && git push && git push --tags",
-    "builder": "node ./server/index.js"
+    "builder": "node ./server/index.js",
+    "version":"node ./up.version.js"
   },
   "dependencies": {
     "@babel/standalone": "^7.17.6",
@@ -64,7 +58,6 @@
     "less-loader": "^6.0.0",
     "lint-staged": "^8.1.5",
     "markdown-loader": "^6.0.0",
-    "marked": "^0.7.0",
     "mockjs": "^1.1.0",
     "prettier": "^2.6.2",
     "vue-template-compiler": "^2.5.21",
