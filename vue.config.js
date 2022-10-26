@@ -1,10 +1,16 @@
 // const marked = require("marked");
 // const renderer = new marked.Renderer();
-// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+const webpack = require('webpack')
 const path = require('path')
+const env = process.env.NODE_ENV
+
+const proEntries = './src/main.js'
+const devEntries = './src/main.dev.js'
+
 function resolve (dir) {
   return path.join(__dirname, dir)
 }
+
 module.exports = {
   configureWebpack: {
     resolve: {
@@ -12,11 +18,12 @@ module.exports = {
         '@builder': resolve('./src/helper/builder')
       }
     },
-    devtool: 'eval-source-map'
-    // plugins: [new BundleAnalyzerPlugin({
-    //   analyzerHost: 'localhost',
-    //   analyzerPort: '8088'
-    // })]
+    devtool: 'source-map',
+    plugins: [
+      // 忽略moment的语言包
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+    ],
+    entry: env === 'production' ? proEntries : devEntries
   },
   chainWebpack: config => {
     config.module

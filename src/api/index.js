@@ -9,7 +9,7 @@ proModules.keys().forEach((item) => {
 })
 
 // 加载 mock 和 builder 环境的api
-if (['local'].includes(process.env.VUE_APP_ENV)) {
+if (['native'].includes(process.env.VUE_APP_SERVER_ENV)) {
   const mockModules = require.context('./mocks', true, /(\.js)$/)
   mockModules.keys().forEach((item) => {
     const fileInfo = mockModules(item).default || mockModules(item)

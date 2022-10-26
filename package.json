@@ -2,6 +2,7 @@
   "name": "temp",
   "version": "1.0.0",
   "private": true,
+  "engines": { "node": ">=12.0.0 <16.18.0" },
   "scripts": {
     "init:commitizen": "commitizen init cz-conventional-changelog --save --save-exact",
     "init": "npm install && npm run init:commitizen",
@@ -11,7 +12,8 @@
     "build:dev": "vue-cli-service build --mode dev",
     "lint": "vue-cli-service lint",
     "builder": "node ./server/index.js",
-    "version":"node ./up.version.js"
+    "up:readme":"node ./md.struct.js",
+    "up:version":"node ./up.version.js"
   },
   "dependencies": {
     "@babel/standalone": "^7.17.6",
@@ -24,7 +26,6 @@
     "jsx-ast-utils": "^3.2.1",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
-    "qs": "^6.7.0",
     "validator": "^10.11.0",
     "vue": "^2.6.10",
     "vue-bus": "^1.2.1",

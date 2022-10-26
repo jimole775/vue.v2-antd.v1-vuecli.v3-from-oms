@@ -1,5 +1,6 @@
 import api from '@/api'
 import utils from '@/utils'
+import { getFingerprint, setFingerprint } from '@/utils/auth'
 import { Message } from 'ant-design-vue'
 import mockMenu from '@/mock/menus'
 
@@ -7,13 +8,13 @@ const exportingListStoreKey = '$$EXPORTINGLIST'
 export default {
   state: {
     token: '',
+    user: '',
     menus: [],
     mockEnv: false,
     todoParams: null,
-    menuButtons: [],
-    user: '',
     userRole: {},
     currentRole: {},
+    menuButtons: [],
     exportingList: [],
     dictionaryList: [],
     supplierList: [],
@@ -111,6 +112,14 @@ export default {
     setLoading (state, status) {
       state.loading = status
     },
+    markFingerprint (state, user) {
+      const curSign = getFingerprint()
+      if (!curSign) {
+        const employeeNumber = user.employeeNumber
+        const createSign = employeeNumber + '_' + utils.utcTime()
+        setFingerprint(createSign)
+      }
+    },
     setExportList (state, params) {
       state.exportingList = params
       sessionStorage.setItem(exportingListStoreKey, JSON.stringify(state.exportingList || []))
@@ -201,6 +210,7 @@ export default {
           if (utils.isObject(res.data)) {
             commit('setUser', res.data)
             commit('currentRole', res.data.currentRole)
+            commit('markFingerprint', res.data)
           }
         } else {
           Message.error('用户信息错误，请联系管理员')

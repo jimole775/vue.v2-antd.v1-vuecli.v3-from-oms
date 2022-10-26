@@ -1,16 +1,17 @@
-import qs from 'qs'
 import Vue from 'vue'
 import axios from 'axios'
 import utils from '@/utils'
+import base64 from '@/utils/base64'
 import unique from '@/config/http.unique'
 import disloading from '@/config/http.disloading'
-import { setToken, getToken } from '@/utils/auth'
+import { setToken, getToken, getFingerprint } from '@/utils/auth'
 
 const http = axios.create({
   withCredentials: true,
   timeout: 10000
 })
 
+let xClient
 let cancelRequest
 http.interceptors.request.use(
   config => {
@@ -21,22 +22,11 @@ http.interceptors.request.use(
     if (pass) {
       handleLoading(config)
       handleToken(config)
+      handleClient(config)
       return config
     } else {
       return cancelRequest()
     }
-    // let to = qs.parse(location.search.split('?')[1])
-    // /** 避免出现两个token的情况 */
-    // if (to.token && to.token.length) {
-    //   if (utils.isString(to.token)) {
-    //     setToken(to.token)
-    //   }
-    //   if (utils.isArray(to.token)) {
-    //     setToken(to.token[0])
-    //   }
-    // }
-    // config.headers['x-token'] = getToken()
-    // return config
   },
   error => {
     Vue.prototype.$loading.countdown()
@@ -46,16 +36,6 @@ http.interceptors.request.use(
 
 // response interceptor
 http.interceptors.response.use(
-  /**
-   * If you want to get http information such as headers or status
-   * Please return  response => response
-  */
-
-  /**
-   * Determine the request status by custom code
-   * Here is just an example
-   * You can also judge the status by HTTP Status Code
-   */
   response => {
     Vue.prototype.$loading.countdown()
     try {
@@ -88,15 +68,29 @@ function handleLoading (config) {
 }
 
 function handleToken (config) {
-  let to = qs.parse(location.search.split('?')[1])
+  let to = utils.fromQueryString(location.search.split('?')[1])
   if (to.token && to.token.length) {
     utils.isString(to.token) && setToken(to.token)
     utils.isArray(to.token) && setToken(to.token[0])
   }
-  if (process.env.VUE_APP_ENV === 'local' && process.env.VUE_APP_MOCK_TOKEN) {
+  if (process.env.VUE_APP_SERVER_ENV === 'native' && process.env.VUE_APP_MOCK_TOKEN) {
     setToken(process.env.VUE_APP_MOCK_TOKEN)
   }
   config.headers['x-token'] = getToken()
+}
+
+function handleClient(config) {
+  if (config.headers && !config.headers['x-client']) {
+    const fingerprint = getFingerprint()
+    if (!xClient && fingerprint) {
+      xClient = base64.encode(`${fingerprint}`)
+      xClient = xClient.replace(/([\d\w]+)(=*)$/ig, '$1VUE$2')
+    }
+    // 如果没有xClient可以不提交
+    if (xClient) {
+      config.headers['x-client'] = xClient
+    }
+  }
 }
 
 function relogin () {

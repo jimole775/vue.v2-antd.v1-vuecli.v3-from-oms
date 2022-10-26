@@ -150,18 +150,15 @@ export default {
     }
   },
   injectForStandardAndroid () {
-    
     const adapterName = 'App'
 
     if (window.RYMJSBRIDGE) {
       return
     }
 
-    var app = new Adapter();
-    var slice = Array.prototype.slice;
-    var toString = Object.prototype.toString;
-    var callindex = 0;
-
+    var app = new Adapter()
+    var slice = Array.prototype.slice
+    var callindex = 0
 
     /**
      * 调用Native接口适配层的构造器
@@ -169,10 +166,10 @@ export default {
      */
     function Adapter () {
       var ua = navigator.userAgent.toUpperCase()
-      this.IS_ANDROID = ua.indexOf("ANDROID") !== -1
-      this.IS_IOS = ua.indexOf("IPHONE OS") !== -1
-      this.IS_MOCK = ua.indexOf("MOCK") !== -1
-      this.IS_ANYDOOR = ua.indexOf("ANYDOOR") !== -1
+      this.IS_ANDROID = ua.indexOf('ANDROID') !== -1
+      this.IS_IOS = ua.indexOf('IPHONE OS') !== -1
+      this.IS_MOCK = ua.indexOf('MOCK') !== -1
+      this.IS_ANYDOOR = ua.indexOf('ANYDOOR') !== -1
     }
 
     /**
@@ -191,7 +188,7 @@ export default {
           var newArguments = []
           var ps = []
           var param
-          for (var i = 0; i < args.length; i++) {
+          for (let i = 0; i < args.length; i++) {
             if (typeof args[i] === 'function') {
               var callbackName = methodName + 'Callback' + callindex
               window[callbackName] = args[i]
@@ -206,7 +203,7 @@ export default {
               var limitSize = 500
 
               if (paramLen > limitSize) {
-                var i = 0
+                i = 0
                 do {
                   i++
                   if (paramLen > limitSize * i) {
@@ -228,7 +225,6 @@ export default {
           }
 
           if (ps.length > 0) {
-            var i = 0
             var splitArguments
             var methodParams = {
               method: methodName,
@@ -236,71 +232,62 @@ export default {
               index: 0
               // md5: hex_md5(param),
             }
-
-            // var md5_a = hex_md5(param)
-            console.log('im-h5 param md5 = ' + md5_a + 'ori str = ' + param);
-            console.log('im-h5 param = ' + md5_a);
-            //  methodParams.method = methodName;
-            //  methodParams.size = ps.length;
-            for (; i < ps.length; i++) {
-              methodParams.index = i;
-              splitArguments = null;
-              splitArguments = clone(newArguments);
-              splitArguments.push(ps[i]);
-              splitArguments.push(JSON.stringify(methodParams));
-              console.log('im-h5 splitArguments = ' + splitArguments);
-              HostApp['splitJoint'].apply(window.HostApp, splitArguments);
+            for (let k = 0; k < ps.length; k++) {
+              methodParams.index = k
+              splitArguments = null
+              splitArguments = [].concat(newArguments)
+              splitArguments.push(ps[k])
+              splitArguments.push(JSON.stringify(methodParams))
+              console.log('im-h5 splitArguments = ' + splitArguments)
+              window.HostApp['splitJoint'].apply(window.HostApp, splitArguments)
             }
           } else {
             try {
-              console.log('im-h5 newArguments = ' + newArguments);
-              console.log('im-h5 newArguments methodName = ' + methodName);
-              HostApp[methodName].apply(window.HostApp, newArguments);
+              console.log('im-h5 newArguments = ' + newArguments)
+              console.log('im-h5 newArguments methodName = ' + methodName)
+              window.HostApp[methodName].apply(window.HostApp, newArguments)
             } catch (e) {
-              var params = slice.call(arguments, 0);
               setTimeout(function() {
-                app['call'].apply(app, params);
+                app['call'].apply(app, slice.call(arguments, 0))
               }, 300)
             }
           }
         } else {
-          var params = slice.call(arguments, 0);
           setTimeout(function() {
-            app['call'].apply(app, params);
+            app['call'].apply(app, slice.call(arguments, 0))
           }, 1000)
         }
       } else if (self.IS_IOS && self.IS_ANYDOOR) {
-        var newArguments = ''
         var tempArgument = []
-        for (var i = 0; i < args.length; i++) {
-          // tempArgument = args[i];
-          if (typeof args[i] === 'function') {
-            var callbackName = methodName + 'Callback' + callindex;
-            window[callbackName] = args[i];
-            tempArgument.push(callbackName);
-            callindex++;
+        for (let j = 0; j < args.length; j++) {
+          // tempArgument = args[j];
+          if (typeof args[j] === 'function') {
+            var theCallbackName = methodName + 'Callback' + callindex
+            window[theCallbackName] = args[j]
+            tempArgument.push(theCallbackName)
+            callindex++
           } else {
-            tempArgument.push(args[i]);
+            tempArgument.push(args[j])
           }
         }
-        callindex++;
-        var iframe = document.createElement('iframe');
-        console.log('tempArgument' + tempArgument);
+        callindex++
+        var iframe = document.createElement('iframe')
+        console.log('tempArgument' + tempArgument)
         var _src =
           'callnative://' +
           methodName +
           '/' +
           encodeURIComponent(JSON.stringify(tempArgument)) +
           '/' +
-          callindex;
-        console.log(_src);
-        iframe.src = _src;
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        iframe.parentNode.removeChild(iframe);
-        iframe = null;
+          callindex
+        console.log(_src)
+        iframe.src = _src
+        iframe.style.display = 'none'
+        document.body.appendChild(iframe)
+        iframe.parentNode.removeChild(iframe)
+        iframe = null
       } else {
-        console.log('未知环境');
+        console.log('未知环境')
       }
     }
 
@@ -310,19 +297,19 @@ export default {
      * @return {undefined} 没有返回
      */
     Adapter.prototype.goBack = function() {
-      if (this.IS_ANDROID && HostApp && HostApp.goBackOrForward) {
-        this.call(["goBackOrForward"], function(res) {
-            try {
-                res = JSON.parse(res);
-                var flag = res.result;
-                if (flag == "true") {
-                    console.log("success back");
-                } else {
-                    console.log("success error");
-                }
-            } catch (e) {
-
+      if (this.IS_ANDROID && window.HostApp && window.HostApp.goBackOrForward) {
+        this.call(['goBackOrForward'], function(res) {
+          try {
+            res = JSON.parse(res)
+            var flag = res.result
+            if (flag === 'true') {
+              console.log('success back')
+            } else {
+              console.log('success error')
             }
+          } catch (e) {
+
+          }
         }, function(err) {
           console.log(err)
         }, -1)
@@ -331,29 +318,28 @@ export default {
       }
     }
 
-    
-    window[adapterName] = window.RYMJSBRIDGE = app;
+    window[adapterName] = window.RYMJSBRIDGE = app
     window.$bridge = {}
     window.$bridge.callHandler = function(name, param, callback) {
       var fnName = name
-      if (name == 'opp_request_encrypt') {
-        fnName = 'encodeData';
+      if (name === 'opp_request_encrypt') {
+        fnName = 'encodeData'
       }
-      if (param == null || param == undefined) {
-        console.log('im-h5 callHandler param is null');
+      if (param === null || param === undefined) {
+        console.log('im-h5 callHandler param is null')
         param = {}
       }
 
-      console.log('im-h5 callHandler fnName = ' + fnName);
-      App.call([fnName],function(data) {
-        console.log("im-h5 callHandler data = "+data)
-        if (callback == null || callback == undefined) {
-          console.log('im-h5 callHandler callback is null');
+      console.log('im-h5 callHandler fnName = ' + fnName)
+      window.App.call([fnName], function(data) {
+        console.log('im-h5 callHandler data = ' + data)
+        if (callback === null || callback === undefined) {
+          console.log('im-h5 callHandler callback is null')
         } else {
-          callback(data);
+          callback(data)
         }
-      }, function(error){
-        console.log("im-h5 error" + error)
+      }, function(error) {
+        console.log('im-h5 error' + error)
       }, param
       )
     }
@@ -393,7 +379,7 @@ export default {
   },
   closeWebviewForMo () {
     console.log('closeWebviewForMo: ', win.location.href)
-    const query = utils.getParamsFromURL(win.location.href)
+    const query = utils.fromQueryString(win.location.href)
     if (query['returnPage'] && query['returnPage'] === 'mo') {
       this.closeWebview()
     }

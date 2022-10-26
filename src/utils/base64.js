@@ -101,7 +101,7 @@ export default {
       } else if (((code >> 2) & 0xFF) === 0x3E) {
         // 五字节
         // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-      } else /** if (((code >> 1) & 0xFF) == 0x7E) */ {
+      } else /** if (((code >> 1) & 0xFF) === 0x7E) */ {
         // 六字节
         // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
       }

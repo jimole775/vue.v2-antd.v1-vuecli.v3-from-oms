@@ -1,5 +1,8 @@
 import store from '@/store'
-if (['local'].includes(process.env.VUE_APP_ENV)) {
+
+const devEnvs = ['native']
+
+if (devEnvs.includes(process.env.VUE_APP_SERVER_ENV)) {
   // mock data开关
   store.commit('setMockEnv', true)
 
@@ -9,3 +12,6 @@ if (['local'].includes(process.env.VUE_APP_ENV)) {
   // 加载 代码高亮 工具
   require('@/directives/highlight')
 }
+
+// 主入口
+require('./main')

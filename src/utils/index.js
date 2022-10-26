@@ -1,11 +1,12 @@
+import axios from 'axios'
+import store from '@/store'
 import moment from 'moment'
 import 'moment/locale/zh-cn'
-import { cloneDeep, merge, debounce } from 'lodash'
-import { Modal } from 'ant-design-vue'
-import axios from 'axios'
 import { getToken } from './auth'
-import store from '@/store'
-// import base64 from './base64'
+import { Modal } from 'ant-design-vue'
+import merge from 'lodash/merge'
+import debounce from 'lodash/debounce'
+import cloneDeep from 'lodash/cloneDeep'
 moment.locale('zh-cn')
 const utils = {
   moment,
@@ -282,11 +283,11 @@ const utils = {
   /** 把对象转换成的urlquery字段
    * @param {Object} obj
    * @return {String}
-   * @template = setParamsToURL({a: 1}) => '?a=1'
-   * @template = setParamsToURL({a: ''}) => ''
-   * @template = setParamsToURL({}) => ''
+   * @template = toQueryString({a: 1}) => '?a=1'
+   * @template = toQueryString({a: ''}) => ''
+   * @template = toQueryString({}) => ''
    */
-  setParamsToURL (obj) {
+  toQueryString (obj) {
     if (!this.isObject(obj)) return new Error('utils.toQueryString参数必须是Object类型')
     const res = []
     Object.keys(obj).forEach(key => {
@@ -300,16 +301,16 @@ const utils = {
   /** 把urlquery转换成的Object对象
    * @param {String} url
    * @return {Object}
-   * @template = getParamsFromURL('') => { }
-   * @template = getParamsFromURL('?') => { }
-   * @template = getParamsFromURL('&') => { }
-   * @template = getParamsFromURL('/xxx/xxx') => { }
-   * @template = getParamsFromURL('xxx=xxx') => { xxx: xxx }
-   * @template = getParamsFromURL('&xxx=xxx') => { xxx: xxx }
-   * @template = getParamsFromURL('?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
-   * @template = getParamsFromURL('/xxx/xxx?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
+   * @template = fromQueryString('') => { }
+   * @template = fromQueryString('?') => { }
+   * @template = fromQueryString('&') => { }
+   * @template = fromQueryString('/xxx/xxx') => { }
+   * @template = fromQueryString('xxx=xxx') => { xxx: xxx }
+   * @template = fromQueryString('&xxx=xxx') => { xxx: xxx }
+   * @template = fromQueryString('?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
+   * @template = fromQueryString('/xxx/xxx?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
    */
-  getParamsFromURL (url) {
+  fromQueryString (url) {
     if (!url) return {}
     if (!/[&\?]/g.test(url)) return {}
     const paramPartString = url.split('?')[1]
@@ -379,7 +380,7 @@ const utils = {
     const link = document.createElement('a')
     const fileName = customFileName || (url.indexOf('/') !== -1 ? url.split('/')[url.split('/').length - 1] : 'unknowFile')
     const fileUrl = `${domain}${this.encodeFileName(url.split('?')[0])}`
-    const fileParam = `${this.setParamsToURL({ ...this.getParamsFromURL(url), ...param, auth_token: `oms:${getToken()}` })}`
+    const fileParam = `${this.toQueryString({ ...this.fromQueryString(url), ...param, auth_token: `oms:${getToken()}` })}`
     link.style.display = 'none'
     link.href = fileUrl + fileParam
     link.setAttribute('download', fileName)
@@ -404,7 +405,7 @@ const utils = {
       method: 'get',
       url: `${domain}${this.encodeFileName(url.split('?')[0])}`,
       params: {
-        ...this.getParamsFromURL(url),
+        ...this.fromQueryString(url),
         auth_token: `oms:${getToken()}`
       },
       responseType: 'blob'
@@ -769,44 +770,6 @@ const utils = {
       newobject[attrName] = value
     }
     return newobject
-    // let newobject = null
-    // if (this.isArray(srcobject)) {
-    //   newobject = []
-    //   objPropsIteration.apply(this, [srcobject, newobject])
-    //   // 数组类型，第二个参数必须是数字
-    //   if (this.isNumber(attrName)) {
-    //     const index = attrName
-    //     newobject[index] = value
-    //   }
-    // }
-    // if (this.isObject(srcobject)) {
-    //   newobject = Object.create(srcobject)
-    //   objPropsIteration.apply(this, [srcobject, newobject])
-    //   // 对象类型，第二个参数必须是有效的字符串
-    //   if (this.isValuable(attrName) && this.isString(attrName)) {
-    //     newobject[attrName] = value
-    //   }
-    // }
-
-    // function objPropsIteration () {
-    //   const isTop = arguments.length === 2
-    //   const [src, res, pkey] = arguments
-    //   if (this.isObject(src)) {
-    //     if (!isTop) res[pkey] = Object.create(src)
-    //     return Object.keys(src).forEach((ckey) => {
-    //       return objPropsIteration.apply(this, [src[ckey], isTop ? res : res[pkey], ckey])
-    //     })
-    //   }
-    //   if (this.isArray(src)) {
-    //     if (!isTop) res[pkey] = []
-    //     return src.forEach((item, index) => {
-    //       return objPropsIteration.apply(this, [item, isTop ? res : res[pkey], index])
-    //     })
-    //   }
-    //   res[pkey] = src
-    // }
-
-    // return newobject || srcobject
   },
   /**
    * 合并(对象|数组)
@@ -822,72 +785,6 @@ const utils = {
       return new Error(`utils.merge => 出现不支持的合并类型!`)
     }
     return merge(a, b)
-    // let res = null
-    // if (this.isArray(a) && this.isArray(b)) {
-    //   res = []
-    //   arrItemsIteration.call(this, a, b, res)
-    //   return res
-    // }
-    // if (this.isObject(a) && this.isObject(b)) {
-    //   res = Object.create(a)
-    //   objPropsIteration.call(this, a, b, res)
-    //   return res
-    // }
-    // return new Error(`utils.merge => 出现不支持的合并类型!`)
-
-    // function objPropsIteration (aObj, bObj, res) {
-    //   if (this.isObject(aObj) && this.isObject(bObj)) {
-    //     const allKeys = Object.keys(aObj).concat(Object.keys(bObj))
-    //     if (allKeys.length) {
-    //       allKeys.forEach((key) => {
-    //         const av = aObj[key]
-    //         const bv = bObj[key]
-    //         if (av && bv) {
-    //           if (this.isArray(av) && this.isArray(bv)) {
-    //             res[key] = []
-    //             return arrItemsIteration.call(this, av, bv, res[key])
-    //           }
-    //           if (this.isObject(av) && this.isObject(bv)) {
-    //             res[key] = Object.create(av)
-    //             return objPropsIteration.call(this, av, bv, res[key])
-    //           }
-    //           // 如果相同属性，相同层级，那么只取 b 对象的值
-    //           res[key] = bv
-    //         } else {
-    //           res[key] = av || bv
-    //         }
-    //       })
-    //     }
-    //   }
-    //   if (this.isArray(aObj) && this.isArray(bObj)) {
-    //     arrItemsIteration.call(this, aObj, bObj, res)
-    //   }
-    // }
-    // function arrItemsIteration (aObj, bObj, res) {
-    //   const all = aObj.concat(bObj)
-    //   all.forEach((item) => {
-    //     res.push(item)
-    //   })
-    // }
-    // 数组内部元素合并逻辑，暂时不需要这种合并模式
-    // function arrItemsIteration_abandon (aObj, bObj, res) {
-    //   const len = aObj.length > bObj.length ? aObj.length : bObj.length
-    //   for (let i = 0; i < len; i++) {
-    //     const aItem = aObj[i]
-    //     const bItem = bObj[i]
-    //     if (this.isArray(aItem) && this.isArray(bItem)) {
-    //       res[i] = []
-    //       arrItemsIteration.call(this, aItem, bItem, res[i])
-    //     }
-    //     if (this.isObject(aItem) && this.isObject(bItem)) {
-    //       res[i] = {}
-    //       objPropsIteration.call(this, aItem, bItem, res[i])
-    //     }
-    //     if (Object.prototype.toString.call(aItem) !== Object.prototype.toString.call(bItem)) {
-    //       res[i] = bItem || aItem
-    //     }
-    //   }
-    // }
   },
   /** 拼装 DepartmentSelectPlus 的输入项
    * @params keys => 'xxx,xxx'
@@ -924,98 +821,6 @@ const utils = {
     }).join(','), listTemp.map(item => {
       return item.label
     }).join(',')]
-  },
-  bindDefaultValueForComponent (dataSource, formItems) {
-    formItems.forEach((item) => {
-      const componentName = item.component ? (item.component.name ? item.component.name : item.component) : ''
-      switch (componentName) {
-        case 'UserSelect':
-          if (item.paramKeys && dataSource[item.paramKeys[0]] && dataSource[item.paramKeys[1]]) {
-            item.value = this.parseUser(dataSource[item.paramKeys[0]], dataSource[item.paramKeys[1]])
-          } else {
-            item.value = dataSource[item.key] || []
-          }
-          break
-        case 'DepartmentSelectPlus':
-          if (item.paramKeys && dataSource[item.paramKeys[0]] && dataSource[item.paramKeys[1]]) {
-            item.value = this.spillOptionItems(dataSource[item.paramKeys[0]], dataSource[item.paramKeys[1]])
-          } else {
-            item.value = dataSource[item.key] || []
-          }
-          break
-        case 'ADatePicker':
-        case 'ATimePicker':
-          if (dataSource[item.key]) {
-            item.value = moment(dataSource[item.key])
-          }
-          break
-        case 'RangeDatePicker':
-          if (item.paramKeys && dataSource[item.paramKeys[0]] && dataSource[item.paramKeys[1]]) {
-            item.value = [moment(dataSource[item.paramKeys[0]]), moment(dataSource[item.paramKeys[1]])]
-          } else {
-            item.value = [dataSource[item.key] || null, dataSource[item.key] || null]
-          }
-          break
-        case 'ARadioGroup':
-          if (dataSource[item.key] !== null && dataSource[item.key] !== undefined && dataSource[item.key] !== '') {
-            item.value = `${dataSource[item.key]}` // vue的原因，ARadioGroup绑定的key值都是字符串
-          }
-          break
-        default:
-          if (dataSource[item.key]) {
-            item.value = dataSource[item.key]
-          }
-          break
-      }
-    })
-    return formItems
-  },
-  formatFormValues (formValues, operationItems) {
-    const res = JSON.parse(JSON.stringify(formValues))
-    operationItems.forEach((item) => {
-      const valueItem = this.clone(res[item.key])
-      const componentName = item.component ? (item.component.name ? item.component.name : item.component) : ''
-      switch (componentName) {
-        case 'UserSelect':
-          if (item.paramKeys) {
-            res[item.paramKeys[0]] = this.splitUser(valueItem)[0]
-            res[item.paramKeys[1]] = this.splitUser(valueItem)[1]
-          } else {
-            // 如果只有一个key，那么只获取code
-            res[item.key] = this.splitUser(valueItem)[0]
-          }
-          break
-        case 'DepartmentSelectPlus':
-          if (item.paramKeys) {
-            res[item.paramKeys[0]] = this.splitOptionItems(valueItem)[0]
-            res[item.paramKeys[1]] = this.splitOptionItems(valueItem)[1]
-          } else {
-            // 如果只有一个key，那么只获取code
-            res[item.key] = this.splitOptionItems(valueItem)[0]
-          }
-          break
-        case 'SupplierSelect':
-          let supplier = store.state.global.supplierList.filter(supplier => supplier.supplierCode === valueItem)
-          supplier = supplier && supplier.length ? supplier[0] : {}
-          if (item.paramKeys) {
-            res[item.paramKeys[0]] = supplier.supplierCode
-            res[item.paramKeys[1]] = supplier.abbreviation
-          } else {
-            // 如果只有一个key，那么只获取code
-            res[item.key] = supplier.supplierCode
-          }
-          break
-      }
-      // 单独处理moment类型
-      if (valueItem instanceof moment) {
-        res[item.key] = moment(valueItem).format('YYYY-MM-DD')
-      }
-      // 裁剪掉多余的key，不过要确保 item.key 不在 item.paramKeys 中
-      // if (item.paramKeys && item.key !== item.paramKeys[0] && item.key !== item.paramKeys[1]) {
-      //   delete res[item.key]
-      // }
-    })
-    return res
   },
   permissionQueryByRole (src) {
     const pMap = {
@@ -1364,6 +1169,62 @@ const utils = {
     return moment(`${y}-${m}-${d}`)
   },
   /**
+   * 调整到指定月份，日期不变
+   * @param {Moment} date
+   * @param {Number} diff 月份的差值
+   * @return Moment
+   * @template adjustMonth('2021-01-15') => { t: 2021-01-15 }
+   * @template adjustMonth('2021-01-15', -1) => { t: 2020-12-15 }
+   */
+  adjustMonth (date, diff = 0) {
+    if (!date) return date
+    let [y, m, d] = moment(date).format('YYYY-MM-DD').split('-').map(i => Number(i))
+    if (diff) {
+      m = m + diff
+    }
+    if (m > 12) {
+      y = y + 1
+      m = m % 12
+    }
+    if (m < 0) {
+      y = y - 1
+      m = 12 + m
+    }
+    if (m === 0) {
+      y = y - 1
+      m = 12
+    }
+    return moment(new Date(`${y}-${m}-${d}`))
+  },
+  /**
+   * 调整到指定月份，把日期固定到1号
+   * @param {Moment} date
+   * @param {Number} diff 月份的差值
+   * @return Moment
+   * @template flatMonth('2021-01-15') => { t: 2021-01-01 }
+   * @template flatMonth('2021-01-15', -1) => { t: 2020-12-01 }
+   */
+  flatMonth (date, diff = 0) {
+    if (!date) return date
+    let [y, m] = moment(date).format('YYYY-MM-DD').split('-').map(i => Number(i))
+    if (diff) {
+      m = m + diff
+    }
+    if (m > 12) {
+      y = y + 1
+      m = m % 12
+    }
+    if (m < 0) {
+      y = y - 1
+      m = 12 + m
+    }
+    if (m === 0) {
+      y = y - 1
+      m = 12
+    }
+    return moment(new Date(`${y}-${m}-01`))
+  },
+  /**
    * 获取函数的参数名
    * @param {Function | String} src
    * @returns Array
@@ -1453,6 +1314,35 @@ const utils = {
       string = string.split('\n').map(i => leftMargin + i).join('\n')
     }
     return string
+  },
+  createDecorator (formItem) {
+    return [formItem.key, { initialValue: formItem.default, rules: [{ required: formItem.required, message: `请确认${formItem.label}` }] }]
+  },
+  forEachTree (tree, callback) {
+    const nodes = this.flatten(tree)
+    for (let i = 0; i < nodes.length; i++) {
+      callback(nodes[i], i)
+    }
+  },
+  flatten (src) {
+    const res = []
+    if (this.isArray(src)) {
+      loop(src)
+    }
+    if (this.isObject(src)) {
+      loop([src])
+    }
+
+    function loop (nodes) {
+      nodes.forEach(node => {
+        res.push(node)
+        if (node.children && node.children.length) {
+          loop(node.children)
+        }
+      })
+    }
+
+    return res
   }
 }
 

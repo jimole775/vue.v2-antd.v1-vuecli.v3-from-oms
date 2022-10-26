@@ -20,7 +20,7 @@ mock.mock(/\/dync/, options => {
 function getParams (options) {
   let res = null
   if (options.type === 'GET' && hasQueryString(options.url)) {
-    res = utils.getParamsFromURL(options.url)
+    res = utils.fromQueryString(options.url)
   }
   if (options.body) {
     res = utils.isJSONString(options.body) ? JSON.parse(options.body) : options.body

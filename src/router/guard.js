@@ -1,9 +1,8 @@
-import qs from 'qs'
-import store from '@/store/index'
+import store from '@/store'
+import utils from '@/utils'
 import base64 from '@/utils/base64'
 import collectWhites from './whites'
-// import collectTracks from '@/config/router.tracks.js'
-import { setToken, getToken, setJumpInfo } from '@/utils/auth'
+import { setToken, setJumpInfo } from '@/utils/auth'
 
 export default (router) => {
   router.beforeEach((to, from, next) => {
@@ -20,15 +19,6 @@ export default (router) => {
 
 // 用户访问敏感页面的时候，记录到obus
 function trackPageView (to, from) {
-  const user = store.state.global.user
-  if (user && window.trackPageView) {
-    window.trackPageView(to, from, {
-      pageTitle: '', // 页面标题，选填
-      userId: user.employeeNumber, // 用户工号,必填
-      userName: user.name, // 用户名，必填
-      sessionId: getToken() // sessionId，可以是用户登录token，必填
-    })
-  }
 }
 
 // 校验是否是白名单地址，如果不是，就跳转到 401 界面
@@ -50,10 +40,10 @@ function handleLoginRedirect (to, from, next) {
 // 处理外部直连的跳转信息
 function handleExternalRedirect (to, from, next) {
   if (to.query.external) {
-    // mo跳转数据需要用base64解码, 然后缓存到本地
+    // 跳转数据需要用base64解码, 然后缓存到本地
     setJumpInfo(base64.decode(to.query.external))
     delete to.query.external
-    next(to.path + '?' + qs.stringify(to.query))
+    next(to.path + utils.toQueryString(to.query))
   }
 }
 
@@ -62,7 +52,7 @@ function handleToken (to, from, next) {
   if (to.query.token) {
     setToken(to.query.token)
     delete to.query.token
-    next(to.path + '?' + qs.stringify(to.query))
+    next(to.path + utils.toQueryString(to.query))
   } else {
     // 新增缓存用户信息
     if (!store.state.global.user) {

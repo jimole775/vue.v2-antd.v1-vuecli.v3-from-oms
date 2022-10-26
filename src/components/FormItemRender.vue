@@ -79,9 +79,6 @@ export default {
       this.clearForm()
       this.formatFormItems(formItems)
 
-      // 全局统一的默认值
-      utils.bindDefaultValueForComponent(dataSource, formItems)
-
       // 获取自定义的默认值 item.default
       this.bindDefaultValue(dataSource, formItems)
 
