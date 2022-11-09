@@ -1,6 +1,7 @@
 import axios from 'axios'
 import store from '@/store'
 import moment from 'moment'
+import base64 from './base64'
 import 'moment/locale/zh-cn'
 import { getToken } from './auth'
 import { Modal } from 'ant-design-vue'
@@ -1343,6 +1344,34 @@ const utils = {
     }
 
     return res
+  },
+  // 动态插入第三方资源
+  async insertSource (url) {
+    if (!url) return Promise.resolve()
+    const sourceId = 'cdn_' + base64.encode(url)
+    if (document.getElementById(sourceId)) return Promise.resolve()
+    const script = document.createElement('script')
+    script.id = sourceId
+    script.src = url
+    const slot = document.getElementById('cdn_slot')
+    await this.waitBy(() => !!slot)
+    slot.appendChild(script)
+    return Promise.resolve()
+  },
+  async waitBy (condition, delay) {
+    const entity = async (resolve) => {
+      const expection = await condition()
+      if (expection) {
+        return resolve(expection)
+      } else {
+        return setTimeout(() => {
+          return entity(resolve)
+        })
+      }
+    }
+    return new Promise((resolve) => {
+      return entity(resolve)
+    })
   }
 }
 

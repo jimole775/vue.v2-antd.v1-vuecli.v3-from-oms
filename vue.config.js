@@ -2,10 +2,13 @@
 // const renderer = new marked.Renderer();
 const webpack = require('webpack')
 const path = require('path')
-const env = process.env.NODE_ENV
+const env = process.env.VUE_APP_SERVER_ENV
 
 const proEntries = './src/main.js'
 const devEntries = './src/main.dev.js'
+
+const devEnvs = ['native']
+const proEnvs = ['prod']
 
 function resolve (dir) {
   return path.join(__dirname, dir)
@@ -13,18 +16,17 @@ function resolve (dir) {
 
 module.exports = {
   configureWebpack: {
+    entry: devEnvs.includes(env) ? devEntries : proEntries,
+    devtool: proEnvs.includes(env) ? '' : 'source-map',
     resolve: {
       alias: {
         '@builder': resolve('./src/helper/builder')
       }
     },
-    devtool: 'source-map',
     plugins: [
       // 忽略moment的语言包
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
-    ],
-    entry: env === 'production' ? proEntries : devEntries
-  },
+    ] },
   chainWebpack: config => {
     config.module
       .rule('md')
@@ -41,6 +43,7 @@ module.exports = {
       // })
       .loader('markdown-loader')
       .end()
+    config.plugins.delete('prefetch')
   },
   css: {
     loaderOptions: {
