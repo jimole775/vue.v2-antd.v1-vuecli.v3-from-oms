@@ -45,15 +45,17 @@ http.interceptors.response.use(
     } catch (e) {
       Vue.prototype.$loading.reset()
       Vue.prototype.$loading.unload()
+      console.log(e.message)
       return response
     }
   },
-  error => {
+  e => {
     Vue.prototype.$loading.countdown()
-    if (utils.isString(error.data) && /^http/i.test(error.data)) {
-      window.location.href = error.data
+    if (utils.isString(e.data) && /^http/i.test(e.data)) {
+      window.location.href = e.data
     }
-    return Promise.reject(error)
+    console.log(e.message)
+    return Promise.reject(e)
   }
 )
 

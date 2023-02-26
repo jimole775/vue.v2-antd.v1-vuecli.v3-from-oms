@@ -138,6 +138,7 @@ export default {
           return false
         }
         this.modal.show = false
+        debugger
         this.$emit('update', this.packageParams(values))
       })
     },

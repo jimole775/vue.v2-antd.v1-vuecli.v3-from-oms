@@ -60,8 +60,8 @@ export default {
         // tabId: 输出给SApproval组件
         // rank: 用来标记是第几套审批流程，一套审批流程有['列表', '申请', '审批']三个tab
         // type: 用来标记 list, apply, approval
-        { tabName: '列表', key: '0_0', tabId: '0', rank: 0, type: '0', component: ProjectList },
-        { tabName: '审批', key: '0_2', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval }
+        { tabName: '列表', key: '0_0', tabId: '0', rank: 0, type: '0', component: ProjectList, permission: { roles: '0' } },
+        { tabName: '审批', key: '0_2', tabId: '0_2', rank: 0, type: '2', component: ProjectApproval, permission: { roles: '0' } }
       ]
     }
   },

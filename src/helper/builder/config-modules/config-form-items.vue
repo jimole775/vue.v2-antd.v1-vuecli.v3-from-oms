@@ -110,12 +110,13 @@ export default {
     formItemConfirm (componentInfo) {
       const copy = utils.clone(componentInfo)
       const insertIndex = this.getInsertIndex(componentInfo)
-      if (insertIndex === null) {
-        this.formItems.push(copy)
-      } else {
-        this.formItems[insertIndex] = copy
-        this.$forceUpdate()
-      }
+      // if (insertIndex === null) {
+      //   this.formItems.push(copy)
+      // } else {
+      //   this.formItems[insertIndex] = copy
+      //   this.$forceUpdate()
+      // }
+      this.$set(this.formItems, insertIndex || this.formItems.length, copy)
       this.update()
     },
     // 如果是编辑，就获取需要修改的下标

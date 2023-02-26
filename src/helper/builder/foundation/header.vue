@@ -34,9 +34,14 @@ export default {
   computed: {
     user () {
       return this.$store.state.global.user
-    },
-    loading () {
-      return this.$store.state.global.loading
+    }
+  },
+  watch: {
+    loading: {
+      handler (val) {
+        console.log('loading:', val)
+      },
+      immediate: true
     }
   },
   methods: {

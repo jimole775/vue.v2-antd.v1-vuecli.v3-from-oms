@@ -151,16 +151,17 @@ export default {
   },
   watch: {
     modal: {
-      handler ({ data, show }) {
+      handler ({ data = {}, show }) {
         if (show) {
-          this.defaultProps.width = data.props.width || 100
-          this.defaultProps.cellContentType = data.props.cellContentType || 'text'
-          this.defaultProps.permission = data.props.permission
-          this.defaultProps.titleTips = data.props.titleTips
-          this.defaultProps.title = data.props.title
-          this.defaultProps.dataIndex = data.props.dataIndex
-          this.defaultProps.slotsFunction.expression = data.props.slotsRender
-          this.defaultProps.scopedSlotsFunction.expression = data.props.scopedSlotsRender
+          const props = data.props || {}
+          this.defaultProps.width = props.width || 100
+          this.defaultProps.cellContentType = props.cellContentType || 'text'
+          this.defaultProps.permission = props.permission
+          this.defaultProps.titleTips = props.titleTips
+          this.defaultProps.title = props.title
+          this.defaultProps.dataIndex = props.dataIndex
+          this.defaultProps.slotsFunction.expression = props.slotsRender
+          this.defaultProps.scopedSlotsFunction.expression = props.scopedSlotsRender
           this.$nextTick(() => {
             this.form.setFieldsValue({ ...this.defaultProps })
           })

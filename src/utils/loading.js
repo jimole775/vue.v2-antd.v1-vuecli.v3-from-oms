@@ -3,9 +3,11 @@ const loading = {
   high: 0,
   uprise () {
     this.high++
+    console.log('loading uprise:', this.high)
   },
   countdown () {
     this.high--
+    console.log('loading countdown:', this.high)
     if (this.high < 1) {
       this.unload()
     }
@@ -17,6 +19,7 @@ const loading = {
     store.commit('setLoading', true)
   },
   unload () {
+    debugger
     store.commit('setLoading', false)
   }
 }

@@ -11,6 +11,7 @@ export default {
     user: '',
     menus: [],
     mockEnv: false,
+    loading: false,
     todoParams: null,
     userRole: {},
     currentRole: {},
@@ -116,7 +117,7 @@ export default {
       const curSign = getFingerprint()
       if (!curSign) {
         const employeeNumber = user.employeeNumber
-        const createSign = employeeNumber + '_' + utils.utcTime()
+        const createSign = employeeNumber + '_' + utils.getUniqueMs()
         setFingerprint(createSign)
       }
     },

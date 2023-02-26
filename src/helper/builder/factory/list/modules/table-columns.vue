@@ -4,6 +4,12 @@ import utils from '@/utils'
 import http from '@/utils/http'
 import { string2func, jsx2vue } from '@builder/utils'
 import AddColumnsItem from '@builder/config-modals/config-columns-item'
+const addtionCol = {
+  width: 100,
+  id: '__addition__',
+  dataIndex: '__addition__',
+  slots: { title: '__additionTitle__' }
+}
 export default {
   components: {
     AddColumnsItem
@@ -38,31 +44,52 @@ export default {
   watch: {
     value: {
       handler (columns) {
+        debugger
+        if (columns.length === 0) {
+          columns = this.defaultColumns()
+        }
         this.columns = deployDefaultProps(columns)
       },
       immediate: true
     },
     dataApi: {
       async handler (dataApi) {
-        if (dataApi) {
-          if (utils.isEmptyObject(this.currentDataApi)) {
-            // 初始化，重新获取列表数据
-            this.currentDataApi = utils.clone(dataApi)
-            await this.tryFetch(dataApi).catch(e => this.$message.error(e.toString()))
-          } else {
-            if (!isEqual(this.currentDataApi, dataApi)) {
-              // 如果 api 重新赋值，那么 columns 和 dataList 需要置空
-              this.columns.length = 0
-              this.dataList.length = 0
-              this.currentDataApi = utils.clone(dataApi)
-              await this.tryFetch(dataApi).catch(e => this.$message.error(e.toString()))
-              this.defaultColumns(this.dataList[0])
-              this.$emit('update', this.columns)
-            }
+        if (dataApi && (dataApi.name || dataApi.url)) {
+          // if (utils.isEmptyObject(this.currentDataApi)) {
+          //   // 初始化，重新获取列表数据
+          //   this.currentDataApi = utils.clone(dataApi)
+          //   await this.tryFetch(dataApi).catch(e => this.$message.error(e.toString()))
+          // } else {
+          //   if (!isEqual(this.currentDataApi, dataApi)) {
+          //     // 如果 api 重新赋值，那么 columns 和 dataList 需要置空
+          //     this.columns.length = 0
+          //     this.dataList.length = 0
+          //     this.currentDataApi = utils.clone(dataApi)
+          //     await this.tryFetch(dataApi).catch(e => this.$message.error(e.toString()))
+          //     this.defaultColumns(this.dataList[0])
+          //     this.$emit('update', this.columns)
+          //   }
+          // }
+          if (!isEqual(this.currentDataApi, dataApi)) {
+            this.columns.length = 0
+            this.dataList.length = 0
+          }
+          this.currentDataApi = utils.clone(dataApi)
+          this.dataList = await this.tryFetch(dataApi).catch(e => console.log(e.message))
+          debugger
+          if (this.columns.length === 0 && this.dataList.length > 0) {
+            this.columns = this.defaultColumns(this.dataList[0] || {})
+            this.$emit('update', this.columns)
           }
         }
       },
       deep: true,
+      immediate: true
+    },
+    columns: {
+      handler (cols) {
+        console.log(cols)
+      },
       immediate: true
     }
   },
@@ -88,54 +115,45 @@ export default {
     async tryFetch (apiInfo) {
       try {
         let res
+        let serv
         if (api[apiInfo.name]) {
-          res = await api[apiInfo.name]({ pageNum: 1, pageSize: 10 })
+          serv = await api[apiInfo.name]({ pageNum: 1, pageSize: 10 })
         } else if (apiInfo.method && apiInfo.url) {
           const fn = http[apiInfo.method.toLocaleLowerCase()] || function () {}
           const params = apiInfo.method === 'GET' ? { params: apiInfo.params } : apiInfo.params
-          res = await fn.apply(http, [apiInfo.url, params])
+          serv = await fn.apply(http, [apiInfo.url, params])
         }
-        if (res && res.code === 200) {
-          let dataModel
+        if (serv && serv.code === 200 && serv.data && serv.data.length) {
           if (apiInfo.dataDir) {
-            dataModel = eval('res' + '.' + apiInfo.dataDir)
+            res = eval('serv' + '.' + apiInfo.dataDir)
           } else {
-            dataModel = res.data || []
+            res = serv.data
           }
-          this.dataList = [dataModel[0]]
         }
-        return Promise.resolve('')
-      } catch (error) {
-        return Promise.reject(error)
+        return Promise.resolve(res ? [res[0]] : [])
+      } catch (e) {
+        console.error(e.message)
+        return Promise.resolve([])
       }
     },
     defaultColumns (row = {}) {
-      try {
-        this.columns = [
-          {
-            width: 100,
-            id: '__addition__',
-            dataIndex: '__addition__',
-            slots: { title: '__addition__Title' }
+      return [
+        utils.clone(addtionCol),
+        ...Object.keys(row).map((key) => ({
+          id: key,
+          width: 100,
+          dataIndex: key,
+          slots: { title: key + 'Title' },
+          slotsRender (h, vm) {
+            return key
           },
-          ...Object.keys(row).map((key) => ({
-            id: key,
+          props: {
             width: 100,
-            dataIndex: key,
-            slots: { title: key + 'Title' },
-            slotsRender (h, vm) {
-              return key
-            },
-            props: {
-              width: 100,
-              title: key,
-              dataIndex: key
-            }
-          }))
-        ]
-      } catch (error) {
-        this.$message.error(error.toString())
-      }
+            title: key,
+            dataIndex: key
+          }
+        }))
+      ]
     },
     callScopedSlotsRender (col) {
       const aRow = this.dataList[0] || {}
@@ -174,12 +192,14 @@ export default {
           break
         }
       }
-      if (insertIndex === null) {
-        this.columns.push(aColumn)
-      } else {
-        this.columns[insertIndex] = aColumn
-        this.$forceUpdate()
-      }
+      // if (insertIndex === null) {
+      //   this.columns.push(aColumn)
+      // } else {
+      //   this.columns[insertIndex] = aColumn
+      //   this.$forceUpdate()
+      // }
+      this.$set(this.columns, insertIndex || this.columns.length, aColumn)
+      this.$forceUpdate()
       this.$emit('update', this.columns)
     },
     buildTHead () {
@@ -254,7 +274,7 @@ export default {
     </div>)
   }
 }
-function deployDefaultProps (columns) {
+function deployDefaultProps (columns = []) {
   return columns.map((col) => {
     const props = col.props
     if (!props) return col

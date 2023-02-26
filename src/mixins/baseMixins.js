@@ -3,6 +3,7 @@ import { mapState } from 'vuex'
 export default {
   computed: {
     ...mapState({
+      loading: state => state.global.loading,
       currentName: state => state.global.user.name,
       currentAccount: state => state.global.user.employeeNumber,
       currentRoleType: state => state.global.global.userRole.type

@@ -33,6 +33,16 @@ const utils = {
   date2YMDHM (strOrDate, splitSign = '-') {
     return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD HH:mm`) : ''
   },
+  getUniqueMs () {
+    const utc = moment.utc()
+    const yy = utc.year()
+    const mm = utc.month()
+    const dd = utc.date()
+    const h = utc.hour()
+    const m = utc.minute()
+    const s = utc.second()
+    return new Date(`${yy}-${mm}-${dd} ${h}:${m}:${s}`).getTime()
+  },
   /**
    * @param {string} input value
    * @returns {number} output value
