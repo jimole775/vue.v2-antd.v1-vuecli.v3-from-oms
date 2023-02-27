@@ -3,7 +3,7 @@ import api from '@/api'
 import utils from '@/utils'
 import http from '@/utils/http'
 import { string2func, jsx2vue } from '@builder/utils'
-import ConfigColumnsItem from '@builder/config-modals/config-columns-item'
+import ConfigColumnsItem from '../modals/config-columns-item.vue'
 let cacheDataApi
 const addtionCol = {
   width: 100,

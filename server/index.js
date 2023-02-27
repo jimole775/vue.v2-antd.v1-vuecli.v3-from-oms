@@ -1,3 +1,4 @@
+require('./config')
 const cmdParam = require('./utils/cmdParam')
 const Express = require('express')
 const resHandler = require('./res-handler')
