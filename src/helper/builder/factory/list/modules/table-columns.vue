@@ -3,7 +3,8 @@ import api from '@/api'
 import utils from '@/utils'
 import http from '@/utils/http'
 import { string2func, jsx2vue } from '@builder/utils'
-import AddColumnsItem from '@builder/config-modals/config-columns-item'
+import ConfigColumnsItem from '@builder/config-modals/config-columns-item'
+let cacheDataApi
 const addtionCol = {
   width: 100,
   id: '__addition__',
@@ -12,7 +13,7 @@ const addtionCol = {
 }
 export default {
   components: {
-    AddColumnsItem
+    ConfigColumnsItem
   },
   props: {
     dataApi: {
@@ -37,14 +38,12 @@ export default {
       },
       scope: this,
       columns: [],
-      dataList: [],
-      currentDataApi: {}
+      dataList: []
     }
   },
   watch: {
     value: {
       handler (columns) {
-        debugger
         if (columns.length === 0) {
           columns = this.defaultColumns()
         }
@@ -55,6 +54,20 @@ export default {
     dataApi: {
       async handler (dataApi) {
         if (dataApi && (dataApi.name || dataApi.url)) {
+          this.dataList = await this.tryFetch(dataApi)
+          // 如果 cacheDataApi 是空的，那么可以判断是首次进入
+          // 再加上，this.columns 有值，就可以直接返回
+          // 因为，this.columns 有可能是后端返回的视图数据，不能丢失
+          if (utils.isEmpty(cacheDataApi) && this.columns.length) {
+            return (cacheDataApi = utils.clone(dataApi))
+          }
+          // 以下逻辑判断是否需要 重新构建 this.columns
+          if (!isEqual(cacheDataApi, dataApi) && this.dataList.length) {
+            this.columns = this.defaultColumns(this.dataList[0] || {})
+            this.$emit('update', this.columns)
+          }
+          // 缓存 api 数据
+          cacheDataApi = utils.clone(dataApi)
           // if (utils.isEmptyObject(this.currentDataApi)) {
           //   // 初始化，重新获取列表数据
           //   this.currentDataApi = utils.clone(dataApi)
@@ -70,17 +83,17 @@ export default {
           //     this.$emit('update', this.columns)
           //   }
           // }
-          if (!isEqual(this.currentDataApi, dataApi)) {
-            this.columns.length = 0
-            this.dataList.length = 0
-          }
-          this.currentDataApi = utils.clone(dataApi)
-          this.dataList = await this.tryFetch(dataApi).catch(e => console.log(e.message))
-          debugger
-          if (this.columns.length === 0 && this.dataList.length > 0) {
-            this.columns = this.defaultColumns(this.dataList[0] || {})
-            this.$emit('update', this.columns)
-          }
+          // if (!isEqual(this.currentDataApi, dataApi)) {
+          //   this.columns.length = 0
+          //   this.dataList.length = 0
+          // }
+          // this.currentDataApi = utils.clone(dataApi)
+          // this.dataList = await this.tryFetch(dataApi).catch(e => console.log(e.message))
+          // debugger
+          // if (this.columns.length === 0 && this.dataList.length > 0) {
+          //   this.columns = this.defaultColumns(this.dataList[0] || {})
+          //   this.$emit('update', this.columns)
+          // }
         }
       },
       deep: true,
@@ -184,22 +197,8 @@ export default {
     },
     columnsItemConfirm (column) {
       const aColumn = adjustColumn(column)
-      let insertIndex = null
-      for (let i = 0; i < this.columns.length; i++) {
-        const item = this.columns[i]
-        if (item.id === aColumn.id) {
-          insertIndex = i
-          break
-        }
-      }
-      // if (insertIndex === null) {
-      //   this.columns.push(aColumn)
-      // } else {
-      //   this.columns[insertIndex] = aColumn
-      //   this.$forceUpdate()
-      // }
-      this.$set(this.columns, insertIndex || this.columns.length, aColumn)
-      this.$forceUpdate()
+      const insertIndex = this.columns.indexOf(this.columns.find(i => i.id === aColumn.id))
+      this.$set(this.columns, insertIndex > -1 ? insertIndex : this.columns.length, aColumn)
       this.$emit('update', this.columns)
     },
     buildTHead () {
@@ -270,7 +269,7 @@ export default {
           this.buildTBody()
         }
       </a-table>
-      <AddColumnsItem key={this.modal.show} modal={this.modal} onUpdate={this.columnsItemConfirm} />
+      <ConfigColumnsItem key={this.modal.show} modal={this.modal} onUpdate={this.columnsItemConfirm} />
     </div>)
   }
 }

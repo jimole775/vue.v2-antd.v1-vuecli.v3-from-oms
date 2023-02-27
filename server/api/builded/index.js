@@ -11,8 +11,8 @@ module.exports = function (req, res) {
     const { buildData } = req.body
     if (buildData) {
       try {
-        if (buildData.name === 'builder-demo') {
-          return resolve('“builder-demo”属于样例项目，只支持预览功能！')
+        if (buildData.name === global.const.demo_name) {
+          return resolve(`“${global.const.demo_name}”属于样例项目，只支持预览功能！`)
         }
         recordId(buildData.name)
         buildCodeFiles(buildData)

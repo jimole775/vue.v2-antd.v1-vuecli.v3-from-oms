@@ -137,6 +137,9 @@ export default {
     tabProxy: {
       async handler (tabProxy) {
         if (!tabProxy) return false
+        if (utils.isNone(this.currentApimap.detail)) {
+          return this.$message.warning('审批页面“详情”接口未配置！')
+        }
         this.currentTab = tabProxy.tabs.find((pane) => pane.tabId === tabProxy.activeId)
         let func
         if (utils.isFunction(this.currentApimap.detail)) {
@@ -421,6 +424,9 @@ export default {
     },
     // 发起审批
     async startApprove (params) {
+      if (utils.isNone(this.currentApimap.submit)) {
+        return this.$message.warning('审批页面“提交”接口未配置！')
+      }
       const finalParams = this.$props.beforeSubmit(params, this.scope)
       let func
       if (utils.isFunction(this.currentApimap.submit)) {

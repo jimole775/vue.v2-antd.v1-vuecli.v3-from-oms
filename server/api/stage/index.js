@@ -9,9 +9,9 @@ module.exports = function (req, res) {
       }
       try {
         let midPath = 'view-data'
-        if (viewData.name === 'builder-demo') {
+        if (viewData.name === global.const.demo_name) {
           // midPath = 'demo'
-          return resolve('“builder-demo”属于样例项目，只支持预览功能！')
+          return resolve(`“${global.const.demo_name}”属于样例项目，只支持预览功能！`)
         }
         viewData.id = recordId(viewData.name)
         writeFileSync(global.path.db(midPath, viewData.name + '.json'), viewData)

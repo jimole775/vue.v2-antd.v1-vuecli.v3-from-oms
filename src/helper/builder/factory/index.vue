@@ -86,7 +86,7 @@ export default {
       deep: true
     },
     viewData: {
-      handler (data) {
+      handler (data = {}) {
         const tabs = []
         data.tabs && data.tabs.forEach((tab) => {
           if (tab.type === '0') {

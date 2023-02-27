@@ -1,26 +1,9 @@
-const path = require('path')
 const cmdParam = require('./utils/cmdParam')
 const Express = require('express')
 const resHandler = require('./res-handler')
 const app = new Express()
 const bodyParser = require('body-parser')
-const currentDir = __dirname
 const port = 8888
-function resolve (base, args) {
-  args = Array.from(args)
-  args.unshift(base)
-  args.unshift(currentDir)
-  return path.join.apply(path, args)
-}
-
-global.path = {}
-global.path.root = function () { return resolve('../', arguments) }
-global.path.server = function () { return resolve('/', arguments) }
-global.path.api = function () { return resolve('api', arguments) }
-global.path.common = function () { return resolve('common', arguments) }
-global.path.db = function () { return resolve('data-base', arguments) }
-global.path.utils = function () { return resolve('utils', arguments) }
-
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use(bodyParser.json())

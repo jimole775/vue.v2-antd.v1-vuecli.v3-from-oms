@@ -17,10 +17,10 @@
       :value="collapsePanels"
       @update="panelsUpdate"
     />
-    <LogInfoPanel
+    <!-- <LogInfoPanel
       :value="logInfo"
       @update="logUpdate"
-    />
+    /> -->
     <OperationPanel
       :value="{ operator, approvalSubmitApi }"
       :nodes="availNodes"
@@ -32,7 +32,7 @@
 import utils from '@/utils'
 import { mapActions } from 'vuex'
 import builder from '@builder/mixins/builder'
-import LogInfoPanel from './modules/log-info-panel'
+// import LogInfoPanel from './modules/log-info-panel'
 import BaseInfoPanel from './modules/base-info-panel'
 import StepNodePanel from './modules/step-node-panel'
 import OperationPanel from './modules/operator-panel'
@@ -40,7 +40,7 @@ import CollapsePanels from './modules/collapse-panels'
 export default {
   mixins: [builder],
   components: {
-    LogInfoPanel,
+    // LogInfoPanel,
     BaseInfoPanel,
     StepNodePanel,
     OperationPanel,
