@@ -124,20 +124,21 @@ export default {
           return new Error('不支持的 wrapperCustomRender 类型！')
         }
       } else if (formItem.component) {
+        const vDecorator = [formItem.key, { initialValue: formItem.default, rules: [{ required: formItem.required, message: '请确认必填项' }]}]
+        const props = utils.isFunction(formItem.props) ? formItem.props(formItem, this) : formItem.props
+        const attrs = utils.isFunction(formItem.attrs) ? formItem.attrs(formItem, this) : formItem.attrs
+        const domProps = utils.isFunction(formItem.domProps) ? formItem.domProps(formItem, this) : formItem.domProps
+        const def = utils.isFunction(formItem.default) ? formItem.default(formItem, this) : formItem.default
         return (<formItem.component
-          props={formItem.props}
-          attrs={formItem.attrs}
-          domProps={formItem.domProps}
-          initialValue={formItem.default}
-          defaultValue={formItem.default/** Uploader的属性 */}
-          defaultFiles={formItem.default/** UploaderMultiple的属性 */}
-          vDecorator={[formItem.key, { initialValue: formItem.default, rules: [{ required: formItem.required, message: `请确认必填项` }] }]}
+          props={props}
+          attrs={attrs}
+          domProps={domProps}
+          initialValue={def}
+          defaultValue={def/** Uploader的属性 */}
+          defaultFiles={def/** UploaderMultiple的属性 */}
+          vDecorator={vDecorator}
           onChange={(val, option) => this.componentChangeEvent(val, option, formItem)}
-        >
-          {
-            // formItem.customRender && formItem.customRender(this.$createElement)
-          }
-        </formItem.component>)
+        />)
       } else {
         const data = this.$props.dataSource || {}
         const dv = data[formItem.vkey || formItem.key]
@@ -234,7 +235,7 @@ export default {
         if (item.required === undefined) this.$set(item, 'required', false)
         if (item.layout === undefined) this.$set(item, 'layout', layout8)
         if (item.mode === undefined) this.$set(item, 'mode', 'edit')
-        if (item.value === undefined) this.$set(item, 'value', null)
+        if (item.value === undefined) this.$set(item, 'value', undefined)
         if (item.params === undefined) this.$set(item, 'params', {})
         if (item.userPermissions === undefined) this.$set(item, 'userPermissions', [1, 2]) // 1是内部员工，2是外部员工
         if (item.radioPermissions === undefined) this.$set(item, 'radioPermissions', [1]) // 1通过
@@ -300,12 +301,11 @@ export default {
             resolve({
               type: 'failure',
               data: null,
-              message: utils.getFormErrorMessage(err)
+              message: utils.getFormErrorMessage(err) || '请完成必填项！'
             })
           } else {
             const params = {
               ...values,
-              // ...utils.formatFormValues(values, this.formItems),
               ...this.getFormItemsValue(values, this.scopeFormItems)
             }
             resolve({
@@ -331,8 +331,8 @@ export default {
                 return (
                   <a-col span={formItem.layout ? formItem.layout.span : 8}>
                     <a-form-item
-                      label-col={{ span: formItem.layout ? formItem.layout.label : 6 }}
-                      wrapper-col={{ span: formItem.layout ? formItem.layout.wrapper : 16 }}
+                      label-col={{ span: formItem.layout ? formItem.layout.label : 12 }}
+                      wrapper-col={{ span: formItem.layout ? formItem.layout.wrapper : 12 }}
                     >
                       {[
                         this.labelRender(h, utils.clone(formItem)),

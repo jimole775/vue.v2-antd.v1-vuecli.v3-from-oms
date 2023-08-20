@@ -34,7 +34,7 @@ import utils from '@/utils'
 export default {
   title: '月份范围选择',
   name: 'RangeMonthPicker',
-  forBuilder: true,
+  enumerated: true,
   props: {
     value: {
       type: Array,

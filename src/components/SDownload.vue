@@ -37,7 +37,7 @@ import PreviewFrame from '@/components/PreviewFrame'
 export default {
   title: '下载',
   name: 'SDownload',
-  forBuilder: true,
+  enumerated: true,
   components: { PreviewFrame },
   props: {
     value: {

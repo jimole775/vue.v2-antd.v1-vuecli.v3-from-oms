@@ -13,7 +13,7 @@
 export default {
   title: '年选择',
   name: 'YearPicker',
-  forBuilder: true,
+  enumerated: true,
   props: {
     value: {
       type: String,

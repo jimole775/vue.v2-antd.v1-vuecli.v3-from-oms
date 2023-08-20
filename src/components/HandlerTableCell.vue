@@ -1,7 +1,7 @@
 <script>
 export default {
   title: '处理人解析',
-  forBuilder: true,
+  enumerated: true,
   functional: true,
   name: 'HandlerTableCell',
   props: {

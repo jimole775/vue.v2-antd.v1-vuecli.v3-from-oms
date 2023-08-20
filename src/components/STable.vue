@@ -8,6 +8,10 @@ export default {
   title: '标准表格',
   name: 'STable',
   props: {
+    mock: {
+      type: Object,
+      default: undefined
+    },
     columns: {
       type: Array,
       default: () => []
@@ -53,6 +57,10 @@ export default {
       default: null
     },
     abandonApi: { // 批量放弃
+      type: String | Function,
+      default: null
+    },
+    closeApi: { // 批量关闭
       type: String | Function,
       default: null
     },
@@ -127,7 +135,8 @@ export default {
       dataList: [],
       fileList: [],
       isLoading: false,
-      isSearchorExpand: true,
+      isReset: false,
+      // isSearchorExpand: true,
       searchorGroups: [], // 显示搜索栏
       selectedRows: [],
       selectedRowKeys: [],
@@ -153,8 +162,13 @@ export default {
   watch: {
     // 监听dataParams参数，使其能触发fetchData()
     dataParams: {
-      handler (val) {
-        if (val) {
+      handler (params, oldParams) {
+        // 如果 oldParams 有值，需要判断值是否有变更，否则会造成死循环
+        if (oldParams) {
+          if (JSON.stringify(params) !== JSON.stringify(oldParams)) {
+            this.fetchData()
+          }
+        } else if (params) {
           this.fetchData()
         }
       },
@@ -294,10 +308,10 @@ export default {
       return this.accept ? this.accept : supports.join(',')
     }
   },
-  mounted () {
+  async mounted () {
     this.fixFields()
-    this.initialize()
-    this.fetchImmediate && this.fetchData()
+    await this.initialize()
+    this.fetchImmediate && await this.fetchData()
   },
   methods: {
     fixFields () {
@@ -384,7 +398,7 @@ export default {
         }
       }
     },
-    showmodal (type) {
+    async showmodal (type) {
       // 判断有没有勾选
       if (!this.selectedRows || !this.selectedRows.length) {
         return this.$modal.warning({
@@ -392,12 +406,40 @@ export default {
           content: '请至少勾选一项！'
         })
       }
+      await this.verfiyBatchOperatility(type)
       this.modal.form.setFieldsValue({
         approvalContent: '',
         transfer: []
       })
       this.modal.info = this.modalinfomap[type]
       this.modal.show = true
+    },
+    verfiyBatchOperatility (type) {
+      // 根据选择项的操作类型给出提示
+      // 1. 【】流程已结束，不支持此操作
+      const endSigns = ['end', 'flowend', 'nodeend', 'closed', 'cancelled']
+      const endDisableds = ['pass', 'reject', 'unpass', 'revoke', 'delete', 'transfer', 'abandon']
+      const endNode = this.selectedRows.find(i => endSigns.includes((i[this.flowStatusField] || '').toLowerCase()))
+      const startSigns = ['start', 'restart', 'resubmit', 'submit']
+      const startDisableds = ['reject', 'unpass']
+      const startNode = this.selectedRows.find(i => startSigns.includes((i[this.flowStatusField] || '').toLowerCase()))
+      if (endNode && endDisableds.includes(type)) {
+        this.$modal.info({
+          title: '提示',
+          okText: '确定',
+          content: `${endNode['flowNo'] || endNode[this.rowKey]} 流程已结束，不支持此操作`
+        })
+        return Promise.reject(new Error())
+      } else if (startNode && startDisableds.includes(type)) {
+        this.$modal.info({
+          title: '提示',
+          okText: '确定',
+          content: `${startNode['flowNode'] || startNode[this.rowKey]} 流程需要重新提交，不支持此操作`
+        })
+        return Promise.reject(new Error())
+      } else {
+        return Promise.resolve(0)
+      }
     },
     modalSubmitEvent () {
       this.modal.form.validateFields(async (err, values) => {
@@ -436,14 +478,15 @@ export default {
         this.modal.show = false
       })
     },
-    initialize () {
+    async initialize () {
       this.searchorGroups = []
-      this.searchor.forEach((searchItem) => {
-        this.searchorGroups.push(searchItem)
+      for (let index = 0; index < this.searchor.length; index++) {
+        const searchItem = this.searchor[index]
+      
         if (searchItem.beforeRender) {
           searchItem.beforeRender(this.queryParams, searchItem, this.scope)
         }
-        const defvalue = utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default
+        const defvalue = utils.isFunction(searchItem.default) ? await searchItem.default(this.scope) : searchItem.default
         if (searchItem.key) {
           this.$set(this.queryParams, searchItem.key, defvalue)
           if (defvalue) {
@@ -453,26 +496,29 @@ export default {
         if (searchItem.keys) {
           this.multiSelectEvent(defvalue, null, searchItem)
         }
-      })
+      }
     },
     simpleSelectEvent (e, optionItem, searchItem) {
       // 赋值元素视图
       const value = e && e.currentTarget ? e.currentTarget.value : e
+      // 手动变更的数据，防止render的时候使用旧数据
+      this.setSearchItem(searchItem, value)
+      // 手动赋值html的视图
       this.setComponentView(searchItem, value)
-      this.cacheDefaultView(searchItem, value)
+      // this.cacheDefaultView(searchItem, value)
       // 重置操作
       if (utils.isNone(value) || utils.isEmptyArray(value) || utils.isEmptyObject(value)) {
-        this.queryParams[searchItem.key] = null
+        this.queryParams[searchItem.key] = undefined
         return this.queryParams
       }
 
-      if (isLabelOption(value)) {
-        const userOption = value.length ? JSON.parse(value[0].key) : null
-        this.queryParams[searchItem.key] = userOption ? userOption['key'] : null
+      if (isuserOption(value)) {
+        const userOption = value.length ? JSON.parse(value[0].key) : undefined
+        this.queryParams[searchItem.key] = userOption ? userOption['key'] : undefined
       } else {
         this.queryParams[searchItem.key] = value
       }
-      function isLabelOption (value) {
+      function isuserOption (value) {
         return (utils.isArray(value) && value.length && value[0].label && value[0].key)
       }
     },
@@ -521,7 +567,7 @@ export default {
         const res = await this.getApiFunction(this.expandApi)(this.formatQueryParams({ ...record }))
         if (res.code === 200) {
           if (res.data) {
-            const children = this.evalHandle(res.data)
+            const children = this.evalHandleDirect(res.data)
 
             // 关联父级节点数据
             const cpyParent = { ...record }
@@ -560,7 +606,7 @@ export default {
       }
     },
     update () {
-      this.$emit('update', this.dataList)
+      this.$emit('update', this.dataList, this.formatQueryParams(), this.scope)
     },
     insertTreeNode (loopNodes, insertNodeId, willInsertNodes, resolve) {
       for (let index = 0; index < loopNodes.length; index++) {
@@ -584,28 +630,42 @@ export default {
       this.selectedRows = selectedRows
       this.$emit('selectChange', selectedRowKeys, selectedRows)
     },
+    /**
+     * @injectParam 一般是由父级组件调用时，传入的
+     */
+    search (injectParam = {}) {
+      this.pagination.current = 1
+      this.fetchData({ ...injectParam })
+    },
     // 重置
-    async resetSearch () {
+    async reset () {
       // 充填必填的表单，选取默认值
       this.searchor.forEach((searchItem) => {
-        if (!searchItem.required) {
-          if (searchItem.key) {
-            this.resetByFieldType(this.queryParams, searchItem.key)
-          }
-          if (searchItem.keys) {
-            searchItem.keys.forEach((key) => {
-              this.resetByFieldType(this.queryParams, key)
-            })
-          }
-          // 置空 default，避免重新渲染的时候会进行默认赋值
-          this.resetByFieldType(searchItem, 'default')
-          setTimeout(() => {
-            this.setComponentView(searchItem, null)
+        // if (!searchItem.required) {
+        if (searchItem.key) {
+          this.resetByFieldType(this.queryParams, searchItem.key)
+        }
+        if (searchItem.keys) {
+          searchItem.keys.forEach((key) => {
+            this.resetByFieldType(this.queryParams, key)
           })
         }
+        // 置空 default 和 value，避免重新渲染的时候会进行默认赋值
+        this.resetByFieldType(searchItem, 'value')
+        this.resetByFieldType(searchItem, 'default')
+        setTimeout(() => {
+          this.setComponentView(searchItem, null)
+        })
+        // }
       })
       this.pagination.current = 1
-      this.fetchData()
+      this.pagination.pageSize = 10
+      this.pagination.total = 0
+      this.dataList.length = 0
+      this.isReset = true
+      this.$emit('reset', this.scope)
+      await this.initialize()
+      this.fetchImmediate && await this.fetchData()
     },
     // 设置组件的视图
     // ****************************************
@@ -617,18 +677,18 @@ export default {
     setComponentView (searchItem, view) {
       const ref = this.spillComponentRef(searchItem)
       const comp = this.$refs[ref]
-      if (comp) {
-        if (utils.isObject(comp)) {
-          comp.value = view // 会触发change事件
-        }
-        if (utils.isArray(comp)) {
-          comp[0].value = view // 会触发change事件
-        }
-      } else {
-        return setTimeout(() => {
-          this.setComponentView(searchItem, view)
-        }, 150)
+      // if (comp) {
+      if (utils.isObject(comp)) {
+        comp.value = view // 会触发change事件
       }
+      if (utils.isArray(comp)) {
+        comp[0].value = view // 会触发change事件
+      }
+      // } else {
+      //   return setTimeout(() => {
+      //     this.setComponentView(searchItem, view)
+      //   }, 150)
+      // }
     },
     // 暂存组件的视图,帮助“required”字段在刷新时不会被刷掉
     cacheDefaultView (searchItem, view) {
@@ -636,17 +696,12 @@ export default {
     },
     // 根据value类型，进行置空操作
     resetByFieldType (obj, key) {
-      if (utils.isString(obj[key])) {
-        obj[key] = ''
-      }
-      if (utils.isNumber(obj[key])) {
-        obj[key] = null
-      }
       if (utils.isObject(obj[key])) {
         obj[key] = {}
-      }
-      if (utils.isArray(obj[key])) {
+      } else if (utils.isArray(obj[key])) {
         obj[key] = []
+      } else {
+        obj[key] = undefined
       }
     },
     // 导入
@@ -669,12 +724,28 @@ export default {
       }
       return false
     },
-    /**
-     * @injectParam 一般是由父级组件调用时，传入的
-     */
-    search (injectParam = {}) {
-      this.pagination.current = 1
-      this.fetchData({ ...injectParam })
+    hasRequiredItemEmpty (injectParam) {
+      let emptyItem
+      const params = this.formatQueryParams(injectParam)
+      this.searchor.forEach(i => {
+        let value
+        if (i.key) {
+          value = params[i.key]
+        }
+        if (i.keys) {
+          i.keys.forEach(k => {
+            value = params[k]
+          })
+        }
+        if (i.required && utils.isNone(value)) {
+          emptyItem = i
+        }
+      })
+      // 如果点击 重置 按钮，就不用给校验提示
+      if (!!emptyItem && !this.isReset) {
+        this.$message.warning(this.$t('请确认必须填'))
+      }
+      return emptyItem
     },
     /**
      * 提供语义化接口，功能和fetchData一致
@@ -702,27 +773,29 @@ export default {
         }
       })
 
-      // 转换 Moment 类型的值
+      // 逐级处理
       Object.keys(queryParams).forEach((key) => {
-        if (queryParams[key] instanceof utils.moment) {
-          queryParams[key] = utils.moment(queryParams[key]).format('YYYY-MM-DD')
+        const val = queryParams[key]
+        // 清掉空值
+        if (utils.isNone(val) || utils.isEmptyArray(val) || utils.isEmptyObject(val)) {
+          delete queryParams[key]
         }
-      })
+        // 裁掉边际空格
+        if (utils.isString(val)) {
+          queryParams[key] = utils.trim(val)
+        }
 
-      // 手动清理空值的字段
-      Object.keys(queryParams).forEach((key) => {
-        if (queryParams[key] === '' || queryParams[key] === null || queryParams[key] === undefined) {
-          delete queryParams[key]
-        }
-        if (utils.isEmptyArray(queryParams[key]) || utils.isEmptyObject(queryParams[key])) {
-          delete queryParams[key]
+        // 转换 Moment 类型的值
+        if (utils.isMoment(queryParams[key])) {
+          queryParams[key] = utils.moment(queryParams[key]).format('YYYY-MM-DD')
         }
       })
 
       // 分页参数
       const pageParam = {
         pageSize: this.pagination.pageSize,
-        pageNum: this.pagination.current
+        pageNum: this.pagination.current,
+        current: this.pagination.current
       }
       // 【queryParams】来源：
       //    页面上的搜索栏
@@ -731,7 +804,7 @@ export default {
       //    或者当前是树级表格，点击展开触发的this.expandEvent方法，会把当前行数据当作参数传入
       // 【this.dataParams】来源：
       //    由父级组件定制，当前组件不会对这个数据进行过滤，所以定制时，保持数据的纯净（可以直接交到后端）
-      return this.handleParamsByCustom({ ...queryParams, ...injectparams, ...this.dataParams, ...pageParam })
+      return this.handleParamsByCustom({ ...queryParams, ...injectparams, ...pageParam, ...this.dataParams })
     },
 
     // 最后交给定制的回调参数进行调整
@@ -765,10 +838,20 @@ export default {
     },
     // 导入模板下载
     downLoadTemplate () {
-      if (api[this.templateApi] && utils.isFunction(api[this.templateApi])) {
-        api[this.templateApi]()
-      } else {
-        utils.exportGetFile(this.templateApi)
+      if (utils.isFunction(api[this.templateApi])) {
+        return this.templateApi(this)
+      }
+      const exchangeName = this.templateName ? this.templateName : ''
+      if (utils.isString(this.templateApi)) {
+        if (api[this.templateApi]) {
+          return api[this.templateApi](exchangeName)
+        } else {
+          return utils.exportGetFile(this.templateApi, { fileName: exchangeName })
+        }
+      }
+      // 如果不提供模板地址，就使用默认的
+      if (utils.isNone(this.templateApi) && utils.isString(exchangeName)) {
+        return api['getfilestemple'](exchangeName)
       }
     },
     getApiFunction (apiNameOrFunction) {
@@ -782,7 +865,7 @@ export default {
         return function () {}
       }
     },
-    evalHandle (data) {
+    evalHandleDirect (data) {
       let res = {}
       if (this.$props.dataDir && utils.isString(this.$props.dataDir)) {
         res = eval(this.$props.dataDir)
@@ -810,15 +893,20 @@ export default {
     // 获取列表数据
     async fetchData (injectparams = {}) {
       if (this.isLoading) return false
-      if (!this.dataApi) return false
+      if (this.hasRequiredItemEmpty(injectparams)) return false
       this.isLoading = true
       this.selectedRows = []
       this.selectedRowKeys = []
-      const res = await this.getApiFunction(this.dataApi)(this.formatQueryParams(injectparams))
+      let res
+      if (this.mock && ['native'].includes(process.env.VUE_APP_SERV_ENV)) {
+        res = this.mock
+      } else {
+        res = await this.getApiFunction(this.dataApi)(this.formatQueryParams(injectparams))
+      }
       this.isLoading = false
       if (res.code === 200) {
         if (res.data) {
-          this.dataList = this.evalHandle(res.data)
+          this.dataList = this.evalHandleDirect(res.data)
           this.pagination.total = this.detectTotal(res.data)
           this.expandedRowKeys = []
         } else {
@@ -838,6 +926,7 @@ export default {
     onChangePage (val) {
       this.pagination.current = val.current
       this.pagination.pageSize = val.pageSize
+      this.$emit('pageChange', val, this.scope)
       this.fetchData()
     },
 
@@ -852,13 +941,14 @@ export default {
     const mainTable = buildMainTable.call(this, h)
     const searchorGroup = buildSearchorGroup.call(this, h)
     const summarySlots = getSummarySlots.call(this, h)
+    const paginationSlots = getPaginationSlots.call(this, h)
     return (
       <div>
         { searchorGroup }
         <div class={'panel-content'}>
           {
             hasSummary(summarySlots, batchHandleButtons, summaryButtons) &&
-            <div class={'btn-wrap clearfix'}>
+            <div class={'btn-wrap clearfix summary-bar'}>
               { ...summarySlots }
               { ...batchHandleButtons }
               { ...summaryButtons }
@@ -866,6 +956,7 @@ export default {
           }
         </div>
         <div>{ mainTable }</div>
+        <div>{ paginationSlots }</div>
         <div>{ batchHandleModal }</div>
       </div>
     )
@@ -881,13 +972,19 @@ function getSummarySlots () {
   return slots.summary || []
 }
 
+// 获取自定义的pagination
+function getPaginationSlots () {
+  const slots = this.$slots || {}
+  return slots.pagination || []
+}
+
 // 创建批处理按钮
 function buildBatchHandleButtons (h) {
   return Object.keys(this.modalinfomap).map((key) => {
     const buttonItem = this.modalinfomap[key]
     if (buttonItem.api) {
       return (
-        <a-button ghost type={'primary'} onClick={() => this.showmodal(buttonItem.type)}>
+        <a-button disabled={this.selectedRowKeys.length === 0} type={'primary'} onClick={() => this.showmodal(buttonItem.type)}>
           <span>{ buttonItem.label || buttonItem.title }</span>
         </a-button>
       )
@@ -921,7 +1018,7 @@ function buildsummaryBaseButtons (h) {
   if (this.exportApi && this.dataList.length > 0) {
     buttons.push(
       <span style="padding: 0 0.5rem">
-        <ExportExcel api={this.exportApi} params={() => this.exportParams()} file-name={this.tableName} />
+        <ExportInterface api={this.exportApi} params={() => this.exportParams()} file-name={this.tableName} />
       </span>
     )
   }
@@ -941,6 +1038,31 @@ function buildsummaryBaseButtons (h) {
 
 // 创建弹出框
 function buildModal (h) {
+  const slots = []
+  const scopedSlots = []
+  const scope = this.scope
+  const vdMap = {
+    transfer: ['transfer', { rules: [{ required: true, message: '请选择审批人'}]}],
+    approvalConent: ['approvalContent', {rules: [{ required: true, message: `请填写 "${this.modal.info.reasonTitle}"`}]}]
+  }
+  this.columnSlots.map(columnSlot => {
+    const slotName = (columnSlot.slots && columnSlot.slots.title) || ''
+    if (columnSlot.slotsRender && utils.isFunction(columnSlot.slotsRender)) {
+      slots.push(<span slot={slotName}>{columnSlot.slotsRender(h, scope)}</span>)
+    } else {
+      slots.push(<span slot={slotName}>...</span>)
+    }
+  })
+  this.columnScopedSlots.map(columnSlot => {
+    const slotName = (columnSlot.scopedSlots && columnSlot.scopedSlots.customRender) || columnSlot.dataIndex || columnSlot.key
+    scopedSlots[slotName] = function (text, record) {
+      if (columnSlot.scopedSlotsRender && utils.isFunction(columnSlot.scopedSlotsRender)) {
+        return columnSlot.scopedSlotsRender(h, record, scope)
+      } else {
+        return text
+      }
+    }
+  })
   return (
     <a-modal
       width={'60%'}
@@ -953,16 +1075,16 @@ function buildModal (h) {
           {
             this.modal.info.type === 'transfer' &&
             <a-col>
-              <a-form-item label="转审人" label-col={{ span: 3 }} wrapper-col={{ span: 18 }}>
-                <UserSelect v-decorator={['transfer', { rules: [{ required: true, message: '请选择转审人' }] }]} />
+              <a-form-item label="转审人" label-col={{ span: 4 }} wrapper-col={{ span: 18 }}>
+                <UserSelect v-decorator={vdMap.transfer} />
               </a-form-item>
             </a-col>
           }
           {
             this.modal.info.reasonTitle &&
             <a-col>
-              <a-form-item label={this.modal.info.reasonTitle} label-col={{ span: 3 }} wrapper-col={{ span: 18 }}>
-                <a-textarea rows={4} v-decorator={['approvalContent', { rules: [{ required: true, message: `请填写${this.modal.info.reasonTitle}` }] }]} />
+              <a-form-item label={this.modal.info.reasonTitle} label-col={{ span: 4 }} wrapper-col={{ span: 18 }}>
+                <a-textarea rows={4} v-decorator={vdMap.approvalConent} />
               </a-form-item>
             </a-col>
           }
@@ -972,11 +1094,14 @@ function buildModal (h) {
             <a-form-item label={this.modal.info.listTitle || ''} label-col={{ span: 3 }} wrapper-col={{ span: 18 }}>
               <a-table
                 bordered
+                scopedSlots={scopedSlots}
                 row-key={'id'}
                 columns={this.modalColumns}
                 data-source={this.selectedRows}
                 pagination={false}
-              />
+              >
+                { ...slots }
+              </a-table>
             </a-form-item>
           </a-col>
         </a-row>
@@ -990,6 +1115,7 @@ function buildMainTable (h) {
   const slots = []
   const scopedSlots = {}
   const scope = this.scope
+  const selection = this.isSelection ? { 'type': this.selectMode, 'selectedRowKeys': this.selectedRowKeys, 'onChange': this.onSelectChange } : null
   /* 表头渲染 */
   this.columnSlots.map((columnSlot, index) => {
     const slotName = (columnSlot.slots && columnSlot.slots.title) || ''
@@ -1019,7 +1145,7 @@ function buildMainTable (h) {
       pagination={this.isPagination ? this.pagination : false}
       scroll={this.autoScroll}
       row-key={this.rowKey}
-      row-selection={this.isSelection ? { 'type': this.selectMode, 'selectedRowKeys': this.selectedRowKeys, 'onChange': this.onSelectChange } : null}
+      row-selection={selection}
       expanded-row-keys={this.expandedRowKeys}
       onExpand={this.expandEvent}
       onChange={this.onChangePage}
@@ -1033,7 +1159,7 @@ function buildSearchorGroup (h) {
   if (!this.searchorGroups || !this.searchorGroups.length) return ''
   return (
     <div class={['panel-content', 'border-bottom-1']}>
-      <a-form class={['form-wrap']}>
+      <a-form class={['form-wrap']} v-flexible-search-items>
         <a-row>
           {
             buildSearchItems.call(this)
@@ -1072,11 +1198,11 @@ function buildSearchorGroup (h) {
   function createFormItem (searchItem) {
     if (searchItem.component) {
       return <searchItem.component
-        props={utils.isFunction(searchItem.props) ? searchItem.props(this.scope) : searchItem.props}
-        attrs={utils.isFunction(searchItem.attrs) ? searchItem.attrs(this.scope) : searchItem.attrs}
-        dom-attrs={utils.isFunction(searchItem.domAttrs) ? searchItem.domAttrs(this.scope) : searchItem.domAttrs}
+        props={utils.isFunction(searchItem.props) ? searchItem.props(searchItem, this.scope) : searchItem.props}
+        attrs={utils.isFunction(searchItem.attrs) ? searchItem.attrs(searchItem, this.scope) : searchItem.attrs}
+        value={utils.isFunction(searchItem.value) ? searchItem.value(searchItem, this.scope) : searchItem.value}
+        dom-attrs={utils.isFunction(searchItem.domAttrs) ? searchItem.domAttrs(searchItem, this.scope) : searchItem.domAttrs}
         allow-clear={!searchItem.required}
-        value={utils.isFunction(searchItem.default) ? searchItem.default(this.scope) : searchItem.default}
         ref={this.spillComponentRef(searchItem)}
         depend={this.queryParams[searchItem.dependKey]}
         onKeyup={(e) => /13/.test(e.keyCode) && this.fetchData()}
@@ -1089,7 +1215,7 @@ function buildSearchorGroup (h) {
         }
       />
     } else if (searchItem.customRender) {
-      return searchItem.customRender(this.$createElement, this.queryParams, this.scope)
+      return searchItem.customRender(this.$createElement, searchItem, this.scope)
     } else {
       return ''
     }
@@ -1099,30 +1225,9 @@ function buildSearchorGroup (h) {
     return (
       <a-col span={this.searchorGroups.length < 4 ? 6 : 24} class={['t-center', 'mt5']}>
         <a-button ghost type={'primary'} onClick={() => this.search()}>查询</a-button>
-        <a-button style={{ margin: '0 8px' }} onClick={() => this.resetSearch()}>重置</a-button>
-        {
-          this.searchorGroups.length > 4 &&
-          <a
-            style={{ 'color': '#999', 'font-size': '0.8rem' }}
-            onClick={() => { this.isSearchorExpand = !this.isSearchorExpand }}
-          >
-            { this.isSearchorExpand ? '收起' : '展开' }
-            <a-icon class={this.isSearchorExpand ? 'trans-reverse' : 'trans'} type={'double-right'} />
-          </a>
-        }
+        <a-button style="margin-left: 0.5rem" onClick={() => this.reset()}>重置</a-button>
       </a-col>
     )
-  }
-  // 返回true展示，返回false隐藏
-  function filterItems (index) {
-    // 如果下标小于4，返回true
-    if (index < 4) {
-      return true
-    }
-    // 如果下标大于4，且是展开状态，返回false
-    if (index >= 4 && this.isSearchorExpand) {
-      return true
-    }
   }
 }
 
@@ -1137,5 +1242,23 @@ function buildSearchorGroup (h) {
 div.ant-table-wrapper {
   padding: 0;
   background-color: #fff;
+}
+div.summary-bar {
+  display: flex;
+  align-items: center;
+}
+div.searchor-item-required {
+  /deep/ div[role="combobox"] {
+    border-color: red;
+  }
+  /deep/ div.ant-select-selection__placeholder {
+    color: red;
+  }
+  /deep/.ant-calendar-picker {
+    input {
+      border-color: red;
+      &::placeholder{color: red;}
+    }
+  }
 }
 </style>

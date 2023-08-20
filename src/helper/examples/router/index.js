@@ -42,7 +42,7 @@ export default [
       },
       {
         path: '/helper/examples/export-excel',
-        name: 'ExportExcel',
+        name: 'ExportInterface',
         component: () => import('@/helper/examples/pages/export-excel/index.vue')
       },
       {

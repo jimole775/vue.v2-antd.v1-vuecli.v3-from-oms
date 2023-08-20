@@ -18,7 +18,7 @@ import api from '@/api'
 export default {
   title: '工作地选择（内联）',
   name: 'WorkPlaceInnerSelect',
-  forBuilder: true,
+  enumerated: true,
   props: {
     prNo: {
       type: String,

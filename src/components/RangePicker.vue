@@ -23,7 +23,7 @@
 export default {
   title: '日期范围选择',
   name: 'RangePicker',
-  forBuilder: true,
+  enumerated: true,
   props: {
     value: {
       type: Array,

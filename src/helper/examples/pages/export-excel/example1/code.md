@@ -1,5 +1,5 @@
 ``` html
 <template>
-  <ExportExcel api="postkeyeventsexport" />
+  <ExportInterface api="postkeyeventsexport" />
 </template>
 ```

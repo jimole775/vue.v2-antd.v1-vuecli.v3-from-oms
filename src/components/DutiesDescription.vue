@@ -12,7 +12,7 @@
 import api from '@/api'
 export default {
   title: '岗位说明',
-  forBuilder: true,
+  enumerated: true,
   props: {
     modal: {
       type: Object,

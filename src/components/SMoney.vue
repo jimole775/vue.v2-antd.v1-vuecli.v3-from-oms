@@ -13,7 +13,7 @@ import utils from '@/utils'
 export default {
   title: '金钱输入框',
   name: 'SMoney',
-  forBuilder: true,
+  enumerated: true,
   props: {
     value: {
       type: Number

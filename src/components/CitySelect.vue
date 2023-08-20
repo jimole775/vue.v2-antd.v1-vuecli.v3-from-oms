@@ -17,7 +17,7 @@ import api from '@/api'
 export default {
   title: '城市选择',
   name: 'CitySelect',
-  forBuilder: true,
+  enumerated: true,
   props: {
     disabled: {
       type: Boolean,

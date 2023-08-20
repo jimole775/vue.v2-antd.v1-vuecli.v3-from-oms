@@ -426,70 +426,31 @@ body {
   color: @primary-color;
 }
 .line-standard {
-  line-height: 2.8 // 单独一行的情况
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  line-height: 1.5;
 }
-.line-multiple {
-  line-height: 1.8 // 多行文本的情况
-}
-.line-multiple {
+
+// ant-row 里面需要设置统一高度，才能使文本垂直居中
+.ant-row {
+  .line-multiple {
+    min-height: 40px;
+  }
   .line-standard {
-    line-height: 1.8
+    min-height: 40px;
+  }
+  // 如果是 table 里面的 line-standard，需要取消 min-height
+  .ant-table-body {
+    .line-standard {
+      min-height: unset;
+    }
   }
 }
-// 表格内部的 line-standard，不管单行还是多行都设置 1.8
-.ant-table-row {
-  .line-standard {
-    line-height: 1.8
-  }
-}
-.overHidden {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.overHidden2 {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.overHiddenTwoRow{
-  max-width: 100%;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient:vertical;
-  -webkit-line-clamp: 2;
-}
-.overHiddenTwoRow:hover{
-  cursor: pointer;
-  color: #05B570;
-}
-.overHidden:hover {
-  color: #05B570
-}
-.overHidden3 {
-  max-width: 550px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.overHidden3:hover{
-  color: #05B570
-}
-.overtimeHidden {
-  max-width: 250px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.overtimeHidden:hover{
-  color: #05B570
-}
+
 .tootipText{
   max-width: 110px;
   overflow: hidden;

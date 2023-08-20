@@ -84,7 +84,7 @@ import api from '@/api'
 export default {
   title: '工作地选择（关联）',
   name: 'WorkPlaceUnitedSelect',
-  forBuilder: true,
+  enumerated: true,
   props: {
     defaultList: {
       type: Array,

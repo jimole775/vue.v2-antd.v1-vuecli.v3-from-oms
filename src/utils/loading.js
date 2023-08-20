@@ -7,7 +7,7 @@ const loading = {
   countdown () {
     this.high--
     if (this.high < 1) {
-      this.unload()
+      this.unmount()
     }
   },
   reset () {
@@ -16,7 +16,7 @@ const loading = {
   mounted () {
     store.commit('setLoading', true)
   },
-  unload () {
+  unmount () {
     store.commit('setLoading', false)
   }
 }

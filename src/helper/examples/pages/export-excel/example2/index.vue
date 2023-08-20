@@ -1,9 +1,9 @@
 <template>
   <Panel :code="code" title="异步导出">
     <template slot="example">
-      <ExportExcel api="postrequirementservicesexportrequire" />
+      <ExportInterface api="postrequirementservicesexportrequire" />
       <div style="position: relative;">
-        <ExportExcelManager style="position:absolute;top:-20px;left:60px;" />
+        <ExportManager style="position:absolute;top:-20px;left:60px;" />
       </div>
     </template>
     <template slot="description">
@@ -12,13 +12,13 @@
   </Panel>
 </template>
 <script>
-import ExportExcelManager from '@/components/ExportExcelManager.vue'
+import ExportManager from '@/components/ExportManager.vue'
 import code from './code.md'
 export default {
   title: '异步导出',
   name: 'Example2',
   components: {
-    ExportExcelManager
+    ExportManager
   },
   data () {
     return {

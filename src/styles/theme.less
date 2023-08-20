@@ -113,3 +113,46 @@ div::-webkit-scrollbar-thumb {
 .ant-table-body {
   overflow-x: auto !important;
 }
+
+/*************************************************/
+/*******|            a-form              |*******/
+/***********************************************/
+// 表单中的label，需要适应换行
+.ant-form-item-label {
+  overflow: initial; // 防止多行文本被高度限制而裁剪
+  white-space: normal;
+  padding-left: 1rem;
+  line-height: 1;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: flex-end;
+  align-items: center;
+  label {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    span {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+  }
+}
+
+.ant-form-item-control-wrapper {
+  min-height: 40px;
+}
+
+/*************************************************/
+/*******|          a-date-picker         |*******/
+/***********************************************/
+.ant-calendar-picker-icon {
+  display: none;
+}

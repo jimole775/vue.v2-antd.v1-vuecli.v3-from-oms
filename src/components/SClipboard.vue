@@ -4,7 +4,7 @@ import Vue from 'vue'
 export default {
   title: '剪切按钮',
   name: 'SClipboard',
-  forBuilder: true,
+  enumerated: true,
   functional: true,
   props: {
     value: {

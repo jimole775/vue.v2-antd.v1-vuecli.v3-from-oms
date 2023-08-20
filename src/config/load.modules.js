@@ -16,7 +16,7 @@ import {
 } from 'ant-design-vue'
 
 import Confidential from '@/components/Confidential'
-import ExportExcel from '@/components/ExportExcel'
+import ExportInterface from '@/components/ExportInterface'
 import ImportExcel from '@/components/ImportExcel'
 import YearPicker from '@/components/YearPicker'
 import RangePicker from '@/components/RangePicker'
@@ -77,7 +77,7 @@ Vue.use(HandlerTableCell)
 Vue.use(RangeMonthPicker)
 Vue.use(SLine)
 Vue.use(SLines)
-Vue.use(ExportExcel)
+Vue.use(ExportInterface)
 Vue.use(ImportExcel)
 Vue.use(Modal)
 Vue.use(Message)
@@ -95,7 +95,7 @@ Vue.component(ApprovalStepBar.name, ApprovalStepBar)
 Vue.component(SOperator.name, SOperator)
 Vue.component(SOperatorFlow.name, SOperatorFlow)
 Vue.component(FormItemRender.name, FormItemRender)
-Vue.component(ExportExcel.name, ExportExcel)
+Vue.component(ExportInterface.name, ExportInterface)
 Vue.component(ImportExcel.name, ImportExcel)
 Vue.component(SLine.name, SLine)
 Vue.component(SLines.name, SLines)

@@ -1,5 +1,5 @@
 ``` html
 <template>
-  <ExportExcel type="permission" api="exportbudgetManagementexportmanagement" />
+  <ExportInterface type="permission" api="exportbudgetManagementexportmanagement" />
 </template>
 ```

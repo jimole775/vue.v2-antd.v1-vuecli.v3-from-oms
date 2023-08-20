@@ -1,5 +1,5 @@
 ``` html
 <template>
-  <ExportExcel api="postrequirementservicesexportrequire" />
+  <ExportInterface api="postrequirementservicesexportrequire" />
 </template>
 ```

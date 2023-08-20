@@ -1,7 +1,7 @@
 <template>
   <Panel :code="code" title="简易导出">
     <template slot="example">
-      <ExportExcel api="postkeyeventsexport" />
+      <ExportInterface api="postkeyeventsexport" />
     </template>
     <template slot="description">
       注意'api'接口接收的是'@/api'中的属性名

@@ -35,7 +35,7 @@ import { getToken } from '@/utils/auth'
 export default {
   title: '上传',
   name: 'SUpload',
-  forBuilder: true,
+  enumerated: true,
   props: {
     injectParams: {
       type: Object,
@@ -155,7 +155,7 @@ export default {
       return false
     },
     successHandler (res, file) {
-      loading.unload()
+      loading.unmount()
       if (res.data === null || res.data === undefined) {
         res.message && this.$modal.warning({
           title: '提示',
@@ -177,7 +177,7 @@ export default {
       }
     },
     failerHandler (res) {
-      loading.unload()
+      loading.unmount()
       this.$modal.error({ title: '上传失败', content: res.message })
     },
     extendsForm (file) {

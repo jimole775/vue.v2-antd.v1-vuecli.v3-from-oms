@@ -1,26 +1,22 @@
 <template>
   <div style="display: inline">
-    <a-tooltip>
-      <template slot="title">
-        导出
-      </template>
-      <a-button class="cir-button button-export" @click="sniffExports" />
+    <a v-if="$slots.default" style="margin:0;padding:0" @click="sniffExports"><slot /></a>
+    <a-tooltip v-else title="导出">
+      <a-button :disabled="disabled" class="cir-button button-export" @click="sniffExports" />
     </a-tooltip>
     <Phonevalidate ref="PhonevalidateRef" />
   </div>
 </template>
 <script>
-// import Vue from 'vue'
 import api from '@/api'
 import utils from '@/utils'
 import { mapActions } from 'vuex'
-import loading from '@/utils/loading'
 import { getToken } from '@/utils/auth'
 import Phonevalidate from '@/components/Phonevalidate'
 export default {
   title: '异步导出',
-  name: 'ExportExcel',
-  forBuilder: true,
+  name: 'ExportInterface',
+  enumerated: true,
   components: {
     Phonevalidate
   },
@@ -44,6 +40,10 @@ export default {
     fileName: {
       type: String,
       default: '导出文件'
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -82,6 +82,7 @@ export default {
       }
     },
     async sniffExports () {
+      if (this.disabled) return false
       const pass = this.validate()
       if (!pass) return false
       let res = null
@@ -93,17 +94,17 @@ export default {
         apiFun = this.api
       }
       if (!apiFun) return false
-      loading.mounted()
+      this.$loading.mounted()
       if (utils.isFunction(apiFun)) {
         if (this.type === 'permission') {
           res = await this.$refs.PhonevalidateRef.validate(apiFun, this.getTrulyParams())
         } else {
           res = await apiFun(this.getTrulyParams())
         }
-        loading.unload()
+        this.$loading.unmount()
       } else {
-        loading.unload()
-        this.$message.error('ExportExcel => 请先在api对象中设置好接口！')
+        this.$loading.unmount()
+        this.$message.error('ExportInterface => 请先在api对象中设置好接口！')
       }
       if (utils.isBackendResponse(res)) {
         this.jsonHandler(res)

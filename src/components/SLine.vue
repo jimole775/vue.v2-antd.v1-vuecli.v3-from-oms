@@ -2,7 +2,7 @@
 import utils from '@/utils'
 export default {
   title: '单行文本',
-  forBuilder: true,
+  enumerated: true,
   functional: true,
   name: 'SLine',
   // props提供给componentSelect进行枚举显示
@@ -49,12 +49,8 @@ export default {
     } else if (utils.isArray(sentence)) {
       return (
         <a-tooltip title={text}>
-          <div class="line-multiple" style={style}>
-            {
-              sentence.map((line) => {
-                return <div>{ line }</div>
-              })
-            }
+          <div class="line-standard" style={style}>
+            { sentence.map(line => <div>{ line }</div> ) }
           </div>
         </a-tooltip>
       )

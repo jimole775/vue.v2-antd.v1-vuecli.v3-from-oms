@@ -299,7 +299,7 @@ const utils = {
    * @template = toQueryString({}) => ''
    */
   toQueryString (obj) {
-    if (!this.isObject(obj)) return new Error('utils.toQueryString参数必须是Object类型')
+    if (!obj) return ''
     const res = []
     Object.keys(obj).forEach(key => {
       const val = obj[key]
@@ -307,7 +307,7 @@ const utils = {
         res.push(`${key}=${encodeURIComponent(val)}`)
       }
     })
-    return res.length ? `?${res.join('&')}` : ``
+    return res.length ? `?${res.join('&')}` : ''
   },
   /** 把urlquery转换成的Object对象
    * @param {String} url
@@ -726,6 +726,12 @@ const utils = {
         res.empty = false
       }
     }
+  },
+  isAsyncFunction (src) {
+    return Object.prototype.toString.call(src) === '[object AsyncFunction]'
+  },
+  isPromise (src) {
+    return Object.prototype.toString.call(src) === '[object Promise]'
   },
   isArray (src) {
     return Object.prototype.toString.call(src) === '[object Array]'
@@ -1236,6 +1242,45 @@ const utils = {
     return moment(new Date(`${y}-${m}-01`))
   },
   /**
+   * 计算日期差值
+   * @param {Moment|String} start
+   * @param {Number|String} end
+   * @param {String} unit 'y|m|d|Y|M|D'
+   * @return Number(Int)
+   * @template dateDiff('2021-02-15', '2022-01-25') => 334
+   * @template dateDiff('2021-02-15', '2022-01-25', 'm') => 11
+   * @template dateDiff('2021-02-15', '2022-01-25', 'y') => 1
+   */
+  dateDiff (start, end, unit = 'd') {
+    if (utils.isNone(start) || utils.isNone(end)) return 0
+    const _u = unit.toLowerCase()
+    const mStart = moment(start)
+    const mEnd = moment(end)
+    const sy = mStart.yaer()
+    const sm = mStart.month()
+    const ey = mEnd.yaer()
+    const em = mEnd.month()
+    switch (_u) {
+      case 'd':
+        return countDay()
+      case 'm':
+        return countMonth()
+      case 'y':
+        return countYear()
+    }
+    function countMonth () {
+      const dy = ey - sy // 年份差值
+      const dm = em - sm // 年份差值
+      return dy * 12 + dm
+    }
+    function countYear () {
+      return ey - sy
+    }
+    function countDay () {
+      return (mEnd - mStart) / 24 / 60 / 60 / 1000
+    }
+  },
+  /**
    * 获取函数的参数名
    * @param {Function | String} src
    * @returns Array
@@ -1382,6 +1427,33 @@ const utils = {
     return new Promise((resolve) => {
       return entity(resolve)
     })
+  },
+  /**
+   * 限定【输入框】返回的是数字类型
+   * @param {Number|String} val
+   * @param {Number} decimal
+   * @returns {Number|String}
+   * @template numberFormat('123.5555', 2) => 123.55
+   * @template numberFormat('123.') => '123.'
+   * @template numberFormat('-') => '-'
+   * @template numberFormat('+') => '+'
+   * @template numberFormat('.') => ''
+   * @template numberFormat('...') => ''
+   */
+  numberFormat (val, decimal = 0) {
+    if (utils.isNone(val)) return val
+    val = utils.trim(val)
+    // 判断是否只是 负号
+    if (/^\-$/.test(val)) return val
+    // 如果不是有效数字，就过滤掉非数字字符
+    if (isNaN(val)) {
+      val = val.replace(/./g, x => isNaN(x) ? '' : x)
+    }
+    // 判断是否最后一位为 .
+    if (/\d\.$/.test(val)) return val
+    // 处理位数
+    const k = Math.pow(10, decimal)
+    return Math.round(val * k) / k
   }
 }
 

@@ -3,7 +3,7 @@ import axios from 'axios'
 import utils from '@/utils'
 import base64 from '@/utils/base64'
 import unique from '@/config/http.unique'
-import disloading from '@/config/http.disloading'
+import slient from '@/config/http.slient'
 import { setToken, getToken, getFingerprint } from '@/utils/auth'
 
 const http = axios.create({
@@ -44,7 +44,7 @@ http.interceptors.response.use(
       else return res
     } catch (e) {
       Vue.prototype.$loading.reset()
-      Vue.prototype.$loading.unload()
+      Vue.prototype.$loading.unmount()
       console.log(e.message)
       return response
     }
@@ -61,7 +61,7 @@ http.interceptors.response.use(
 
 function handleLoading (config) {
   Vue.prototype.$loading.uprise()
-  if (disloading.includes(config.url) || (config.data && config.data.$silent) || config.$slient) {
+  if (slient.includes(config.url) || (config.data && config.data.$slient) || config.$slient) {
     // 静默访问，不做任何动作
   } else {
     // 否则，挂载遮罩

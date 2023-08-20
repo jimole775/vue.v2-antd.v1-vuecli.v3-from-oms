@@ -26,7 +26,7 @@ import utils from '@/utils'
 export default {
   title: '用户选择',
   name: 'UserSelect',
-  forBuilder: true,
+  enumerated: true,
   props: {
     value: {
       type: Array,

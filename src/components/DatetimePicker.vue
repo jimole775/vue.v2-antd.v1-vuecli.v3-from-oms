@@ -24,7 +24,7 @@ import utils from '@/utils'
 export default {
   title: '时分秒选择',
   name: 'DatetimePicker',
-  forBuilder: true,
+  enumerated: true,
   data () {
     return {
       dateVal: null,

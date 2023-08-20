@@ -13,7 +13,7 @@
 export default {
   title: '字典(radio)',
   name: 'DictRadio',
-  forBuilder: true,
+  enumerated: true,
   props: {
     disabled: {
       type: Boolean,

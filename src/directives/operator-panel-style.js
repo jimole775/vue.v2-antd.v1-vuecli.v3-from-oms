@@ -19,6 +19,7 @@ Vue.directive('operator-panel-style', {
     getSider()
     getContenter()
     savePageBottom() // 存储默认的底部间距
+    createSwitch(operator)
     setPanelStyle(operator) // 设置审批板块的样式
     watchingOperatorChanges(operator)
   },
@@ -49,6 +50,53 @@ function resetConst () {
   observer = null
   contenter = null
   defaultPaddingBottom = null
+}
+
+function createSwitch (operator) {
+  const node = document.createElement('i')
+  node.id = '__OperatorPanelStyle__'
+  node.style.position = 'absolute'
+  node.style.left = '1rem'
+  node.style.top = '1rem'
+  node.style.cursor = 'pointer'
+  node.style.width = '2rem'
+  node.style.height = '1.6rem'
+  node.style.zIndex = 11
+  node.className = 'fa fa-chevron-down'
+  node.switch = true
+  node.addEventListener('click', () => {
+    if (node.switch) {
+      switchDownEvent(node, operator)
+    } else {
+      switchUpEvent(node, operator)
+    }
+  })
+  operator.appendChild(node)
+}
+
+function switchDownEvent (node, operator) {
+  node.className = 'fa fa-chevron-up'
+  node.switch = false
+  operator.style.bottom = (0 - operator.offsetHeight + 50) + 'px'
+  radioAbilitySwitch(node, operator)
+}
+
+function switchUpEvent (node, operator) {
+  node.className = 'fa fa-chevron-down'
+  node.switch = false
+  operator.style.bottom = 0
+  radioAbilitySwitch(node, operator)
+}
+
+function radioAbilitySwitch (node, operator) {
+  const allRaios = operator.querySelectorAll('input[type="radio"]')
+  allRaios.forEach(radio => {
+    radio.disabled = !node.switch
+  })
+  const allLabels = operator.querySelectorAll('label')
+  allLabels.forEach(label => {
+    label.style.color = !node.switch ? '#aeaeae' : ''
+  })
 }
 
 function setPanelStyle (operator) {

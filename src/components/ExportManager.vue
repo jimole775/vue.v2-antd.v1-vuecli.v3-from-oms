@@ -48,7 +48,7 @@ import utils from '@/utils'
 import { mapActions } from 'vuex'
 export default {
   title: '异步导出管理中心',
-  name: 'ExportExcelManager',
+  name: 'ExportManager',
   data () {
     return {
       managermodal: {
