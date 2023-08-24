@@ -16,15 +16,15 @@ export default {
     userRole: {},
     currentRole: {},
     menuButtons: [],
-    exportingList: [],
+    taskingList: [],
     dictionaryList: [],
     supplierList: [],
     supportSeries: []
   },
   getters: {
-    getExportingList: (state) => {
+    getTaskingList: (state) => {
       let list = []
-      if (!state.exportingList || !state.exportingList.length) {
+      if (!state.taskingList || !state.taskingList.length) {
         const cache = sessionStorage.getItem(exportingListStoreKey)
         if (cache) {
           list = JSON.parse(cache)
@@ -32,7 +32,7 @@ export default {
           list = []
         }
       } else {
-        list = state.exportingList
+        list = state.taskingList
       }
       return list
     },
@@ -122,8 +122,8 @@ export default {
       }
     },
     setExportList (state, params) {
-      state.exportingList = params
-      sessionStorage.setItem(exportingListStoreKey, JSON.stringify(state.exportingList || []))
+      state.taskingList = params
+      sessionStorage.setItem(exportingListStoreKey, JSON.stringify(state.taskingList || []))
     },
     setTodoParams (state, params) {
       state.todoParams = params
@@ -157,15 +157,15 @@ export default {
     }
   },
   actions: {
-    pushExportingList ({ commit, state }, item) {
-      if (!state.exportingList) state.exportingList = []
-      state.exportingList.push(item)
-      commit('setExportList', state.exportingList)
+    pushTaskingList ({ commit, state }, item) {
+      if (!state.taskingList) state.taskingList = []
+      state.taskingList.push(item)
+      commit('setExportList', state.taskingList)
     },
-    spliceExportingList ({ commit, state }, index) {
-      if (!state.exportingList) state.exportingList = []
-      state.exportingList.splice(index, 1)
-      commit('setExportList', state.exportingList)
+    spliceTaskingList ({ commit, state }, index) {
+      if (!state.taskingList) state.taskingList = []
+      state.taskingList.splice(index, 1)
+      commit('setExportList', state.taskingList)
     },
     loadTodoParams ({ commit, state }, params) {
       commit('setTodoParams', params)

@@ -1,19 +1,3 @@
-<template>
-  <a-tabs
-    hide-add
-    type="editable-card"
-    v-model="tabProxy.activeId"
-    @edit="tabEditEvent"
-    @change="tabChangeEvent"
-  >
-    <a-tab-pane
-      v-for="tab in tabsView"
-      :key="tab.tabId"
-      :tab="tab.tabName"
-      :closable="!!tab.closable"
-    />
-  </a-tabs>
-</template>
 <script>
 import utils from '@/utils'
 import baseMixins from '@/mixins/baseMixins'
@@ -24,6 +8,7 @@ const panelmodel = {
   tabId: '1_1',
   closable: true,
   show: true,
+  visible: true,
   lastListId: '',
   recordData: {}
 }
@@ -312,6 +297,31 @@ export default {
     getDetailIdFormTabId (tabId) {
       return Number.parseInt(tabId.split('_')[2])
     }
+  },
+  render () {
+    return (
+      <a-tabs
+        hide-add
+        type="editable-card"
+        v-model={ this.tabProxy.activeId }
+        onEdit={ this.tabEditEvent }
+        onChange={ this.tabChangeEvent }
+      >
+        {
+          this.tabsView && this.tabsView.map((tab) => {
+            const nameDom = tab.tabName || tab.customRender && tab.customRender(this.$createElement, tab, this)
+            return (
+              <a-tab-pane
+                key={tab.tabId}
+                closable={!!tab.closable}
+              >
+                <template slot="tab">{ nameDom }</template>
+              </a-tab-pane>
+            )
+          })
+        }
+      </a-tabs>
+    )
   }
 }
 </script>

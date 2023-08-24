@@ -1,41 +1,54 @@
 <template>
   <div>
-    <div v-if="(exportingList && exportingList.length) || failureList.data.length" class="export-hover-button">
+    <div v-if="(taskingList && taskingList.length) || failureList.data.length" class="task-hover-button">
       <a-tooltip v-model="tipmodal.show" trigger="contextmenu">
         <template slot="title">
           <span>{{ tipmodal.message }}</span>
         </template>
         <a-button @click="managermodal.show = true">
-          <span><a-icon type="download" />&nbsp;<span class="desc">导出列表</span></span>
+          <span>
+            <a-icon type="bars" />&nbsp;
+            <span class="desc">任务列表</span>
+          </span>
         </a-button>
       </a-tooltip>
     </div>
     <a-modal
-      class="export-hover-window"
-      title="导出列表"
+      class="task-hover-window"
+      title="任务列表"
       :footer="null"
       v-model="managermodal.show"
     >
-      <a-list bordered :data-source="exportingList">
+      <a-list bordered :data-source="taskingList">
         <a-list-item slot="renderItem" slot-scope="item">
           <div class="list-item">
-            <a-button class="fake-loading-icon" :loading="true" :title="'计算导出中...'" />
-            <span class="file-name">{{ item.fileName }}</span>
-            <a-button class="close-icon" @click="() => delExportListItemConfirm(item)"><a-icon type="close" /></a-button>
+            <a-tooltip :title="behavior[item.type] || '任务运行中...'">
+              <a-button class="fake-loading-icon" :loading="true" />
+            </a-tooltip>
+            <span class="file-name" style="padding-left: 0.5rem;">{{ item.fileName }}</span>
+            <a-button class="close-icon" @click="() => delExportListItemConfirm(item)">
+              <a-icon type="close" />
+            </a-button>
           </div>
         </a-list-item>
       </a-list>
       <a-list v-if="failureList.data.length" bordered :data-source="failureList.data">
         <a-list-item slot="renderItem" slot-scope="item, index">
           <div class="list-item">
-            <a-tooltip>
-              <template slot="title">
-                <span>导出失败，请联系管理员！</span>
-              </template>
-              <a-button class="fake-loading-icon" @click="() => tryReloadFormErrorList(item, index)"><a-icon type="exclamation-circle" /></a-button>
+            <a-tooltip :title="item.msg">
+              <a-button class="fake-loading-icon">
+                <a-icon type="exclamation-circle" />
+              </a-button>
+            </a-tooltip>
+            <a-tooltip :title="点击重试">
+              <a-button class="redo-icon" @click="() => tryReloadFormErrorList(item, index)">
+                <a-icon type="redo" />
+              </a-button>
             </a-tooltip>
             <span class="file-name">{{ item.fileName }}</span>
-            <a-button class="close-icon" @click="() => delErrorListItem(item)"><a-icon type="close" /></a-button>
+            <a-button class="close-icon" @click="() => delErrorListItem(item)">
+              <a-icon type="close" />
+            </a-button>
           </div>
         </a-list-item>
       </a-list>
@@ -47,8 +60,8 @@ import api from '@/api'
 import utils from '@/utils'
 import { mapActions } from 'vuex'
 export default {
-  title: '异步导出管理中心',
-  name: 'ExportManager',
+  title: '任务管理中心',
+  name: 'TaskManager',
   data () {
     return {
       managermodal: {
@@ -57,16 +70,25 @@ export default {
       heartbeatState: {
         timesign: null
       },
-      exportingListBackup: [], // 用来备份对比data的，已方便判断data有没有新增
+      taskingListBackup: [], // 用来备份对比data的，已方便判断data有没有新增
       failureList: {
         data: [],
         backup: []
       },
+      error: '在调用 global.pushTaskingList 时，请注意参数中的 type 值！',
+      apimap: {
+        import: api.getuploadfilekey,
+        export: api.getdownfilekey,
+      },
+      behavior: {
+        import: '正在导入...',
+        export: '正在导出...',
+      },
       tipmodal: {
         message: '',
-        normal: '已加入导出队列，可点击查看！',
-        failure: '导出失败，可点击查看！',
-        success: '导出成功！',
+        normal: '已加入任务队列，可点击查看！',
+        failure: '任务失败，可点击查看！',
+        success: '任务成功！',
         duplicate: '已在队列中！',
         show: false,
         timesign: null
@@ -74,18 +96,14 @@ export default {
     }
   },
   watch: {
-    'exportingList': {
+    'taskingList': {
       handler (data = []) {
-        const backup = this.exportingListBackup || []
-        // const duplicateItem = this.hasDuplicate(data)
-        // if (duplicateItem) {
-        // this.showDuplicateTips(duplicateItem)
-        // return this.delExportListItem(duplicateItem)
-        // }
+        const backup = this.taskingListBackup || []
+        // 防止无限循环
         if (data.length !== backup.length) {
           this.showNormalTips()
           this.heartbeat()
-          this.syncModalDataBak()
+          this.syncTaskingListBak()
         }
       },
       immediate: true
@@ -93,34 +111,39 @@ export default {
     'failureList.data': {
       handler (data = []) {
         const backup = this.failureList.backup || []
+        // 防止无限循环
         if (data.length !== backup.length) {
           this.showFailureTips()
-          this.syncModalDataBak()
+          this.syncFailureListBak()
         }
       },
       immediate: true
     }
   },
   computed: {
-    exportingList () {
-      const cache = this.$store.getters.getExportingList
+    taskingList () {
+      const cache = this.$store.getters.getTaskingList
+      // 防止无限循环
       if (cache && cache.length) {
         return cache
       } else {
-        return this.$store.state.global.exportingList
+        return this.$store.state.global.taskingList
       }
     }
   },
   methods: {
-    ...mapActions(['pushExportingList', 'spliceExportingList']),
+    ...mapActions(['pushTaskingList', 'spliceTaskingList']),
     delExportListItemConfirm (item) {
       this.$confirm({
         title: '提示',
-        content: '文件正在导出中，是否删除这个任务？',
+        content: '文件正在运行中，是否删除这个任务？',
         okText: '是',
         cancelText: '否',
         onOk: () => {
-          this.delExportListItem(item)
+          // 如果用户选择主动删除任务，那么，这里需要强调回收监听器，
+          // 在其他情况下，this.$bus.$on 都是由其申请者确认回收
+          this.$bus.$off(item.fileKey)
+          this.delTaskListItem(item)
         }
       })
     },
@@ -141,14 +164,15 @@ export default {
     showFailureTips (item = { fileName: '' }) {
       const data = this.failureList.data || []
       const backup = this.failureList.backup || []
+      // 防止无限循环
       if (data.length > backup.length) {
         this.tipmodal.message = `${item.fileName}${this.tipmodal.failure}`
         this.showTipsHandler()
       }
     },
     showNormalTips (item = { fileName: '' }) {
-      const data = this.exportingList || []
-      const backup = this.exportingListBackup || []
+      const data = this.taskingList || []
+      const backup = this.taskingListBackup || []
       if (data.length > backup.length) {
         this.tipmodal.message = `${item.fileName}${this.tipmodal.normal}`
         this.showTipsHandler()
@@ -174,24 +198,21 @@ export default {
       clearTimeout(this.heartbeatState.timesign)
       this.heartbeatState.timesign = null
       this.heartbeatState.timesign = setTimeout(() => {
-        if (this.exportingList && this.exportingList.length) {
+        if (this.taskingList && this.taskingList.length) {
           this.heartbeatQueueHandler().then(() => {
             return this.heartbeat()
           })
         }
       }, 1000)
     },
-    addExportItem (item) {
-      this.pushExportingList(item)
+    addErrorItem (item, msg) {
+      this.failureList.data.push({ ...item, msg })
     },
-    addErrorItem (item) {
-      this.failureList.data.push(item)
-    },
-    delExportListItem (item) {
-      for (let i = 0; i < this.exportingList.length; i++) {
-        const loopItem = this.exportingList[i]
-        if (loopItem.fileName === item.fileName) {
-          this.spliceExportingList(i)
+    delTaskListItem (item) {
+      for (let i = 0; i < this.taskingList.length; i++) {
+        const loopItem = this.taskingList[i]
+        if (loopItem.fileKey === item.fileKey) {
+          this.spliceTaskingList(i)
           break
         }
       }
@@ -199,7 +220,7 @@ export default {
     delErrorListItem (item) {
       for (let i = 0; i < this.failureList.data.length; i++) {
         const loopItem = this.failureList.data[i]
-        if (loopItem.fileName === item.fileName) {
+        if (loopItem.fileKey === item.fileKey) {
           this.failureList.data.splice(i, 1)
           break
         }
@@ -207,14 +228,17 @@ export default {
     },
     heartbeatQueueHandler () {
       return new Promise((resolve, reject) => {
-        const exportingList = utils.clone(this.exportingList)
-        exportingList.forEach(async (item, index) => {
-          const res = await api.getDownFileFileKey(item).catch(() => {})
+        const taskingList = utils.clone(this.taskingList)
+        taskingList.forEach(async (item, index) => {
+          const apiFunc = this.apimap[item.type]
+          if (!apiFunc) return reject(new Error(this.error))
+          const res = await apiFunc(item).catch(() => {})
           if (utils.isBlob(res)) {
             // 如果直接返回流，就直接下载
             this.showSuccessTips(item)
-            this.delExportListItem(item)
+            this.delTaskListItem(item)
             this.downloadByStream(res, item)
+            this.$bus.$emit(item.fileKey, res, item)
           } else if (utils.isBackendResponse(res)) {
             // 如果返回后台数据，根据数据做判断
             if (res && res.code === 200) {
@@ -226,28 +250,33 @@ export default {
                 //   2: '处理中'
                 // }
                 if (res.data.fileStatus === -1 || res.data.fileStatus === 0) {
-                  this.addErrorItem(item)
-                  this.delExportListItem(item)
+                  this.addErrorItem(item, res.message)
+                  this.delTaskListItem(item)
+                  this.$bus.$emit(item.fileKey, res, item)
                 }
                 if (res.data.fileStatus === 1) {
                   this.showSuccessTips(item)
-                  this.delExportListItem(item)
+                  this.delTaskListItem(item)
                   this.downloadByFileId(res, item)
+                  this.$bus.$emit(item.fileKey, res, item)
                 }
               } else {
-                this.addErrorItem(item)
-                this.delExportListItem(item)
+                this.addErrorItem(item, res.message)
+                this.delTaskListItem(item)
+                this.$bus.$emit(item.fileKey, res, item)
               }
             } else {
-              this.addErrorItem(item)
-              this.delExportListItem(item)
+              this.addErrorItem(item, res.message)
+              this.delTaskListItem(item)
+              this.$bus.$emit(item.fileKey, res, item)
             }
           } else {
             // 其他类型的数据，一律视作失败
-            this.addErrorItem(item)
-            this.delExportListItem(item)
+            this.addErrorItem(item, res.message)
+            this.delTaskListItem(item)
+            this.$bus.$emit(item.fileKey, res, item)
           }
-          if (index + 1 === exportingList.length) {
+          if (index + 1 === taskingList.length) {
             // 一轮心跳完毕
             resolve()
           }
@@ -255,12 +284,14 @@ export default {
       })
     },
     tryReloadFormErrorList (item, index) {
-      this.pushExportingList(item)
+      this.pushTaskingList(item)
       this.delErrorListItem(item)
     },
-    syncModalDataBak () {
-      this.exportingListBackup = [].concat(this.exportingList)
-      this.failureList.backup = [].concat(this.failureList.data)
+    syncTaskingListBak () {
+      this.taskingListBackup = utils.clone(this.taskingList)
+    },
+    syncFailureListBak () {
+      this.failureList.backup = utils.clone(this.failureList.data)
     },
     downloadByFileId (res, item) {
       const fileId = res.data && res.data.fileUrl // 后端用fileUrl字段存储fileId
@@ -285,12 +316,16 @@ div.ant-list-item {
   padding-left: 12px;
 }
 span.file-name {
-  padding-left: 1rem;
+  // padding-left: 1rem;
   line-height: 32px;
 }
 div.list-item {
   position: relative;
   width: 100%;
+}
+button.redo-icon {
+  border: 0;
+  box-shadow: none;
 }
 button.close-icon {
   border: 0;
@@ -311,7 +346,7 @@ button.fake-loading-icon {
     color: red;
   }
 }
-.export-hover-button {
+.task-hover-button {
   // position: fixed;
   // right: 150px;
   // bottom: 150px;

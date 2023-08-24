@@ -40,7 +40,7 @@
             <a-col :span="1">
               <div style="position: relative;">
                 <!-- 移出文档流，防止显示/隐藏时造成抖动 -->
-                <ExportManager style="position: absolute;top:0;left:0;" />
+                <AsyncTaskManager style="position: absolute;top:0;left:0;" />
               </div>
             </a-col>
             <a-col :span="14">
@@ -69,7 +69,7 @@
 import SMenu from './SMenu'
 import utils from '@/utils'
 import api from '@/api'
-import ExportManager from '@/components/ExportManager.vue'
+import AsyncTaskManager from '@/components/AsyncTaskManager.vue'
 import SBreadcrumb from '@/components/SBreadcrumb.vue'
 let collapsed = false
 export default {
@@ -77,7 +77,7 @@ export default {
   components: {
     SMenu,
     SBreadcrumb,
-    ExportManager
+    AsyncTaskManager
   },
   data () {
     return {

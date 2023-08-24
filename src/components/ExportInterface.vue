@@ -57,7 +57,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['pushExportingList']),
+    ...mapActions(['pushTaskingList']),
     getTrulyParams () {
       let res = {}
       if (utils.isObject(this.params)) {
@@ -73,7 +73,7 @@ export default {
       if (backendData.code === 200) {
         // 'async' 是异步下载类型
         if (backendData.data && backendData.data.type === 'async') {
-          this.pushExportingList({ fileName: this.fileName, fileKey: backendData.data.fileKey })
+          this.pushTaskingList({ fileName: this.fileName, fileKey: backendData.data.fileKey })
         } else {
           // 非异步下载类型，当前还没有使用这个接口类型
         }

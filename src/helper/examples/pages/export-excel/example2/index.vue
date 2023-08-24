@@ -3,7 +3,7 @@
     <template slot="example">
       <ExportInterface api="postrequirementservicesexportrequire" />
       <div style="position: relative;">
-        <ExportManager style="position:absolute;top:-20px;left:60px;" />
+        <AsyncTaskManager style="position:absolute;top:-20px;left:60px;" />
       </div>
     </template>
     <template slot="description">
@@ -12,13 +12,13 @@
   </Panel>
 </template>
 <script>
-import ExportManager from '@/components/ExportManager.vue'
+import AsyncTaskManager from '@/components/AsyncTaskManager.vue'
 import code from './code.md'
 export default {
   title: '异步导出',
   name: 'Example2',
   components: {
-    ExportManager
+    AsyncTaskManager
   },
   data () {
     return {

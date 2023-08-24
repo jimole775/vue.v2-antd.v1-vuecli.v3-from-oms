@@ -111,7 +111,7 @@ export default {
       roleType: state => state.global.userRole.type
     }),
     isOutsideStuff () {
-      return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
+      return this.roleType === '0' || this.roleType === '1'
     },
     recordData () {
       return this.currentTab.recordData || {}
@@ -137,9 +137,9 @@ export default {
     tabProxy: {
       async handler (tabProxy) {
         if (!tabProxy) return false
-        if (utils.isNone(this.currentApimap.detail)) {
-          return this.$message.warning('审批页面“详情”接口未配置！')
-        }
+        // if (utils.isNone(this.currentApimap.detail)) {
+        //   return this.$message.warning('审批页面“详情”接口未配置！')
+        // }
         this.currentTab = tabProxy.tabs.find((pane) => pane.tabId === tabProxy.activeId)
         let func
         if (utils.isFunction(this.currentApimap.detail)) {

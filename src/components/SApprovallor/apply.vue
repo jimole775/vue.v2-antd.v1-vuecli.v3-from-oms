@@ -96,7 +96,7 @@ export default {
       roleType: state => state.global.userRole.type
     }),
     isOutsideStuff () {
-      return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
+      return this.roleType === '0' || this.roleType === '1'
     },
     currentApimap () {
       return this.apimap.apply || {}
