@@ -180,7 +180,7 @@ export default {
     },
     showSuccessTips (item = { fileName: '' }) {
       this.tipmodal.message = `${item.fileName}${this.tipmodal.success}`
-      this.$message.success(this.tipmodal.message)
+      // this.$message.success(this.tipmodal.message)
     },
     showDuplicateTips (item = { fileName: '' }) {
       this.tipmodal.message = `${item.fileName}${this.tipmodal.duplicate}`
@@ -257,7 +257,7 @@ export default {
                 if (res.data.fileStatus === 1) {
                   this.showSuccessTips(item)
                   this.delTaskListItem(item)
-                  this.downloadByFileId(res, item)
+                  this.tryDownloadByFileId(res, item)
                   this.$bus.$emit(item.fileKey, res, item)
                 }
               } else {
@@ -293,9 +293,11 @@ export default {
     syncFailureListBak () {
       this.failureList.backup = utils.clone(this.failureList.data)
     },
-    downloadByFileId (res, item) {
-      const fileId = res.data && res.data.fileUrl // 后端用fileUrl字段存储fileId
-      api.gfsfiledownload(fileId, item.fileName)
+    tryDownloadByFileId (res, item) {
+      if (item.type === 'export') {
+        const fileId = res.data && res.data.fileUrl // 后端用fileUrl字段存储fileId
+        api.gfsfiledownload(fileId, item.fileName)
+      }
     },
     downloadByStream (stream, item) {
       const link = document.createElement('a')
