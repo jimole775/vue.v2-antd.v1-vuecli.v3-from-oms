@@ -23,6 +23,7 @@
           </div>
           <component
             :ref="`${panel.componentName}_${index}`"
+            :apply-scope="scope"
             :is="panel.component"
             :option="panel.option"
             :before-render="beforeRender"
@@ -31,6 +32,7 @@
             :active-panels="activePanels"
             :mode="panel.mode"
             :tab-proxy="tabProxy"
+            :share-chanel="shareChanel"
             :bridge="{
               ...bridge,
               panel,
@@ -43,12 +45,14 @@
               formItems: panel.formItems
             }"
             @updateRadio="updateRadio"
+            @shareChanel="onShareEvent"
           />
         </a-collapse-panel>
       </template>
     </a-collapse>
     <div class="ppproject-footer">
-      <a-button type="primary" ghost @click="emitApply">发起</a-button>
+      <a-button class="submit" type="primary" @click="emitApply">提交</a-button>
+      <a-button class="close" type="primary" ghost @click="$emit('close')">取消</a-button>
     </div>
   </div>
 </template>
@@ -87,7 +91,8 @@ export default {
     return {
       scope: this,
       currentRadio: '1',
-      activePanels: []
+      activePanels: [],
+      shareChanel: {}
     }
   },
   computed: {
@@ -230,7 +235,7 @@ export default {
       this.currentRadio = radio
     },
     async emitApply () {
-      const { successData, failureTips } = await this.getComponentsFieldsValue()
+      const { successData, failureTips } = await this.getComponentsSubmitData()
       if (failureTips.length) {
         return this.$modal.warning({
           title: '提示',
@@ -253,23 +258,28 @@ export default {
         })
       }
     },
-    getComponentsFieldsValue () {
+    getComponentsSubmitData () {
       return new Promise(async (resolve) => {
         let successData = {}
         const failureTips = []
         for (let index = 0; index < this.activePanels.length; index++) {
           const panel = this.activePanels[index]
           if (panel.show === false) continue
-          const panelDom = await this.$refs[`${panel.componentName}_${index}`][0]
-          const editData = await panelDom.getFieldsValue()
-          if (editData.type === 'failure') {
-            failureTips.push(editData.message)
+          const panelVM = await this.$refs[`${panel.componentName}_${index}`][0] || {}
+          const handupFunc = panelVM['@GetResult']
+          if (!handupFunc) continue
+          const handupData = await handupFunc()
+          if (handupData.type === 'failure') {
+            failureTips.push(handupData.message)
           } else {
-            successData = { ...successData, ...editData.data }
+            successData = { ...successData, ...handupData.data }
           }
         }
         return resolve({ failureTips, successData })
       })
+    },
+    onShareEvent (key = '', data) {
+      this.$set(this.shareChanel, key, data)
     }
   }
 }

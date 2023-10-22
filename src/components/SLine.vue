@@ -26,7 +26,8 @@ export default {
   },
   render (h, vm) {
     const { value = '', len = 10, lineEnd = 'ellipsis', rows = 3 } = vm.props || {}
-    const style = vm.data.style || {}
+    const style = vm.data.staticStyle || {}
+    const className = vm.data.staticClass || ''
     const text = utils.isValuable(value) ? value : getChildrenText(vm.children)
     if (utils.isNone(text)) return ''
     let sentence = ''
@@ -38,27 +39,28 @@ export default {
     }
     if (utils.isString(sentence)) {
       if (text === sentence) {
-        return <div class="line-standard" style={style}>{ text }</div>
+        return <div class={`line-standard ${className}`} style={style}>{ text }</div>
       } else {
         return (
           <a-tooltip title={text}>
-            <div class="line-standard" style={style}>{ sentence }</div>
+            <div class={`line-standard ${className}`} style={style}>{ sentence }</div>
           </a-tooltip>
         )
       }
     } else if (utils.isArray(sentence)) {
       return (
         <a-tooltip title={text}>
-          <div class="line-standard" style={style}>
+          <div class={`line-standard ${className}`} style={style}>
             { sentence.map(line => <div>{ line }</div> ) }
           </div>
         </a-tooltip>
       )
     } else {
-      return <div class="line-standard" style={style}>{ text }</div>
+      return <div class={`line-standard ${className}`} style={style}>{ text }</div>
     }
   }
 }
+
 function getChildrenText (children = []) {
   let res = ''
   children.forEach((vnode) => {

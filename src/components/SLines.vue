@@ -30,7 +30,8 @@ export default {
   },
   render (h, vm) {
     const { len = 20, value = '', lineEnd = 'ellipsis', rows = 0, copy = false } = vm.props || {}
-    const props = { style: vm.data.style } || {}
+    const style = vm.data.staticStyle || {}
+    const className = vm.data.staticClass || ''
     const text = utils.isValuable(value) ? value : getChildrenText(vm.children)
     if (utils.isNone(text)) return ''
     let dataSentences = getSentences(text)
@@ -43,25 +44,24 @@ export default {
               // 如果规定了显示行数，那么就对最后一行进行显示处理
               const endline = utils.appandEllipsis(utils.ellipsisSentence(sentence, len))
               const title = dataSentences.join('\n')
-              return (<div v-bind={props}>
+              return <div class={className} style={style}>
                 <a-tooltip title={title}>
                   <span>{ endline }&nbsp;</span>
                 </a-tooltip>
-              </div>)
+                { copy && <SClipboard value={title} /> }
+              </div>
             } else {
               if (lineEnd === 'ellipsis') {
                 // xxxx...
                 // xxxx...
-                props.len = len
-                props.value = sentence
-                return <SLine v-bind={props} />
+                return <SLine class={className} style={style} len={len} value={sentence} />
               } else if (lineEnd === 'break') {
                 // xxxxxxx
                 // xxx
                 // xxxxxxx
                 // xxxxx
                 const lines = utils.breakSentence(sentence, len)
-                return <div v-bind={props}> {
+                return <div class={className} style={style}> {
                   lines.map(line => <div>{ line }</div>)
                 }</div>
               } else {
@@ -86,17 +86,8 @@ function getChildrenText (children = []) {
 }
 
 function getSentences (content = '') {
-  // 把所有换行符换成 _||_
-  const splitSign = '_||_'
-  content = content + '' // 防止传入的数字类型
-  // todo 可以进行优化
-  content = content.replace(/(\r\n)/ig, splitSign)
-  content = content.replace(/(\r)/ig, splitSign)
-  content = content.replace(/(\n)/ig, splitSign)
-  content = content.replace(/(\/r\/n)/ig, splitSign)
-  content = content.replace(/(\/n)/ig, splitSign)
-  content = content.replace(/(\/r)/ig, splitSign)
-  return content.split(splitSign)
+  if (utils.isNone(content)) return ''
+  return content.split(/\r?\n|\r/)
 }
 
 </script>

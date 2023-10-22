@@ -1454,7 +1454,7 @@ const utils = {
     // 处理位数
     const k = Math.pow(10, decimal)
     // 避免 3.03 这种类型的数字无法正常输入
-    return /0$/.TEST(val) ? val : Math.round(val * k) / k
+    return /0$/.test(val) ? val : Math.round(val * k) / k
   }
 }
 

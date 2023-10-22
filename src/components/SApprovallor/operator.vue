@@ -139,7 +139,7 @@ export default {
             resolve({
               type: 'failure',
               data: null,
-              message: utils.getFormErrorMessage(err)
+              message: utils.getFormErrorMessage(err) || '请先完成必填项'
             })
           } else {
             resolve({
@@ -188,8 +188,8 @@ function buildRadios (h) {
     return (
       <a-form-item
         label={'审批'}
-        label-col={{ span: 2 }}
-        wrapper-col={{ span: 18 }}
+        label-col={{ span: 3 }}
+        wrapper-col={{ span: 19 }}
       >
         <a-radio-group name="radioGroup" v-model={this.approvalResult} onChange={this.changeEventForRadios}>
           {
@@ -219,10 +219,10 @@ function buildInputs (h) {
   if (this.liveInputs && this.liveInputs.length) {
     return this.liveInputs.map((inputItem, index) => {
       return (
-        <a-col span={inputItem.layout ? inputItem.layout.span : 8}>
+        <a-col span={inputItem.layout ? inputItem.layout.span : 24}>
           <a-form-item
-            label-col={{ span: inputItem.layout ? inputItem.layout.label : 6 }}
-            wrapper-col={{ span: inputItem.layout ? inputItem.layout.wrapper : 16 }}
+            label-col={{ span: inputItem.layout ? inputItem.layout.label : 3 }}
+            wrapper-col={{ span: inputItem.layout ? inputItem.layout.wrapper : 19 }}
           >
             {[
               labelRender.apply(this, [h, inputItem, index]),
@@ -253,14 +253,17 @@ function wrapperRender (h, inputItem, index) {
     return inputItem.wrapperCustomRender(this.$createElement, inputItem, this.scope)
   } else {
     const defaultVal = utils.isFunction(inputItem.default) ? inputItem.default(inputItem, this.scope) : inputItem.default
+    const props = utils.isFunction(inputItem.props) ? inputItem.props(inputItem, this.scope) : inputItem.props
+    const attrs = utils.isFunction(inputItem.attrs) ? inputItem.attrs(inputItem, this.scope) : inputItem.attrs
+    const domProps = utils.isFunction(inputItem.domProps) ? inputItem.domProps(inputItem, this.scope) : inputItem.domProps
     const decoratorInfo = { initialValue: defaultVal, rules: [{ required: inputItem.required, message: `请确认${inputItem.label}` }] }
     return (
       <inputItem.component
         key={`${inputItem.key}_${index}`}
         ref={`${inputItem.key}_${index}`}
-        props={inputItem.props}
-        attrs={inputItem.attrs}
-        domProps={inputItem.domProps}
+        props={props}
+        attrs={attrs}
+        domProps={domProps}
         vDecorator={[inputItem.key, decoratorInfo]}
         onChange={(val, option) => this.changeEventForInput(val, option, inputItem)}
       />
@@ -275,8 +278,8 @@ function buildFooter (h) {
     return (
       <a-form-item
         label={' '}
-        label-col={{ span: 2 }}
-        wrapper-col={{ span: 18 }}
+        label-col={{ span: 3 }}
+        wrapper-col={{ span: 19 }}
       >
         <a-button type="primary" onClick={this.emitSubmit}>提交</a-button>
       </a-form-item>

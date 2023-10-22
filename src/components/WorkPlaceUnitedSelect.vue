@@ -123,9 +123,6 @@ export default {
       })
     }
   },
-  created () {
-    this.getAllArea()
-  },
   data () {
     return {
       vertical: {
@@ -139,9 +136,9 @@ export default {
         w: { span: 16 }
       },
       workPlaceList: [{
-        region: '',
-        workPlace: '',
-        deliveryType: ''
+        region: undefined,
+        workPlace: undefined,
+        deliveryType: undefined
       }],
       workPlaceOption: [],
       areaOption: [],
@@ -149,13 +146,6 @@ export default {
     }
   },
   methods: {
-    // 获取所有地域
-    async getAllArea () {
-      const res = await api.getAllArea()
-      if (res.code === 200) {
-        this.areaOption = res.data
-      }
-    },
     // 动态获取工作地点
     changeRegin (item, index) {
       api.getWorkingPlaceByRegion(item.region, this.orgCode).then(res => {

@@ -228,7 +228,7 @@ export default {
       const layout8 = {
         span: 8,
         label: 9,
-        wrapper: 12
+        wrapper: 15
       }
       formItems.forEach((item) => {
         if (item.show === undefined) this.$set(item, 'show', true)
@@ -289,10 +289,12 @@ export default {
     getFieldsValue () {
       return new Promise((resolve) => {
         const tips = this.validateRequiredField()
+        const fieldsVal = this.form.getFieldsValue()
+        const formData = this.getFormItemsValue(fieldsVal, this.scopeFormItems)
         if (tips && tips.length) {
           return resolve({
             type: 'failure',
-            data: null,
+            data: formData,
             message: tips[0]
           })
         }
@@ -300,17 +302,13 @@ export default {
           if (err) {
             resolve({
               type: 'failure',
-              data: null,
+              data: formData,
               message: utils.getFormErrorMessage(err) || '请完成必填项！'
             })
           } else {
-            const params = {
-              ...values,
-              ...this.getFormItemsValue(values, this.scopeFormItems)
-            }
             resolve({
               type: 'success',
-              data: params,
+              data: formData,
               message: ''
             })
           }

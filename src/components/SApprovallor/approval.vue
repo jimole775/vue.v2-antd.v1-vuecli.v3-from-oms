@@ -1,67 +1,3 @@
-<template>
-  <div>
-    <ApprovalStepBar
-      :id="recordData.flowInstanceId || recordData.instanceId"
-      :nodes="$utils.isFunction(currentApimap.stepNodes) ? currentApimap.stepNodes(scope) : currentApimap.stepNodes"
-      @update="updateCurrentNode"
-    />
-    <a-collapse
-      :bordered="false"
-      :active-key="['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']"
-    >
-      <template v-for="(panel, index) in activePanels">
-        <a-collapse-panel
-          v-if="panel.show"
-          :key="`${index + 1}`"
-          class="m-block"
-        >
-          <div slot="header">
-            <span>
-              {{ panel.title }}&nbsp;
-              <a-tooltip v-if="panel.tips">
-                <template slot="title">
-                  <s-lines :value="panel.tips" :len="999" />
-                </template>
-                <a-icon type="question-circle-o" />
-              </a-tooltip>
-            </span>
-          </div>
-          <component
-            :ref="`${panel.componentName}_${index}`"
-            :is="panel.component"
-            :mode="panel.mode"
-            :columns="panel.columns"
-            :form-items="panel.formItems"
-            :active-panels="activePanels"
-            :option="panel.option"
-            :data-source="basicData"
-            :tab-proxy="tabProxy"
-            :current-panel="panel"
-            :current-node="currentNode"
-            :before-render="beforeRender"
-            :business-id="recordData.id"
-            :business-type="currentApimap.businessType"
-            :bridge="{
-              ...bridge,
-              panel,
-              apimap,
-              tabProxy,
-              recordData,
-              currentNode,
-              activePanels,
-              dataSource: basicData,
-              columns: panel.columns,
-              formItems: panel.formItems,
-              option: panel.option,
-            }"
-            @updateRadio="updateRadio"
-            @submit="submitHandler"
-          />
-        </a-collapse-panel>
-      </template>
-    </a-collapse>
-  </div>
-</template>
 <script>
 import api from '@/api'
 import utils from '@/utils'
@@ -102,7 +38,8 @@ export default {
       currentTab: {},
       currentNode: {},
       currentRadio: '',
-      activePanels: []
+      activePanels: [],
+      shareChanel: {}
     }
   },
   computed: {
@@ -131,15 +68,16 @@ export default {
       const inputs = this.currentOption.inputs || []
       const radios = this.currentOption.radios || []
       return this.isApprovallor && !!(inputs.length || radios.length)
+    },
+    // todo 看看有没有更好的自定义板块的方案
+    customRender () {
+      return this.approval.customRender
     }
   },
   watch: {
     tabProxy: {
       async handler (tabProxy) {
         if (!tabProxy) return false
-        // if (utils.isNone(this.currentApimap.detail)) {
-        //   return this.$message.warning('审批页面“详情”接口未配置！')
-        // }
         this.currentTab = tabProxy.tabs.find((pane) => pane.tabId === tabProxy.activeId)
         let func
         if (utils.isFunction(this.currentApimap.detail)) {
@@ -147,6 +85,7 @@ export default {
         } else {
           func = api[this.currentApimap.detail]
         }
+        if (!func) return false
         const res = await func(this.currentTab.recordData)
         if (res.code === 200) {
           this.basicData = { ...res.data }
@@ -203,6 +142,9 @@ export default {
     }
   },
   methods: {
+    onShareEvent (key = '', data) {
+      this.$set(this.shareChanel, key, data)
+    },
     evalActivePanels () {
       this.activePanels.length = 0
       this.activePanels = this.evalPanelsProps()
@@ -210,7 +152,9 @@ export default {
         this.activePanels.push(this.evalOperatorProps())
       }
       // 当前默认展示 log
-      this.activePanels.push({ component: 'PPApproveLog', title: '操作日志', mode: 'readonly', show: true })
+      if (this.activePanels.length) {
+        this.activePanels.push({ component: 'ApproveLog', title: '操作日志', mode: 'readonly', show: true })
+      }
     },
     evalOperatorProps () {
       const operator = this.approval.operator || {}
@@ -362,10 +306,12 @@ export default {
       for (let index = 0; index < this.activePanels.length; index++) {
         const panel = this.activePanels[index]
         if (panel.show === false) continue
-        const panelDomId = `${panel.componentName}_${index}`
+        const panelRef = `${panel.componentName}_${index}`
         if (panel.mode === 'edit') {
-          // await this.$refs[panelDomId]
-          const validRes = await this.$refs[panelDomId][0].getFieldsValue()
+          const panelVM = await (this.$refs[panelRef][0] || this.$refs[panelRef]) || {}
+          const handupFunc = panelVM['@GetResult']
+          if (!handupFunc) continue
+          const validRes = await handupFunc()
           if (validRes.type === 'success') {
             Object.assign(params, validRes.data)
           } else {
@@ -424,17 +370,16 @@ export default {
     },
     // 发起审批
     async startApprove (params) {
-      if (utils.isNone(this.currentApimap.submit)) {
-        return this.$message.warning('审批页面“提交”接口未配置！')
+      if (this.$props.beforeSubmit) {
+        this.$props.beforeSubmit(params, this.scope)
       }
-      const finalParams = this.$props.beforeSubmit(params, this.scope)
       let func
       if (utils.isFunction(this.currentApimap.submit)) {
         func = this.currentApimap.submit
       } else {
         func = api[this.currentApimap.submit]
       }
-      const res = await func(finalParams)
+      const res = await func(params)
       if (res.code === 200) {
         this.$message.success('操作成功')
         this.$emit('close')
@@ -445,6 +390,93 @@ export default {
         })
       }
     }
+  },
+  render (h) {
+    const bridge = {
+      ...this.bridge,
+      apimap: this.apimap,
+      tabProxy: this.tabProxy,
+      recordData: this.recordData,
+      currentNode: this.currentNode,
+      activePanels: this.activePanels,
+      dataSource: this.basicData
+    }
+    const renderPanel = (h) => {
+      return this.activePanels.map((panel, index) => {
+        if (!panel.show) return ''
+        return <a-collapse-panel
+          key={`${index}`}
+          class="m-block"
+          v-operator-panel-style={
+            panel.show && panel.componentName === 'Operator'
+          }
+        >
+          <div slot="header">
+            <span>
+              { panel.title }&nbsp;
+              {
+                panel.tips && <a-tooltip>
+                  <template slot="title">
+                    <s-lines value={panel.tips} len={999} />
+                  </template>
+                  <a-icon type="question-circle-o" />
+                </a-tooltip>
+              }
+            </span>
+            <panel.component
+              ref={`${panel.componentName}_${index}`}
+              mode={panel.mode}
+              columns={panel.columns}
+              form-items={panel.formItems}
+              approval-scope={this.scope}
+              share-chanel={this.shareChanel}
+              active-panels={this.activePanels}
+              option={this.option}
+              data-source={this.basicData}
+              tab-proxy={this.tabProxy}
+              current-panel={this.panel}
+              current-node={this.currentNode}
+              before-render={this.beforeRender}
+              business-id={this.recordData.id}
+              business-type={this.currentApimap.busunessType}
+              bridge={{ ...bridge, panel }}
+              onUpdateRadio={this.updateRadio}
+              onSubmit={this.submitHandler}
+              onShareChanel={this.onShareEvent}
+            />
+          </div>
+        </a-collapse-panel>
+      })
+    }
+    const renderCustom = (h) => {
+      if (!this.customRender) return ''
+      return <this.customRender
+        approval-scope={this.scope}
+        mode={this.customRender.mode}
+        tab-proxy={this.tabProxy}
+        bridge={{
+          ...bridge,
+          panel: this.customRender
+        }}
+        onSubmit={this.submitHandler}
+      />
+    }
+    return <div>
+      <ApprovalStepBar
+        id={this.recordData.flowInstanceId || this.recordData.instanceId}
+        nodes={utils.isFunction(this.currentApimap.stepNodes) ? this.currentApimap.stepNodes(this.scope) : this.currentApimap.stepNodes}
+        onUpdate={this.uodateCurrentNode}
+      />
+      <a-collapse
+        bordered={false}
+        active-key={this.activePanels.map((i, ii) => `${ii}`)}
+      >
+        { renderPanel(h) }
+      </a-collapse>
+      {
+        renderCustom(h)
+      }
+    </div>
   }
 }
 

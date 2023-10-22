@@ -29,6 +29,7 @@ export default {
   },
   data () {
     return {
+      scope: this,
       dataList: [],
       selectRows: []
     }
@@ -38,11 +39,14 @@ export default {
       user: state => state.global.user,
       roleType: state => state.global.userRole.type
     }),
-    currentApimap () {
+    listapi () {
       return this.apimap.list || { batch: {} }
     },
     isOutsideStuff () {
       return this.roleType === 'SUPPLIER' || this.roleType === 'OUT'
+    },
+    summary () {
+      return this.list.summary || []
     },
     searchor () {
       return this.transferSearchor(this.queryPermissionItem(this.list.searchor || []))
@@ -119,25 +123,29 @@ export default {
   },
   render (h) {
     const summarySlots = getSummarySlots.call(this, h)
-    const { batch, table } = this.currentApimap || { batch: {}, table: {} }
+    const { batch = {}, table = {} } = this.listapi
+    const bridge = {
+      ...this.bridge,
+      reload: this.reload,
+      projectApply: this.projectApply,
+      projectApproval: this.projectApproval
+    }
     return (
       <div>
         <STable
           ref={'STableRef'}
-          bridge={{
-            ...this.bridge,
-            reload: this.reload,
-            projectApply: this.projectApply,
-            projectApproval: this.projectApproval
-          }}
+          bridge={bridge}
           columns={this.columns}
           searchor={this.searchor}
           data-api={table.dataApi}
           data-dir={table.dataDir}
-          record-status-field={table.recordStatusField}
+          is-selection={table.isSelection}
+          flow-status-field={table.flowStatusField}
           row-key={table.rowKey || 'flowInstanceId'}
           pass-api={this.evalBatchApi(batch.pass)}
           close-api={this.evalBatchApi(batch.close)}
+          template-api={this.evalBatchApi(batch.template)}
+          import-api={this.evalBatchApi(batch.import)}
           export-api={this.evalBatchApi(batch.export)}
           unpass-api={this.evalBatchApi(batch.unpass)}
           revoke-api={this.evalBatchApi(batch.revoke)}
@@ -159,8 +167,6 @@ export default {
 
 // 获取插槽提供的按钮
 function getSummarySlots (h) {
-  const slots = this.$slots || {}
-  const summarys = slots.stableSummary || []
   const applyInfo = this.apimap.apply || {}
   const anchorText = applyInfo.anchorText || '申请'
   return (
@@ -168,14 +174,13 @@ function getSummarySlots (h) {
       {
         this.evalBatchApi({ api: applyInfo.submit, permission: applyInfo.permission }) &&
         <a-button
-          ghost
           type="primary"
           onClick={() => this.projectApply()}
         >
           { anchorText }
         </a-button>
       }
-      { ...summarys }
+      { this.summary.map((summRender) => summRender(this.$createElement, this.scope)) }
     </template>
   )
 }

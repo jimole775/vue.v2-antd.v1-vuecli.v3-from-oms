@@ -2,25 +2,24 @@
   <div class="moveBox">
     <STabs :ref="'STabsRef'" :tab-proxy="tabProxy" />
     <div v-show="tabProxy.showList">
-      <template v-for="tab in listTabs">
-        <ProjectList
-          v-show="tab.tabId === tabProxy.activeId"
-          :key="tab.tabId"
-          :list="tab.list"
-          :apimap="tab.apimap"
-          :ref="'ProjectList' + tab.tabId"
-          :transfer-searchor="transferSearchor"
-          :bridge="bridge"
-          :tab-proxy="tabProxy"
-          :before-render="beforeRender"
-          :before-submit="beforeSubmit"
-          @addDetailTab="addDetailTab"
-        />
-      </template>
+      <ProjectList
+        v-for="tab in listTabs"
+        v-show="tab.tabId === tabProxy.activeId"
+        :key="tab.tabId"
+        :list="tab.list"
+        :apimap="tab.apimap"
+        :ref="'ProjectList' + tab.tabId"
+        :transfer-searchor="transferSearchor"
+        :bridge="bridge"
+        :tab-proxy="tabProxy"
+        :before-render="beforeRender"
+        :before-submit="beforeSubmit"
+        @addDetailTab="addDetailTab"
+      />
     </div>
     <div v-show="tabProxy.showApply">
-      <template v-for="tab in applyTabs">
         <ProjectApply
+          v-for="tab in applyTabs"
           v-show="tab.tabId === tabProxy.activeId"
           :key="tab.tabId"
           :apply="tab.apply"
@@ -32,11 +31,10 @@
           :before-submit="beforeSubmit"
           @close="removeTab()"
         />
-      </template>
     </div>
     <div v-show="tabProxy.showDetail">
-      <template v-for="tab in approvalTabs">
         <ProjectApproval
+          v-for="tab in approvalTabs"
           v-show="tab.tabId === tabProxy.activeId"
           :key="tab.tabId"
           :apimap="tab.apimap"
@@ -48,7 +46,6 @@
           :before-submit="beforeSubmit"
           @close="removeTab()"
         />
-      </template>
     </div>
   </div>
 </template>

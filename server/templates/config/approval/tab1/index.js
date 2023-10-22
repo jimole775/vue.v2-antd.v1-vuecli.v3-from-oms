@@ -26,7 +26,7 @@ const panel4ReadViewer = { component: 'FormItemRender', title: '处理结果', m
 
 const operationRender = { component: 'SOperator', title: '审批操作', mode: 'edit', show: true, operationItem: operation }
 
-const approveLogViewer = { component: 'PPApproveLog', title: '操作日志', mode: 'readonly', show: true }
+const approveLogViewer = { component: 'ApproveLog', title: '操作日志', mode: 'readonly', show: true }
 
 export default {
   start: {
