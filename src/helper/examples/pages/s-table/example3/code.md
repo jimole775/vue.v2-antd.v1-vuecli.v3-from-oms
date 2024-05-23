@@ -59,13 +59,6 @@ export default {
           permission: [0, 1]
         },
         {
-          key: 'col2',
-          title: 'col2',
-          dependKey: 'col1', // 依赖 col1 的值
-          component: 'WorkplaceSelect',
-          permission: [0, 1]
-        },
-        {
           title: 'col3',
           keys: ['col31', 'col32'],
           component: 'RangeDatePicker',

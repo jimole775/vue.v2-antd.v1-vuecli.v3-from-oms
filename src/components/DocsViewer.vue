@@ -41,8 +41,8 @@
 import api from '@/api'
 import utils from '@/utils'
 // 这两个包可以通过 CDN 异步加载
-import html2canvas from 'html2canvas'
-import { read, writeFile } from 'xlsx/dist/xlsx.full.min'
+// import html2canvas from 'html2canvas'
+// import { read, writeFile } from 'xlsx/dist/xlsx.full.min'
 let cache = {
   api: '',
   params: '',
@@ -102,17 +102,17 @@ export default {
       this.show = true
     },
     downloadForImg () {
-      const doc = document.querySelector('#excelRender')
-      const node = this.$slots.default[0] || {}
-      const fileName = node.text || '说明文档'
-      html2canvas(doc).then((canvas) => {
-        utils.triggerDownloadLink(canvas.toDataURL('image/png', fileName + '.png'))
-      })
+      // const doc = document.querySelector('#excelRender')
+      // const node = this.$slots.default[0] || {}
+      // const fileName = node.text || '说明文档'
+      // html2canvas(doc).then((canvas) => {
+      //   utils.triggerDownloadLink(canvas.toDataURL('image/png', fileName + '.png'))
+      // })
     },
     downloadForXls () {
-      const node = this.$slots.default[0] || {}
-      const fileName = node.text || '说明文档'
-      writeFile(read(this.htmlContent, { type: 'string' }), fileName + '.xlsx')
+      // const node = this.$slots.default[0] || {}
+      // const fileName = node.text || '说明文档'
+      // writeFile(read(this.htmlContent, { type: 'string' }), fileName + '.xlsx')
     },
     async downloadForHtm () {
       if (!this.htmlContent) await this.fetchor()

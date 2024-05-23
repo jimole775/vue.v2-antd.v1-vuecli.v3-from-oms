@@ -51,7 +51,7 @@ export default {
       return (
         <a-tooltip title={text}>
           <div class={`line-standard ${className}`} style={style}>
-            { sentence.map(line => <div>{ line }</div> ) }
+            { sentence.map(line => <div>{ line }</div>) }
           </div>
         </a-tooltip>
       )

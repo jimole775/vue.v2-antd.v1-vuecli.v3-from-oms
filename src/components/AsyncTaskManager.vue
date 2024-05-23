@@ -78,11 +78,11 @@ export default {
       error: '在调用 global.pushTaskingList 时，请注意参数中的 type 值！',
       apimap: {
         import: api.getuploadfilekey,
-        export: api.getdownfilekey,
+        export: api.getdownfilekey
       },
       behavior: {
         import: '正在导入...',
-        export: '正在导出...',
+        export: '正在导出...'
       },
       tipmodal: {
         message: '',

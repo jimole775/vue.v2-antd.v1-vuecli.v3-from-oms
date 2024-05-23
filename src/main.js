@@ -1,4 +1,4 @@
-import './config/conf.vue'
+import './config/conf.vue.ts'
 import './config/conf.init'
 import './config/load.styles'
 import './config/load.modules'

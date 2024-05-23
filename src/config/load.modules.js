@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueBus from 'vue-bus'
+import './a-table.fix-height'
 import {
   Card, Button, Layout, Menu,
   Pagination, DatePicker, Upload,
@@ -25,7 +26,6 @@ import UserSelect from '@/components/UserSelect'
 import SUpload from '@/components/SUpload'
 import SDownload from '@/components/SDownload'
 import CitySelect from '@/components/CitySelect'
-import WorkplaceSelect from '@/components/WorkplaceSelect'
 import HandlerTableCell from '@/components/HandlerTableCell'
 import RangeMonthPicker from '@/components/RangeMonthPicker'
 import SLine from '@/components/SLine'
@@ -107,6 +107,5 @@ Vue.component(DictSelect.name, DictSelect)
 Vue.component(UserSelect.name, UserSelect)
 // Vue.component(InterviewsDemand.name, InterviewsDemand)
 Vue.component(CitySelect.name, CitySelect)
-Vue.component(WorkplaceSelect.name, WorkplaceSelect)
 Vue.component(SUpload.name, SUpload)
 Vue.component(SDownload.name, SDownload)

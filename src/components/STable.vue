@@ -8,13 +8,13 @@ export default {
   title: '标准表格',
   name: 'STable',
   props: {
-    mock: {
-      type: Object,
-      default: undefined
-    },
     columns: {
       type: Array,
       default: () => []
+    },
+    dataSource: {
+      type: Array,
+      default: null
     },
     dataApi: { // api名字，STable会以api[this.dataApi]的方式调用
       type: String | Function,
@@ -32,7 +32,7 @@ export default {
       type: String,
       default: null
     },
-    recordStatusField: { // 用来指定每一行数据的状态字段名, 默认'flowNode'
+    flowStatusField: { // 用来指定每一行数据的状态字段名, 默认'flowNode'
       type: String,
       default: 'flowNode'
     },
@@ -96,6 +96,14 @@ export default {
       type: Boolean,
       default: true
     },
+    mergeIndexBy: {
+      type: String,
+      default: ''
+    },
+    mergeKeys: {
+      type: Array,
+      default: () => []
+    },
     isPagination: { // 是否使用翻页
       type: Boolean,
       default: true
@@ -104,6 +112,14 @@ export default {
       type: Boolean,
       default: true
     },
+    isRank: { // 显示序号
+      type: Boolean,
+      default: false
+    },
+    isHideEmptyCol: {
+      type: Boolean,
+      default: false
+    },
     rowKey: { // 确定每行的key绑定的字段
       type: String,
       default: 'id'
@@ -111,10 +127,6 @@ export default {
     selectMode: { // 单选还是多选
       type: String,
       default: 'checkbox'
-    },
-    showRank: { // 显示序号
-      type: Boolean,
-      default: false
     },
     tableName: { // 当前列表名，主要用于下载列表
       type: String,
@@ -131,6 +143,8 @@ export default {
   },
   data () {
     return {
+      mergeIndexRowCount: 0,
+      mergeSpanRecords: {},
       queryParams: {},
       dataList: [],
       fileList: [],
@@ -138,11 +152,13 @@ export default {
       isReset: false,
       // isSearchorExpand: true,
       searchorGroups: [], // 显示搜索栏
+      dataParamsCache: {},
       selectedRows: [],
       selectedRowKeys: [],
       expandedRowKeys: [],
       columnSlots: [],
       columnScopedSlots: [],
+      columnModifyDelayEvalutions: [],
       scope: this,
       modal: {
         show: false,
@@ -151,38 +167,12 @@ export default {
       },
       pagination: {
         current: 1,
-        pageSize: 10,
+        pageSize: this.$props.mergeIndexBy ? 5 : 10,
         total: 0,
         showSizeChanger: true,
         showTotal: total => `共 ${total} 条`,
-        pageSizeOptions: ['10', '20', '50', '100']
+        pageSizeOptions: ['5', '10', '20', '50', '100']
       }
-    }
-  },
-  watch: {
-    // 监听dataParams参数，使其能触发fetchData()
-    dataParams: {
-      handler (params, oldParams) {
-        // 如果 oldParams 有值，需要判断值是否有变更，否则会造成死循环
-        if (oldParams) {
-          if (JSON.stringify(params) !== JSON.stringify(oldParams)) {
-            this.fetchData()
-          }
-        } else if (params) {
-          this.fetchData()
-        }
-      },
-      deep: true,
-      immediate: true
-    },
-    columns: {
-      handler (val = []) {
-        this.columnSlots = []
-        this.columnScopedSlots = []
-        this.insertIndexCol(val)
-        this.flattenColumns(val, this.columnSlots, this.columnScopedSlots)
-      },
-      immediate: true
     }
   },
   computed: {
@@ -293,12 +283,16 @@ export default {
       return this.$store.state.global.user
     },
     autoScroll () {
-      const scroll = { x: 0 }
-      this.countColumnsSize(this.columns, scroll)
+      const scroll = { x: 0, y: 0 }
+      if (this.$props.height) {
+        scroll.y = this.$props.height
+      }
+      if (this.$props.width) {
+        scroll.x = this.$props.width
+      } else {
+        this.countColumnsSize(this.columns, scroll)
+      }
       return scroll
-    },
-    currentDomain () { // '域名'
-      return this.$store.getters.getCurrentDomain()
     },
     supportSeries () {
       const dicts = this.$store.getters.getDictByGroupCode('upload_file_suffix_while_list')
@@ -306,6 +300,58 @@ export default {
         return '.' + item.itemCode
       })
       return this.accept ? this.accept : supports.join(',')
+    },
+    finalSearchor () {
+      return this.searchor.filter(i => {
+        const permissions = i.permissions?.map(i => Number(i)) || [0, 1]
+        return permissions.includes(this.user.roleId)
+      })
+    },
+    _mergeKeys () {
+      return this.$props.mergeKeys.length ? this.$props.mergeKeys : this.$props.columns.filter(i => i.isMerge).map(i => (i.dataIndex || i.key))
+    }
+  },
+  watch: {
+    // 监听dataParams参数，使其能触发fetchData()
+    dataParams: {
+      handler (params) {
+        if (JSON.stringify(params) !== JSON.stringify(this.dataParamsCache)) {
+          this.search()
+          this.dataParamsCache = utils.clone(params)
+        }
+      },
+      deep: true,
+      immediate: true
+    },
+    columns: {
+      handler (columns) {
+        if (this.isLoading) {
+          this.columnModifyDelayEvalutions.push(this.evalFinalColumnsEvent)
+        } else {
+          this.evalFinalColumnsEvent()
+        }
+      },
+      immediate: true
+    },
+    isLoading: {
+      handler (isLoading) {
+        if (!isLoading) {
+          this.evalFinalColumns()
+        }
+      }
+    },
+    dataSource: {
+      handler (data) {
+        if (data) {
+          this.loadNativeData()
+        }
+      },
+      immediate: true
+    },
+    searchor: {
+      handler () {
+        this.initialize()
+      }
     }
   },
   async mounted () {
@@ -314,6 +360,87 @@ export default {
     this.fetchImmediate && await this.fetchData()
   },
   methods: {
+    evalFinalColumnsEvent () {
+      this.columns.forEach(i => utils.isString(i.title) && (i.title = this.$t(i.title)))
+      this.columnsSlots = []
+      this.columnScopedSlots = []
+      this.finalColumns = utils.clone(this.columns).filter(i => {
+        const permissions = i.permissions?.map(i => Number(i)) || [0, 1]
+        return permissions.includes(this.user.roleId)
+      })
+      this.insertIndexCol(this.finalColumns)
+      this.flattenColumns(this.finalColumns, this.columnSlots, this.columnScopedSlots)
+    },
+    queryNativeByPageSize (dataSource = []) {
+      const curPageSize = this.pagination.pageSize || 10
+      const startIndex = (this.pagination.current - 1) * curPageSize
+      const endIndex = this.pagination.current * curPageSize
+      return dataSource.filter((row, index) => {
+        const matchIndex = this.$props.mergeIndexBy ? row[indexKey] - 1 : index
+        return matchIndex >= startIndex && matchIndex < endIndex
+      })
+    },
+    evalNativeListTotal (dataList) {
+      if (this.$props.mergeIndexBy) {
+        this.pagination.total = dataList.length - this.mergeIndexRowCount
+      } else {
+        this.pagination.total = dataList.length
+      }
+    },
+    tryCutEmptyCols (dataList) {
+      if (this.isHideEmptyCol && dataList.length) {
+        this.finalColumns = this.finalColumns.filter(col => {
+          return !!dataList.find(row => utils.isValuable(row[col.key || col.dataIndex]))
+        })
+      }
+    },
+    evalIndexValue (dataList, rowSpan, index) {
+      if (rowSpan >= 1) {
+        const rankIndex = index + 1 - this.mergeIndexRowCount
+        this.mergeIndexRowCount += rowSpan - 1
+        return rankIndex
+      }
+      if (rowSpan === 0) {
+        return dataList[index - 1]?.[indexKey]
+      }
+    },
+    markRowSpan (dataList = []) {
+      if (this.$props.mergeIndexBy) {
+        this.mergeIndexRowCount = 0
+        dataList.forEach((row, index) => {
+          const mergeRecord = this.mergeSpanRecords[index] || {}
+          if (!this.mergeSpanRecords[index]) {
+            this.$set(this.mergeSpanRecords, index, mergeRecord)
+          }
+          const indexSpan = utils.mergeRows(dataList, this.$props.mergeIndexBy, index)
+          this.$set(mergeRecord, indexKey, indexSpan)
+          this.$set(row, indexKey, this.evalIndexValue(dataList, indexSpan, index))
+        })
+      }
+      if (this._mergeKeys.length) {
+        dataList.forEach((row, index) => {
+          const mergeRecord = this.mergeSpanRecords[index] || {}
+          if (!this.mergeSpanRecords[index]) {
+            this.$set(this.mergeSpanRecords, index, mergeRecord)
+          }
+          this._mergeKeys.forEach((key) => {
+            // 如果 index 被合并，那么就 index 的合并值
+            const indexSpan = mergeRecord[indexKey]
+            const countRowSpan = utils.isValuable(indexSpan)
+              ? indexSpan
+              : utils.mergeRows(dataList, key, index)
+            this.$set(mergeRecord, key, countRowSpan)
+          })
+        })
+      }
+    },
+    evalFinalColumns () {
+      if (this.columnModifyDelayEvalutions.length) {
+        const evalution = this.columnModifyDelayEvalutions.pop()
+        utils.isFunction(evalution) && evalution()
+        this.columnModifyDelayEvalutions = []
+      }
+    },
     fixFields () {
       // 兼容 title === label、key === dataIndex
       this.searchor && this.searchor.forEach((item) => {
@@ -329,14 +456,22 @@ export default {
       })
     },
     insertIndexCol (columns) {
-      if (this.showRank && !hasIndexColumn(columns)) {
+      if (this.isRank && !hasIndexColumn(columns)) {
         columns.unshift({
           title: '序号',
           width: 60,
           dataIndex: indexKey,
           align: 'center',
           customRender: (text, record, index) => {
-            return (index + 1) + (this.pagination.current - 1) * this.pagination.pageSize
+            const mergeRecord = this.mergeSpanRecords[index] || {}
+            if (this.$props.mergeIndexBy) {
+              return {
+                children: record[indexKey],
+                attrs: { rowSpan: mergeRecord[indexKey] }
+              }
+            } else {
+              return index + 1 + (this.pagination.current - 1) * this.pagination.pageSize
+            }
           }
         })
       }
@@ -363,10 +498,12 @@ export default {
       })
     },
     flattenColumns (columns, columnSlots, columnScopedSlots) {
+      const vm = this.scope
+      const hFunc = this.$createElement
+      const anchorFunction = this.$props.anchorFunction || this.bridge.projectApproval
       columns && columns.forEach(col => {
         // 支持用 anchor属性 的方式增加详情页的锚点
         if (col.anchor) {
-          const anchorFunction = this.$props.anchorFunction || this.bridge.projectApproval
           col.customRender = function (text, record) {
             return <a onClick={() => anchorFunction(record)}>{ text }</a>
           }
@@ -374,11 +511,29 @@ export default {
         if (col.slots || col.slotsRender) {
           columnSlots.push(col)
         }
-        if (col.scopedSlots || col.scopedSlotsRender) {
-          columnScopedSlots.push(col)
+        if (this._mergeKeys.includes(col.dataIndex || col.key)) {
+          const filter = col.filter || function (val) { return val }
+          const rowSpanKey = col.dataIndex || col.key
+          const customRender = col.customRender || ''
+          const scopedSlotsRender = col.scopedSlotsRender
+          const newRender = (text, record, index) => {
+            const mergeRecord = this.mergeSpanRecords[index] || {}
+            const content = customRender ? customRender(text, record, index) : scopedSlotsRender ? scopedSlotsRender(hFunc, record, vm, index) : filter(text)
+            return {
+              children: content,
+              attrs: { rowSpan: mergeRecord[rowSpanKey] }
+            }
+          }
+          if (!col._isAssignRender) {
+            col.customRender = newRender
+            col._isAssignRender = true
+          }
         }
         if (!col.children && !col.customRender && !col.scopedSlots && !col.slotsRender && !col.scopedSlotsRender) {
           col.customRender = this.fixTextWrapper(this.$createElement)
+        }
+        if ((col.scopedSlots || col.scopedSlotsRender) && !col.customRender) {
+          columnScopedSlots.push(col)
         }
         if (col.children && col.children.length) {
           this.flattenColumns(col.children, columnSlots, columnScopedSlots)
@@ -450,7 +605,8 @@ export default {
           instanceIds: this.selectedRowKeys,
           ids: this.selectedRows.map(item => item.id),
           currentAccount: this.user.employeeNumber,
-          currentName: this.user.name
+          currentName: this.user.name,
+          selectedRows: this.selectedRows
         }
         // 专门处理转审的参数
         if (values.transfer) {
@@ -468,7 +624,6 @@ export default {
         if (res.code === 200) {
           this.$message.success(modalInfo.opreationTips)
           this.reload()
-          this.$emit('update')
         } else {
           this.$modal.warning({
             title: '提示',
@@ -482,21 +637,32 @@ export default {
       this.searchorGroups = []
       for (let index = 0; index < this.searchor.length; index++) {
         const searchItem = this.searchor[index]
-      
+        this.searchorGroups.push(searchItem)
         if (searchItem.beforeRender) {
           searchItem.beforeRender(this.queryParams, searchItem, this.scope)
         }
-        const defvalue = utils.isFunction(searchItem.default) ? await searchItem.default(this.scope) : searchItem.default
+        let itemValue
+        if (utils.isFunction(searchItem.default)) {
+          itemValue = await searchItem.default(searchItem, this.scope)
+        } else {
+          itemValue = searchItem.default
+        }
+        if (searchItem.value) {
+          itemValue = searchItem.value
+        }
         if (searchItem.key) {
-          this.$set(this.queryParams, searchItem.key, defvalue)
-          if (defvalue) {
-            this.simpleSelectEvent(defvalue, null, searchItem)
+          this.$set(this.queryParams, searchItem.key, itemValue)
+          if (utils.isValuable(itemValue)) {
+            this.simpleSelectEvent(itemValue, null, searchItem)
           }
         }
         if (searchItem.keys) {
-          this.multiSelectEvent(defvalue, null, searchItem)
+          this.multiSelectEvent(itemValue, null, searchItem)
         }
       }
+    },
+    setSearchItem (searchItem, value) {
+      searchItem.value = value
     },
     simpleSelectEvent (e, optionItem, searchItem) {
       // 赋值元素视图
@@ -519,7 +685,13 @@ export default {
         this.queryParams[searchItem.key] = value
       }
       function isuserOption (value) {
-        return (utils.isArray(value) && value.length && value[0].label && value[0].key)
+        return (
+          utils.isArray(value) &&
+          value.length &&
+          value[0].label &&
+          value[0].key &&
+          utils.isJSONString(value[0].key)
+        )
       }
     },
     // 有两类选项
@@ -567,7 +739,7 @@ export default {
         const res = await this.getApiFunction(this.expandApi)(this.formatQueryParams({ ...record }))
         if (res.code === 200) {
           if (res.data) {
-            const children = this.evalHandleDirect(res.data)
+            const children = this.evalDataListFromApi(res.data)
 
             // 关联父级节点数据
             const cpyParent = { ...record }
@@ -606,6 +778,7 @@ export default {
       }
     },
     update () {
+      this.evalFinalColumns()
       this.$emit('update', this.dataList, this.formatQueryParams(), this.scope)
     },
     insertTreeNode (loopNodes, insertNodeId, willInsertNodes, resolve) {
@@ -634,8 +807,13 @@ export default {
      * @injectParam 一般是由父级组件调用时，传入的
      */
     search (injectParam = {}) {
+      this.isReset = false
       this.pagination.current = 1
-      this.fetchData({ ...injectParam })
+      if (this.$props.dataSource) {
+        this.$emit('search', this.formatQueryParams(injectParam))
+      } else {
+        this.fetchData({ ...injectParam })
+      }
     },
     // 重置
     async reset () {
@@ -654,7 +832,7 @@ export default {
         this.resetByFieldType(searchItem, 'value')
         this.resetByFieldType(searchItem, 'default')
         setTimeout(() => {
-          this.setComponentView(searchItem, null)
+          this.setComponentView(searchItem, undefined)
         })
         // }
       })
@@ -780,23 +958,24 @@ export default {
         if (utils.isNone(val) || utils.isEmptyArray(val) || utils.isEmptyObject(val)) {
           delete queryParams[key]
         }
+
         // 裁掉边际空格
         if (utils.isString(val)) {
           queryParams[key] = utils.trim(val)
         }
 
         // 转换 Moment 类型的值
-        if (utils.isMoment(queryParams[key])) {
-          queryParams[key] = utils.moment(queryParams[key]).format('YYYY-MM-DD')
+        if (utils.isMoment(val)) {
+          queryParams[key] = utils.moment(val).format('YYYY-MM-DD')
         }
       })
 
       // 分页参数
-      const pageParam = {
+      const pageParam = this.isPagination ? {
         pageSize: this.pagination.pageSize,
         pageNum: this.pagination.current,
         current: this.pagination.current
-      }
+      } : {}
       // 【queryParams】来源：
       //    页面上的搜索栏
       // 【injectparams】来源：
@@ -810,8 +989,8 @@ export default {
     // 最后交给定制的回调参数进行调整
     handleParamsByCustom (finalParams) {
       this.searchor.forEach((searchItem) => {
-        if (searchItem.paramTransfer && utils.isFunction(searchItem.paramTransfer)) {
-          searchItem.paramTransfer(finalParams, searchItem, this.scope)
+        if (searchItem.paramTransform && utils.isFunction(searchItem.paramTransform)) {
+          searchItem.paramTransform(finalParams, searchItem, this.scope)
         }
       })
       return finalParams
@@ -838,7 +1017,7 @@ export default {
     },
     // 导入模板下载
     downLoadTemplate () {
-      if (utils.isFunction(api[this.templateApi])) {
+      if (utils.isFunction(this.templateApi)) {
         return this.templateApi(this)
       }
       const exchangeName = this.templateName ? this.templateName : ''
@@ -865,17 +1044,17 @@ export default {
         return function () {}
       }
     },
-    evalHandleDirect (data) {
+    evalDataListFromApi (data) {
       let res = {}
-      if (this.$props.dataDir && utils.isString(this.$props.dataDir)) {
+      if (this.$props.dataTransform && utils.isFunction(this.$props.dataTransform)) {
+        res = this.$props.dataTransform(data)
+      } else if (this.$props.dataDir && utils.isString(this.$props.dataDir)) {
         res = eval(this.$props.dataDir)
-      } else {
-        res = data
       }
       return res
     },
     detectTotal (data) {
-      let pageObj = data
+      let pageRecord = utils.clone(data)
       if (this.$props.dataDir && utils.isString(this.$props.dataDir)) {
         // 一般后端的模型，都把分页数据放在了实例数据的同一层结构
         // 比如：res.data.pageinfo.records
@@ -884,29 +1063,48 @@ export default {
         if (dicts && dicts.length > 1) {
           dicts.pop()
           if (dicts.length > 1) {
-            pageObj = eval(dicts.join('.'))
+            pageRecord = eval(dicts.join('.'))
           }
         }
       }
-      return pageObj.total || 0
+      return pageRecord.hasOwnProperty('total') ? pageRecord.total : this.dataList.length
+    },
+    loadNativeData () {
+      this.$loading.mount()
+      let dataSource = this.$props.dataSource
+      const params = this.formatQueryParams()
+      const rowKeys = Object.keys(dataSource[0] || {}) || []
+      const paramsKeys = Object.keys(params).filter(key => rowKeys.includes(key))
+      if (paramsKeys.length) {
+        dataSource = dataSource.filter(row => {
+          return !!paramsKeys.find(key => new RegExp(row[key]).test(params[key]))
+        })
+      }
+      dataSource.length && this.markRowSpan(dataSource)
+      this.evalNativeListTotal(dataSource)
+      this.dataList = this.queryNativeByPageSize(dataSource)
+      this.tryCutEmptyCols(this.dataList)
+      setTimeout(() => {
+        this.update()
+        this.$loading.unmount()
+      }, 150)
     },
     // 获取列表数据
     async fetchData (injectparams = {}) {
       if (this.isLoading) return false
+      if (this.$props.dataSource) return this.loadNativeData()
       if (this.hasRequiredItemEmpty(injectparams)) return false
+      if (!this.dataApi) return false
       this.isLoading = true
       this.selectedRows = []
       this.selectedRowKeys = []
-      let res
-      if (this.mock && ['native'].includes(process.env.VUE_APP_SERV_ENV)) {
-        res = this.mock
-      } else {
-        res = await this.getApiFunction(this.dataApi)(this.formatQueryParams(injectparams))
-      }
+      const res = await this.getApiFunction(this.dataApi)(this.formatQueryParams(injectparams))
       this.isLoading = false
       if (res.code === 200) {
         if (res.data) {
-          this.dataList = this.evalHandleDirect(res.data)
+          this.dataList = this.evalDataListFromApi(res.data)
+          this.dataList.length && this.markRowSpan(this.dataList)
+          this.dataList.length && this.tryCutEmptyCols(this.dataList)
           this.pagination.total = this.detectTotal(res.data)
           this.expandedRowKeys = []
         } else {
@@ -923,15 +1121,20 @@ export default {
       }
     },
     // 服务费用分页
-    onChangePage (val) {
-      this.pagination.current = val.current
-      this.pagination.pageSize = val.pageSize
-      this.$emit('pageChange', val, this.scope)
+    onChangePage (page, size) {
+      this.pagination.current = page
+      this.pagination.pageNum = page
+      this.pagination.pageSize = size
+      this.$emit('pageChange', this.pagination, this.scope)
       this.fetchData()
     },
 
     spillComponentRef (searchItem) {
-      return `${searchItem.componentName}${searchItem.key ? searchItem.key : searchItem.keys[0]}`
+      if (utils.isValuable(searchItem.key)) {
+        return `${searchItem.key}`
+      } else if (utils.isValuable(searchItem.keys)) {
+        return `${searchItem.keys[0]}`
+      }
     }
   },
   render (h) {
@@ -1042,8 +1245,8 @@ function buildModal (h) {
   const scopedSlots = []
   const scope = this.scope
   const vdMap = {
-    transfer: ['transfer', { rules: [{ required: true, message: '请选择审批人'}]}],
-    approvalConent: ['approvalContent', {rules: [{ required: true, message: `请填写 "${this.modal.info.reasonTitle}"`}]}]
+    transfer: ['transfer', { rules: [{ required: true, message: '请选择审批人' }] }],
+    approvalConent: ['approvalContent', { rules: [{ required: true, message: `请填写 "${this.modal.info.reasonTitle}"` }] }]
   }
   this.columnSlots.map(columnSlot => {
     const slotName = (columnSlot.slots && columnSlot.slots.title) || ''
@@ -1132,27 +1335,35 @@ function buildMainTable (h) {
       if (columnSlot.scopedSlotsRender && utils.isFunction(columnSlot.scopedSlotsRender)) {
         return columnSlot.scopedSlotsRender(h, record, scope)
       } else {
-        return text
+        const ellipsis = columnSlot.ellipsis
+        const len = utils.isNumber(ellipsis) ? ellipsis : 10
+        return utils.isValuable(ellipsis) ? <SLine len={len} value={text} /> : text
       }
     }
   })
-  return (
+  return [
     <a-table
       bordered
       scopedSlots={scopedSlots}
       columns={this.columns}
       data-source={this.dataList}
-      pagination={this.isPagination ? this.pagination : false}
+      pagination={false}
       scroll={this.autoScroll}
       row-key={this.rowKey}
       row-selection={selection}
       expanded-row-keys={this.expandedRowKeys}
       onExpand={this.expandEvent}
-      onChange={this.onChangePage}
     >
       { ...slots }
-    </a-table>
-  )
+    </a-table>,
+    !!this.dataList.length && this.isPagination &&
+      <a-pagination
+        class={'pagination-layout'}
+        props={this.pagination}
+        onChange={this.onChangePage}
+        onShowSizeChange={this.onChangePage}
+      />
+  ]
 }
 
 function buildSearchorGroup (h) {
@@ -1175,11 +1386,11 @@ function buildSearchorGroup (h) {
   function buildSearchItems () {
     if (this.searchorGroups && this.searchorGroups.length) {
       return this.searchorGroups
-        .filter((item, index) => filterItems.call(this, index))
         .map(searchItem => {
           return (
             <a-col span={ searchItem.layout ? searchItem.layout.span : 6 } >
               <a-form-item
+                required={searchItem.required}
                 label={searchItem.label || searchItem.title}
                 label-col={{ span: searchItem.layout ? searchItem.layout.label : 8 }}
                 wrapper-col={{ span: searchItem.layout ? searchItem.layout.wrapper : 16 }}
@@ -1260,5 +1471,9 @@ div.searchor-item-required {
       &::placeholder{color: red;}
     }
   }
+}
+ul.pagination-layout {
+  padding: 1rem;
+  background-color: #fff;
 }
 </style>

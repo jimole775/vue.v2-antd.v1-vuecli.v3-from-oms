@@ -1,22 +1,27 @@
 import store from '@/store'
 const loading = {
-  high: 0,
+  lv: 0,
+  show: false,
   uprise () {
-    this.high++
+    this.lv++
   },
   countdown () {
-    this.high--
-    if (this.high < 1) {
+    this.lv--
+    if (this.lv < 1) {
       this.unmount()
     }
   },
   reset () {
-    this.high = 0
+    this.lv = 0
   },
   mounted () {
-    store.commit('setLoading', true)
+    if (this.show === false) {
+      this.show = true
+      store.commit('setLoading', true)
+    }
   },
   unmount () {
+    this.show = false
     store.commit('setLoading', false)
   }
 }

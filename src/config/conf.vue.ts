@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import utils from '@/utils'
+// import http from '@/utils/http'
 import jumper from '@/router/jumper'
 import loading from '@/utils/loading'
-import { Modal, Message } from 'ant-design-vue'
-
+import { Modal, message } from 'ant-design-vue'
 Vue.config.productionTip = false
-Vue.prototype.$message = Message
+Vue.prototype.$message = message
 Vue.prototype.$utils = utils
 Vue.prototype.$modal = Modal
 Vue.prototype.$jumper = jumper
@@ -14,8 +14,8 @@ Vue.prototype.$confirm = Modal.confirm
 
 // 把 $services 改造成一个无访问边界的 map
 // 以后可以通过点运算符来判断是否有用户权限
-// http.get('/api/catalog/button').then((res) => {
-//   if (res.code === 200) {
+// http.get('/api/catalog/button').then((res: AxiosResponse) => {
+//   if (res?.code === 200) {
 //     const data = res.data || []
 //     let services = Object.create(null)
 //     const ignore = '$services.com.oppo.'

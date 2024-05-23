@@ -1,8 +1,15 @@
+/**
+ * @ Author: Your name
+ * @ Create Time: 2023-08-16 00:02:57
+ * @ Modified by: Your name
+ * @ Modified time: 2024-05-23 22:33:13
+ * @ Description:
+ */
+
 import axios from 'axios'
 import store from '@/store'
 import moment from 'moment'
 import base64 from './base64'
-import 'moment/locale/zh-cn'
 import { getToken } from './auth'
 import { Modal } from 'ant-design-vue'
 import merge from 'lodash/merge'
@@ -12,28 +19,36 @@ moment.locale('zh-cn')
 const utils = {
   moment,
   debounce,
-  date2Y (strOrDate) {
+  date2Y(strOrDate) {
     return this.isValuable(strOrDate) ? moment(strOrDate).format('YYYY') : ''
   },
-  date2M (strOrDate) {
+  date2M(strOrDate) {
     return this.isValuable(strOrDate) ? moment(strOrDate).format('MM') : ''
   },
-  date2YM (strOrDate, splitSign = '-') {
-    return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM`) : ''
+  date2YM(strOrDate, splitSign = '-') {
+    return this.isValuable(strOrDate)
+      ? moment(strOrDate).format(`YYYY${splitSign}MM`)
+      : ''
   },
-  date2HM (strOrDate) {
+  date2HM(strOrDate) {
     return this.isValuable(strOrDate) ? moment(strOrDate).format('HH:mm') : ''
   },
-  date2YMD (strOrDate, splitSign = '-') {
-    return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD`) : ''
+  date2YMD(strOrDate, splitSign = '-') {
+    return this.isValuable(strOrDate)
+      ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD`)
+      : ''
   },
-  date2YMDH (strOrDate, splitSign = '-') {
-    return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD HH`) : ''
+  date2YMDH(strOrDate, splitSign = '-') {
+    return this.isValuable(strOrDate)
+      ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD HH`)
+      : ''
   },
-  date2YMDHM (strOrDate, splitSign = '-') {
-    return this.isValuable(strOrDate) ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD HH:mm`) : ''
+  date2YMDHM(strOrDate, splitSign = '-') {
+    return this.isValuable(strOrDate)
+      ? moment(strOrDate).format(`YYYY${splitSign}MM${splitSign}DD HH:mm`)
+      : ''
   },
-  getUniqueMs () {
+  getUniqueMs() {
     const utc = moment.utc()
     const yy = utc.year()
     const mm = utc.month()
@@ -47,25 +62,25 @@ const utils = {
    * @param {string} input value
    * @returns {number} output value
    */
-  byteLength (str) {
+  byteLength(str) {
     // returns the byte length of an utf8 string
     let s = str.length
     for (var i = str.length - 1; i >= 0; i--) {
       const code = str.charCodeAt(i)
       if (code > 0x7f && code <= 0x7ff) s++
       else if (code > 0x7ff && code <= 0xffff) s += 2
-      if (code >= 0xDC00 && code <= 0xDFFF) i--
+      if (code >= 0xdc00 && code <= 0xdfff) i--
     }
     return s
   },
-  findPathDFS (source, goal) {
+  findPathDFS(source, goal) {
     if (!this.isArray(source)) {
       return []
     }
     // 因为会改变原数据，因此做深拷贝处理
     var dataSource = JSON.parse(JSON.stringify(source))
     var res = []
-    return (function dfs (data) {
+    return (function dfs(data) {
       res.push(data)
       // 深度搜索一条数据，存取在数组 res 中
       if (data.children) return dfs(data.children[0])
@@ -94,46 +109,52 @@ const utils = {
    * 根据后台返回的数据，生成分页配置信息
    * @param {} res
    */
-  getPaginationConfig (res) {
+  getPaginationConfig(res) {
     if (this.isEmpty(res)) {
       return {
         defaultCurrent: 1,
         defaultPageSize: 20,
-        showTotal: total => `共 ${total} 条`,
+        showTotal: (total) => `共 ${total} 条`,
         showSizeChanger: true,
         pageSizeOptions: ['10', '20', '50', '100']
       }
     }
     return {
-      current: 'pageNum' in res ? res.pageNum + 1 : 'number' in res ? res.number + 1 : 1,
+      current:
+        'pageNum' in res
+          ? res.pageNum + 1
+          : 'number' in res
+            ? res.number + 1
+            : 1,
       pageSize: res.pageSize || res.size,
       total: res.totalElements || res.total,
-      showTotal: total => `共 ${total} 条`
+      showTotal: (total) => `共 ${total} 条`
     }
   },
-  getPaginationConfig2 (res) {
+  getPaginationConfig2(res) {
     if (this.isEmpty(res)) {
       return {
         defaultCurrent: 1,
         defaultPageSize: 10,
-        showTotal: total => `共 ${total} 条`,
+        showTotal: (total) => `共 ${total} 条`,
         showSizeChanger: true,
         pageSizeOptions: ['10', '20', '50', '100']
       }
     }
     return {
-      current: 'pageNum' in res ? res.pageNum : 'number' in res ? res.number : 1,
+      current:
+        'pageNum' in res ? res.pageNum : 'number' in res ? res.number : 1,
       pageSize: res.pageSize || res.size,
       total: res.totalElements || res.total,
-      showTotal: total => `共 ${total} 条`
+      showTotal: (total) => `共 ${total} 条`
     }
   },
-  getPaginationConfig3 (res) {
+  getPaginationConfig3(res) {
     if (this.isEmpty(res)) {
       return {
         defaultCurrent: 1,
         defaultPageSize: 10,
-        showTotal: total => `共 ${total} 条`
+        showTotal: (total) => `共 ${total} 条`
       }
     }
     if (!res.content.length) {
@@ -142,7 +163,7 @@ const utils = {
         pageSize: 10,
         showSizeChanger: false,
         total: 0,
-        showTotal: total => `共 ${total} 条`
+        showTotal: (total) => `共 ${total} 条`
       }
     }
     return {
@@ -150,17 +171,17 @@ const utils = {
       pageSize: res.pageSize || res.size,
       showSizeChanger: true,
       total: res.totalElements || res.total,
-      showTotal: total => `共 ${total} 条`
+      showTotal: (total) => `共 ${total} 条`
     }
   },
-  resetPagination (queryObj) {
+  resetPagination(queryObj) {
     queryObj.current = 1
     queryObj.pageSize = 10
     queryObj.showSizeChanger = true
     queryObj.pageSizeOptions = ['10', '20', '50', '100']
     return queryObj
   },
-  filterInvalidDate (obj) {
+  filterInvalidDate(obj) {
     for (let k in obj) {
       if (obj[k] === 'Invalid date') {
         obj[k] = ''
@@ -173,7 +194,7 @@ const utils = {
    * @params names => 'xxx,xxx'
    * @return [{label: '', key: ''},{label: '', key: ''}]
    */
-  parseUser (ids, names) {
+  parseUser(ids, names) {
     const userList = []
     if (ids && names) {
       const namesList = names.split(',')
@@ -190,22 +211,29 @@ const utils = {
    * @params list => [{label: '', key: ''},{label: '', key: ''}]
    * @return ['num1, num2', 'name1, name2']
    */
-  splitUser (list) {
+  splitUser(list) {
     if (this.isEmpty(list)) {
       return ['', '']
     }
-    const listTemp = list.map(item => {
+    const listTemp = list.map((item) => {
       return JSON.parse(item.key)
     })
 
-    return [listTemp.map(item => {
-      return item.key
-    }).join(','), listTemp.map(item => {
-      return item.label
-    }).join(',')]
+    return [
+      listTemp
+        .map((item) => {
+          return item.key
+        })
+        .join(','),
+      listTemp
+        .map((item) => {
+          return item.label
+        })
+        .join(',')
+    ]
   },
   // 切割解析URL地址，主要用于Uploader组件的
-  splitUrl (url) {
+  splitUrl(url) {
     if (this.isEmpty(url)) {
       return {
         domain: '', // 域名
@@ -222,15 +250,16 @@ const utils = {
     return obj
   },
   // 证件号码，预留前后4位，其他隐藏
-  formatCertificateNo (val) {
+  formatCertificateNo(val) {
     const res = []
-    val && val.split('').forEach((word, index) => {
-      if (index < 4 || index >= val.length - 4) {
-        res.push(word)
-      } else {
-        res.push('*')
-      }
-    })
+    val &&
+      val.split('').forEach((word, index) => {
+        if (index < 4 || index >= val.length - 4) {
+          res.push(word)
+        } else {
+          res.push('*')
+        }
+      })
     return res.join('')
   },
   /**
@@ -243,12 +272,12 @@ const utils = {
    * @template = number2money(1234) => '123,4.00'
    * @template = number2money(1234, 3) => '123,4.000'
    */
-  number2money (number, decimals, decPoint, thousandsSep) {
+  number2money(number, decimals, decPoint, thousandsSep) {
     number = (number + '').replace(/[^0-9+-Ee.]/g, '')
     var n = !isFinite(+number) ? 0 : +number
     var prec = !isFinite(+decimals) ? 0 : Math.abs(decimals)
-    var sep = (typeof thousandsSep === 'undefined') ? ',' : thousandsSep
-    var dec = (typeof decPoint === 'undefined') ? '.' : decPoint
+    var sep = typeof thousandsSep === 'undefined' ? ',' : thousandsSep
+    var dec = typeof decPoint === 'undefined' ? '.' : decPoint
     var s = ''
     var toFixedFix = function (n, prec) {
       var k = Math.pow(10, prec)
@@ -273,7 +302,7 @@ const utils = {
    * @template = money2number(12334) => '12334'
    * @template = money2number('123,234') => '123234'
    */
-  money2number (input) {
+  money2number(input) {
     if (!input) return input
     return Number.parseFloat((input + '').replace(/,/g, ''))
   },
@@ -286,7 +315,7 @@ const utils = {
    * @template = hasQueryString('') => false
    * @template = hasQueryString('?') => false
    */
-  hasQueryString (src) {
+  hasQueryString(src) {
     if (!src) return false
     if (!this.isString(src)) return false
     return /\w*?\?{1}\w+/.test(src)
@@ -298,10 +327,10 @@ const utils = {
    * @template = toQueryString({a: ''}) => ''
    * @template = toQueryString({}) => ''
    */
-  toQueryString (obj) {
+  toQueryString(obj) {
     if (!obj) return ''
     const res = []
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
       const val = obj[key]
       if (this.isValuable(val)) {
         res.push(`${key}=${encodeURIComponent(val)}`)
@@ -321,7 +350,7 @@ const utils = {
    * @template = fromQueryString('?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
    * @template = fromQueryString('/xxx/xxx?xxxx=xxx&xxx=xxx') => { xxxx: xxx, xxx: xxx }
    */
-  fromQueryString (url) {
+  fromQueryString(url) {
     if (!url) return {}
     if (!/[&\?]/g.test(url)) return {}
     const paramPartString = url.split('?')[1]
@@ -336,7 +365,7 @@ const utils = {
     })
     return res
   },
-  verifyUploadType (fileName, supportSeries) {
+  verifyUploadType(fileName, supportSeries) {
     if (!fileName) {
       Modal.warning({
         title: '上传失败',
@@ -365,12 +394,50 @@ const utils = {
     if (supportSeries && !supportSeries.includes('.' + type)) {
       Modal.warning({
         title: '上传失败',
-        content: `文件类型不正确，请重新选择！当前支持的类型：${supportSeries.replace(/,/g, ' ')}。`
+        content: `文件类型不正确，请重新选择！当前支持的类型：${supportSeries.replace(
+          /,/g,
+          ' '
+        )}。`
       })
       return false
     }
 
     return true
+  },
+  /**
+   * 针对 mockjs 强制清空 responseType 导致下载文件乱码的情况
+   * @param {String} url
+   * @param {Object} data
+   * @param {String} method
+   * @return {Promise}
+   */
+  blobRequest(url, data, method = 'get') {
+    if (window['_XMLHttpRequest']) {
+      window['_mockXMLHttpRequest'] = window['XMLHttpRequest']
+      window['XMLHttpRequest'] = window['_mockXMLHttpRequest']
+    }
+    return new Promise(async (resolve) => {
+      const params = {
+        url,
+        method,
+        responseType: 'blob',
+        headers: {
+          'x-token': getToken()
+        }
+      }
+      if (params.method === 'get') {
+        params.params = data
+      } else {
+        params.data = data
+      }
+      const promise = await axios(params)
+      if (window['_mockXMLHttpRequest']) {
+        window['_XMLHttpRequest'] = window['XMLHttpRequest']
+        window['XMLHttpRequest'] = window['_mockXMLHttpRequest']
+        delete window['_mockXMLHttpRequest']
+      }
+      return resolve(promise)
+    })
   },
   /** 直接访问CDN服务器，以link的方式来下载文件
    * @param {String} url url为文件的全路径
@@ -382,16 +449,24 @@ const utils = {
    * @template = downloadFileByLink('xxx/xxx.xx?xxx=xxx', {xx: x}) => Undefined
    * @template = downloadFileByLink('xxx/xxx.xx?xxx=xxx', {xx: x}, '文件名') => Undefined
    */
-  downloadFileByLink (url, param = {}, customFileName) {
+  downloadFileByLink(url, param = {}, customFileName) {
     if (!url) return new Error('url不能为空！')
     let domain = window.location.origin
     if (store.getters.getCurrentDomain) {
       domain = store.getters.getCurrentDomain()
     }
     const link = document.createElement('a')
-    const fileName = customFileName || (url.indexOf('/') !== -1 ? url.split('/')[url.split('/').length - 1] : 'unknowFile')
+    const fileName =
+      customFileName ||
+      (url.indexOf('/') !== -1
+        ? url.split('/')[url.split('/').length - 1]
+        : 'unknowFile')
     const fileUrl = `${domain}${this.encodeFileName(url.split('?')[0])}`
-    const fileParam = `${this.toQueryString({ ...this.fromQueryString(url), ...param, auth_token: `oms:${getToken()}` })}`
+    const fileParam = `${this.toQueryString({
+      ...this.fromQueryString(url),
+      ...param,
+      auth_token: `oms:${getToken()}`
+    })}`
     link.style.display = 'none'
     link.href = fileUrl + fileParam
     link.setAttribute('download', fileName)
@@ -406,7 +481,7 @@ const utils = {
    * @template = downloadFileByStream('/xxx/xxx.xx') => Undefined
    * @template = downloadFileByStream('/xxx/xxx.xx?xxx=xxx', 'xxx.xx') => Undefined
    */
-  downloadFileByStream (url, customFileName) {
+  downloadFileByStream(url, customFileName) {
     if (!url) return new Error('url不能为空！')
     let domain = window.location.origin
     if (store.getters.getCurrentDomain) {
@@ -420,20 +495,21 @@ const utils = {
         auth_token: `oms:${getToken()}`
       },
       responseType: 'blob'
-    }).then(res => {
-      if (res.code) {
-        return
-      }
-      const link = document.createElement('a')
-      const blob = new Blob([res.data], { type: 'application/octet-stream' })
-      const fileName = decodeURI(url).split('/').pop() || 'unknowFile'
-      link.style.display = 'none'
-      link.href = URL.createObjectURL(blob)
-      link.setAttribute('download', customFileName || fileName)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
     })
+      .then((res) => {
+        if (res.code) {
+          return
+        }
+        const link = document.createElement('a')
+        const blob = new Blob([res.data], { type: 'application/octet-stream' })
+        const fileName = decodeURI(url).split('/').pop() || 'unknowFile'
+        link.style.display = 'none'
+        link.href = URL.createObjectURL(blob)
+        link.setAttribute('download', customFileName || fileName)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      })
       .catch(() => {
         console.log('失败')
       })
@@ -446,7 +522,7 @@ const utils = {
    * @template = exportGetFile('/api/xxx/xxx', {xx: x}) => Promise
    * @template = exportGetFile('/api/xxx/xxx.xx?xxx=xxx', {xx: x}) => Promise
    */
-  exportGetFile (url, obj) {
+  exportGetFile(url, obj) {
     return new Promise(async (resolve, reject) => {
       const res = await axios({
         method: 'get',
@@ -488,7 +564,7 @@ const utils = {
    * @template = exportPostFile('/api/xxx/xxx', {xx: x}) => Promise
    * @template = exportPostFile('/api/xxx/xxx.xx?xxx=xxx', {xx: x}) => Promise
    */
-  exportPostFile (url, params) {
+  exportPostFile(url, params) {
     return new Promise(async (resolve, reject) => {
       const res = await axios({
         method: 'post',
@@ -522,7 +598,7 @@ const utils = {
       }
     })
   },
-  blobToURI (res) {
+  blobToURI(res) {
     const link = document.createElement('a')
     const blob = new Blob([res.data], { type: 'application/octet-stream' })
     const disposition = res.headers['content-disposition'] || ''
@@ -535,20 +611,32 @@ const utils = {
     link.click()
     document.body.removeChild(link)
   },
+  // 判断英文的规则：需要全部都是字母
+  isEnglish(src) {
+    return this.isString(src) && /^([\w :;!,.'"/?()%$#@*~]+)$/.test(src)
+  },
+  // 判断中文的规则：只要其中带有一个中文字就行
+  isChinese(src) {
+    return this.isString(src) && /[\u4e00-\u9fff]/.test(src)
+  },
   // 判断返回的会话类型是否是后台的数据类型
-  isBackendResponse (res) {
-    return this.isObject(res) &&
+  isBackendResponse(res) {
+    return (
+      this.isObject(res) &&
       res.hasOwnProperty('code') &&
       res.hasOwnProperty('data') &&
       res.hasOwnProperty('message')
+    )
   },
   // 判断返回的会话类型是否是axios的数据类型
   // await axios({}) 类型的请求会返回这个数据类型
-  isAxiosResponse (res) {
-    return this.isObject(res) &&
+  isAxiosResponse(res) {
+    return (
+      this.isObject(res) &&
       res.hasOwnProperty('data') &&
       res.hasOwnProperty('status') &&
       res.hasOwnProperty('headers')
+    )
   },
   /**
    * 省略多余字符
@@ -557,7 +645,7 @@ const utils = {
    * @return {String} '省略字符x...'
    * @template ellipsisSentence('顶顶顶顶', 3) => '顶顶顶...'
    */
-  ellipsisSentence (text = '', len = 10) {
+  ellipsisSentence(text = '', len = 10) {
     if (!text) return ''
     let sum = 0
     let res = ''
@@ -566,7 +654,7 @@ const utils = {
     const limitWidth = defaultWidth * len
     text.split('').forEach((word) => {
       const awidth = this.countStringSize(word).width
-      if (sum + awidth <= limitWidth + (defaultWidth / 3)) {
+      if (sum + awidth <= limitWidth + defaultWidth / 3) {
         res += word
         sum += awidth
       }
@@ -587,7 +675,7 @@ const utils = {
    * @template breakSentence('顶顶顶顶顶', 2) => ['顶顶', '顶顶', '顶']
    * @template breakSentence('顶顶顶顶顶', 2, 2) => ['顶顶', '顶...']
    */
-  breakSentence (sentence = '', len = 10, line) {
+  breakSentence(sentence = '', len = 10, line) {
     if (!sentence) return []
     let res = []
     const defaultWidth = this.countStringSize('中').width
@@ -618,19 +706,19 @@ const utils = {
 
     return res
 
-    function cutLimitLine (src, line) {
+    function cutLimitLine(src, line) {
       const limit = new Array(line)
       src.forEach((item, index) => limit.fill(item, index, index + 1))
       return limit
     }
 
-    function isNeedBreak (loopLineWidth) {
+    function isNeedBreak(loopLineWidth) {
       const aWordFiff = defaultWidth * (2 / 3)
       return loopLineWidth >= lineWidthLimit + aWordFiff
     }
   },
 
-  appandEllipsis (text) {
+  appandEllipsis(text) {
     let cutIndex = 1
 
     // '...' 一般占用（1个中文字符） 或 （2个英文字符）
@@ -638,11 +726,12 @@ const utils = {
 
     countLength.call(this, limitCutSize)
 
-    cutIndex = cutIndex >= text.length ? text.length - 1 : (text.length - cutIndex)
+    cutIndex =
+      cutIndex >= text.length ? text.length - 1 : text.length - cutIndex
 
     return text.substring(0, cutIndex || 1) + '...'
 
-    function countLength (limitCutSize) {
+    function countLength(limitCutSize) {
       let willCutWord = text.substring(text.length - cutIndex, text.length)
       let willCutSize = this.countStringSize(willCutWord).width
       if (willCutSize < limitCutSize) {
@@ -657,8 +746,8 @@ const utils = {
    * 获取字符的尺寸, 支持多个字符
    * @param {String|Number} words
    * @return {Object} {width: x, height: y}
-  */
-  countStringSize (words) {
+   */
+  countStringSize(words) {
     if (!this.isString(words) && !this.isNumber(words)) return { width: 0, height: 0 }
     let sizeBox = document.getElementById('__CountStringSizeBox__')
     if (!sizeBox) {
@@ -675,42 +764,48 @@ const utils = {
     sizeBox.innerHTML = words.replace(/ /g, '&nbsp;')
     return { width: sizeBox.offsetWidth, height: sizeBox.offsetHeight }
   },
-  isJSONString (src) {
+  isJSONString(src) {
     if (Object.prototype.toString.call(src) === '[object String]') {
       const firstChar = src[0]
       const lastChar = src[src.length - 1]
-      if ((firstChar === '[' && lastChar === ']') || (firstChar === '{' && lastChar === '}')) {
+      if (
+        (firstChar === '[' && lastChar === ']') ||
+        (firstChar === '{' && lastChar === '}')
+      ) {
         return true
       }
     }
     return false
   },
-  isString (src) {
+  isString(src) {
     return Object.prototype.toString.call(src) === '[object String]'
   },
-  isFunction (src) {
+  isFunction(src) {
     return Object.prototype.toString.call(src) === '[object Function]'
   },
-  isNumber (src) {
+  isNumber(src) {
     return Object.prototype.toString.call(src) === '[object Number]'
   },
-  isObject (src) {
+  isObject(src) {
     return Object.prototype.toString.call(src) === '[object Object]'
   },
-  isBlob (src) {
+  isBlob(src) {
     return Object.prototype.toString.call(src) === '[object Blob]'
   },
-  isBoolean (src) {
+  isBoolean(src) {
     return Object.prototype.toString.call(src) === '[object Boolean]'
   },
-  isEmptyObject (src) {
-    return Object.prototype.toString.call(src) === '[object Object]' && isEmpty.call(this, src)
-    function isEmpty (src) {
+  isEmptyObject(src) {
+    return (
+      Object.prototype.toString.call(src) === '[object Object]' &&
+      isEmpty.call(this, src)
+    )
+    function isEmpty(src) {
       const res = { empty: true }
       objPropsIteration.apply(this, [src, res])
       return res.empty
     }
-    function objPropsIteration (src, res) {
+    function objPropsIteration(src, res) {
       if (this.isObject(src)) {
         return Object.keys(src).forEach((key) => {
           return objPropsIteration.apply(this, [src[key], res])
@@ -727,61 +822,73 @@ const utils = {
       }
     }
   },
-  isAsyncFunction (src) {
+  isAsyncFunction(src) {
     return Object.prototype.toString.call(src) === '[object AsyncFunction]'
   },
-  isPromise (src) {
+  isPromise(src) {
     return Object.prototype.toString.call(src) === '[object Promise]'
   },
-  isArray (src) {
+  isArray(src) {
     return Object.prototype.toString.call(src) === '[object Array]'
   },
-  isEmptyArray (src) {
-    return Object.prototype.toString.call(src) === '[object Array]' && src.length === 0
+  isEmptyArray(src) {
+    return (
+      Object.prototype.toString.call(src) === '[object Array]' &&
+      src.length === 0
+    )
   },
-  isEmpty (src) {
+  isEmpty(src) {
     return this.isNone(src) || this.isEmptyArray(src) || this.isEmptyObject(src)
   },
-  isNull (src) {
+  isNull(src) {
     return Object.prototype.toString.call(src) === '[object Null]'
   },
-  isUndefined (src) {
+  isUndefined(src) {
     return Object.prototype.toString.call(src) === '[object Undefined]'
   },
-  isNone (src) {
+  isNone(src) {
     return this.isUndefined(src) || this.isNull(src) || src === ''
   },
-  isValuable (src) {
+  isValuable(src) {
     return !this.isUndefined(src) && !this.isNull(src) && src !== ''
   },
-  isMoment (src) {
-    return this.isObject(src) && (src instanceof moment)
+  isMoment(src) {
+    return this.isObject(src) && src instanceof moment
   },
-  isDateString (src) {
+  isDateString(src) {
     return this.isString(src) && this.isMoment(moment(src))
   },
-  isFunctionConstructor (src) {
+  isFunctionConstructor(src) {
     return src === Function
   },
-  isArrayConstructor (src) {
+  isArrayConstructor(src) {
     return src === Array
   },
-  isObjectConstructor (src) {
+  isObjectConstructor(src) {
     return src === Object
   },
-  isStringConstructor (src) {
+  isStringConstructor(src) {
     return src === String
   },
-  isBooleanConstructor (src) {
+  isBooleanConstructor(src) {
     return src === Boolean
   },
-  isNumberConstructor (src) {
+  isNumberConstructor(src) {
     return src === Number
   },
-  toString (src) {
-    return Object.prototype.toString.call(src)
+  toString(src) {
+    if (utils.isArray(src)) {
+      return src.toString()
+    }
+    if (utils.isNumber(src)) {
+      return src + ''
+    }
+    if (utils.isObject(src)) {
+      return JSON.stringify(src)
+    }
+    return src
   },
-  clone (srcobject, attrName, value) {
+  clone(srcobject, attrName, value) {
     const newobject = cloneDeep(srcobject)
     if (utils.isValuable(attrName) && utils.isValuable(value)) {
       newobject[attrName] = value
@@ -797,7 +904,7 @@ const utils = {
    * @template merge({ a: 1 }, { a: 2 }) => { a: 2 }
    * @template merge([{ a: 1 }], [{ a: 2 }]) => [{ a: 1 }, { a: 2 }]
    */
-  merge (a, b) {
+  merge(a, b) {
     if (utils.toString(a) !== utils.toString(b)) {
       return new Error(`utils.merge => 出现不支持的合并类型!`)
     }
@@ -808,7 +915,7 @@ const utils = {
    * @params names => 'xxx,xxx'
    * @return [{label: '', key: ''},{label: '', key: ''}]
    */
-  spillOptionItems (keys, names) {
+  spillOptionItems(keys, names) {
     const optionItems = []
     if (keys && names) {
       const namesList = names.split(',')
@@ -825,21 +932,28 @@ const utils = {
    * @params list => [{label: '', key: ''},{label: '', key: ''}]
    * @return ['num1, num2', 'name1, name2']
    */
-  splitOptionItems (list) {
+  splitOptionItems(list) {
     if (this.isEmpty(list)) {
       return ['', '']
     }
-    const listTemp = list.map(item => {
+    const listTemp = list.map((item) => {
       return JSON.parse(item.key)
     })
 
-    return [listTemp.map(item => {
-      return item.key
-    }).join(','), listTemp.map(item => {
-      return item.label
-    }).join(',')]
+    return [
+      listTemp
+        .map((item) => {
+          return item.key
+        })
+        .join(','),
+      listTemp
+        .map((item) => {
+          return item.label
+        })
+        .join(',')
+    ]
   },
-  permissionQueryByRole (src) {
+  permissionQueryByRole(src) {
     const pMap = {
       SUPPLIER: '1'
     }
@@ -857,7 +971,7 @@ const utils = {
     })
     return res
   },
-  encodeFileName (src) {
+  encodeFileName(src) {
     let prepath = ''
     let fileName = src
     // 需要单独截出文件名，做一次encode，避免 # 和 ？这样的文件名导致url失效
@@ -868,7 +982,7 @@ const utils = {
     }
     return `${prepath}/${window.encodeURIComponent(fileName)}`
   },
-  getFormErrorMessage (error = {}) {
+  getFormErrorMessage(error = {}) {
     const field = Object.keys(error)[0] || ''
     const erObj = error[field].errors ? error[field].errors[0] : {}
     return erObj.message || '请先完成必填项！'
@@ -878,7 +992,7 @@ const utils = {
    * @param {Number|String} no
    * @returns {Number}
    */
-  countAgeFromIDNumber (no) {
+  countAgeFromIDNumber(no) {
     const birth = this.getBirthFromIDNumber(no)
     if (!birth) return ''
     return new Date().getFullYear() - new Date(birth).getFullYear()
@@ -888,24 +1002,28 @@ const utils = {
    * @param {Number|String} no
    * @returns {String}
    */
-  getBirthFromIDNumber (no) {
+  getBirthFromIDNumber(no) {
     if (!no) return ''
     // 15位 1代，18位 2代
-    const t1 = /^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$/
-    const t2 = /^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/
+    const t1 =
+      /^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$/
+    const t2 =
+      /^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/
     if (!t1.test(no) && !t2.test(no)) return ''
     const year = (no + '').substring(6, 10)
     const month = (no + '').substring(10, 12)
     const date = (no + '').substring(12, 14)
     return `${year}-${month}-${date}`
   },
-  readBlobAsText (blob) {
+  readBlobAsText(blob) {
     return new Promise((resolve, reject) => {
       if (this.isBlob(blob)) {
         const r = new FileReader()
         let res = ''
         r.onload = function (event) {
-          const { currentTarget: { result } } = event
+          const {
+            currentTarget: { result }
+          } = event
           res += result || ''
         }
         r.onloadend = function (e) {
@@ -926,10 +1044,10 @@ const utils = {
    * @template await getElementAsync('.class') => Element
    * @template await getElementAsync('#id') => Element
    */
-  getElementAsync (mark, loopTime = 20) {
+  getElementAsync(mark, loopTime = 20) {
     return new Promise((resolve, reject) => {
       loop(mark, loopTime)
-      function loop (_m, _t) {
+      function loop(_m, _t) {
         const el = document.querySelector(_m)
         if (el) {
           resolve(el)
@@ -939,7 +1057,9 @@ const utils = {
             if (_t > 0) {
               return loop(_m, _t)
             } else {
-              return reject(new Error('utils.getElementAsync找不到指定的元素：' + _m))
+              return reject(
+                new Error('utils.getElementAsync找不到指定的元素：' + _m)
+              )
             }
           }, 500)
         }
@@ -954,7 +1074,7 @@ const utils = {
    * @template createFatGetter({ a: { b: { c: 123 } } })
    *                  => Proxy({ a: { b: Proxy(...) }... })
    */
-  createFatGetter (obj, top) {
+  createFatGetter(obj, top) {
     if (!top) {
       top = defineProps(obj, null, Object.create(null))
       utils.createFatGetter(obj, top)
@@ -967,22 +1087,22 @@ const utils = {
       top[key] = createProxy(top[key])
     })
 
-    function defineProps (_obj, _key, _top) {
+    function defineProps(_obj, _key, _top) {
       _top['_k'] = _key // 绑定 key 值
       if (_key === null) {
         _top['_isTop'] = true // 确认是否是顶层对象
       }
       if (utils.isValuable(_obj)) {
         _top['_v'] = utils.clone(_obj) // 绑定返回值，外部可以通过访问这个来获取真实的值，这种访问不会经过 proxy
-        _top['_c'] = !!(Object.keys(_obj).length) // 是否有子项
+        _top['_c'] = !!Object.keys(_obj).length // 是否有子项
         _top['_ct'] = Object.prototype.toString.call(_obj) // 子项类型
       }
       return _top
     }
 
-    function createProxy (_obj) {
+    function createProxy(_obj) {
       return new Proxy(_obj, {
-        get (obj, key) {
+        get(obj, key) {
           // 判断结束符，遇到结束符就直接返回真实值
           if (hasAccessOver(key)) {
             return obj['_v']
@@ -1002,12 +1122,12 @@ const utils = {
         }
       })
 
-      function hasAccessOver (key) {
+      function hasAccessOver(key) {
         return key === '$end' || /.+(\$)$/.test(key)
       }
     }
 
-    function hasProp (o, k) {
+    function hasProp(o, k) {
       return Object.prototype.hasOwnProperty.call(o, k)
     }
 
@@ -1028,7 +1148,7 @@ const utils = {
    * @template createChainMap('a.b.c.d', true) => { a: { b: { c: { d: true } } } }
    * @template createChainMap('a.b.c.d', {}) => { a: { b: { c: { d: {} } } } }
    */
-  createChainMap (string, endval) {
+  createChainMap(string, endval) {
     if (!utils.isString(string)) return createmap()
     let res = createmap()
     const fields = string.split('.')
@@ -1040,8 +1160,8 @@ const utils = {
     }
     return res
 
-    function setField (res, fieldPath, isEnd) {
-      for (let i = 0; i < fieldPath.length;) {
+    function setField(res, fieldPath, isEnd) {
+      for (let i = 0; i < fieldPath.length; i++) {
         const field = fieldPath[i]
         if (res[field]) {
           fieldPath.shift()
@@ -1052,7 +1172,7 @@ const utils = {
         }
       }
     }
-    function createmap () {
+    function createmap() {
       return Object.create(null)
     }
   },
@@ -1064,7 +1184,7 @@ const utils = {
    * @param {Number|String} b
    * @returns {Number}
    */
-  actuary (a = 0, b = 0, fn = '+') {
+  actuary(a = 0, b = 0, fn = '+') {
     const aStr = a.toString()
     const bStr = b.toString()
     const aNum = Number(a)
@@ -1072,9 +1192,26 @@ const utils = {
     const aDecimalLen = aStr.split('.')[1] || ''
     const bDecimalLen = bStr.split('.')[1] || ''
     // 求得最大小数位数
-    const maxLen = aDecimalLen.length > bDecimalLen.length ? aDecimalLen.length : bDecimalLen.length
+    const maxLen =
+      aDecimalLen.length > bDecimalLen.length
+        ? aDecimalLen.length
+        : bDecimalLen.length
     if (maxLen === 0) {
-      return aNum + bNum
+      if (fn === '+') {
+        return aNum + bNum
+      }
+      if (fn === '-') {
+        return aNum - bNum
+      }
+      if (fn === '*') {
+        return aNum * bNum
+      }
+      if (fn === '/') {
+        if (bNum === 0) {
+          return 0
+        }
+        return aNum / bNum
+      }
     } else {
       let res = ''
       // 把小数转成整数，可以理解为: 0.01 => 1
@@ -1082,8 +1219,8 @@ const utils = {
       let bInt = bStr.replace(/\./g, '')
 
       // 对比a, b小数位长度，短的位数，用0填充
-      aInt += (new Array(maxLen - aDecimalLen.length).fill(0).join(''))
-      bInt += (new Array(maxLen - bDecimalLen.length).fill(0).join(''))
+      aInt += new Array(maxLen - aDecimalLen.length).fill(0).join('')
+      bInt += new Array(maxLen - bDecimalLen.length).fill(0).join('')
 
       // 字符转成数字
       aInt = Number(aInt)
@@ -1111,7 +1248,7 @@ const utils = {
       }
 
       // 转成字符串数组
-      const resArr = counted.toString().split('')
+      const resArr = counted.toString().padStart(decimalFix, 0).split('')
       // 最后把数组转成字符串
       resArr.forEach((word, index) => {
         if (index === resArr.length - decimalFix) {
@@ -1123,7 +1260,7 @@ const utils = {
       return Number(res)
     }
   },
-  trim (src) {
+  trim(src) {
     if (utils.isValuable(src)) {
       if (utils.isString(src)) {
         return src.trim()
@@ -1144,12 +1281,13 @@ const utils = {
    * @template getMonthLastDate('2021-01-01', 1) => 28/29
    * @template getMonthLastDate({ t: 2021-01-01}, 1) => 28/29
    */
-  getMonthLastDate (date, diff) {
+  getMonthLastDate(date, diff) {
     if (!date) return date
     // "diff + 1": 先获取指定月份的下一个月
     let [y, m] = moment(this.getMonth(date, diff + 1))
       .format('YYYY-MM-DD')
-      .split('-').map(i => Number(i))
+      .split('-')
+      .map((i) => Number(i))
     // 下个月的1号，减去一天的时间，就是上个月的最后一天
     const ms = moment(`${y}-${m}-${1}`) - 24 * 60 * 60 * 1000
     const nd = new Date(ms)
@@ -1165,9 +1303,12 @@ const utils = {
    * @template getMonth('2021-12-01', 1) => { t: 2022-01-01}
    * @template getMonth({ t: 2021-12-01}, 1) => { t: 2022-01-01}
    */
-  getMonth (date, diff) {
+  getMonth(date, diff) {
     if (!date) return date
-    let [y, m, d] = moment(date).format('YYYY-MM-DD').split('-').map(i => Number(i))
+    let [y, m, d] = moment(date)
+      .format('YYYY-MM-DD')
+      .split('-')
+      .map((i) => Number(i))
     if (diff) {
       m = m + diff
     }
@@ -1193,9 +1334,12 @@ const utils = {
    * @template adjustMonth('2021-01-15') => { t: 2021-01-15 }
    * @template adjustMonth('2021-01-15', -1) => { t: 2020-12-15 }
    */
-  adjustMonth (date, diff = 0) {
+  adjustMonth(date, diff = 0) {
     if (!date) return date
-    let [y, m, d] = moment(date).format('YYYY-MM-DD').split('-').map(i => Number(i))
+    let [y, m, d] = moment(date)
+      .format('YYYY-MM-DD')
+      .split('-')
+      .map((i) => Number(i))
     if (diff) {
       m = m + diff
     }
@@ -1221,9 +1365,12 @@ const utils = {
    * @template flatMonth('2021-01-15') => { t: 2021-01-01 }
    * @template flatMonth('2021-01-15', -1) => { t: 2020-12-01 }
    */
-  flatMonth (date, diff = 0) {
+  flatMonth(date, diff = 0) {
     if (!date) return date
-    let [y, m] = moment(date).format('YYYY-MM-DD').split('-').map(i => Number(i))
+    let [y, m] = moment(date)
+      .format('YYYY-MM-DD')
+      .split('-')
+      .map((i) => Number(i))
     if (diff) {
       m = m + diff
     }
@@ -1251,7 +1398,7 @@ const utils = {
    * @template dateDiff('2021-02-15', '2022-01-25', 'm') => 11
    * @template dateDiff('2021-02-15', '2022-01-25', 'y') => 1
    */
-  dateDiff (start, end, unit = 'd') {
+  dateDiff(start, end, unit = 'd') {
     if (utils.isNone(start) || utils.isNone(end)) return 0
     const _u = unit.toLowerCase()
     const mStart = moment(start)
@@ -1268,15 +1415,15 @@ const utils = {
       case 'y':
         return countYear()
     }
-    function countMonth () {
+    function countMonth() {
       const dy = ey - sy // 年份差值
       const dm = em - sm // 年份差值
       return dy * 12 + dm
     }
-    function countYear () {
+    function countYear() {
       return ey - sy
     }
-    function countDay () {
+    function countDay() {
       return (mEnd - mStart) / 24 / 60 / 60 / 1000
     }
   },
@@ -1288,7 +1435,7 @@ const utils = {
    * @template getFuncParamNames('function (a, b)') => ['a', 'b']
    * @template getFuncParamNames((a, b) => {}) => ['a', 'b']
    */
-  getFuncParamNames (src) {
+  getFuncParamNames(src) {
     if (this.isFunction(src) || this.isString(src)) {
       src = src.toString()
     } else {
@@ -1313,7 +1460,7 @@ const utils = {
    * @returns String
    * @template func2string(function(){}) => 'function(){}'
    */
-  func2string (func) {
+  func2string(func) {
     if (!func) return ''
     return func.toString()
   },
@@ -1325,7 +1472,7 @@ const utils = {
    * @template string2func('() => {}') => () => {}
    * @template string2func('') => () => {}
    */
-  string2func (string) {
+  string2func(string) {
     if (!string) return () => {}
     let head = ''
     let body = ''
@@ -1340,7 +1487,7 @@ const utils = {
     body = string.replace(regHead, '').replace(regTail, '')
     // function () {} 这种类型的转换，需要增加一个函数名
     if (/function \(/.test(string)) {
-      string = string.replace(/function \(/, 'function anonymous \(')
+      string = string.replace(/function \(/, 'function anonymous (')
     }
     func = eval(`(${string})`)
     func.head = head ? head[0] : ''
@@ -1349,38 +1496,52 @@ const utils = {
     func.args = this.getFuncParamNames(string)
     return func
   },
-  object2file (json, leftMargin = '', space = 2) {
+  object2file(json, leftMargin = '', space = 2) {
     const queryNoQuotation = (string) => {
       return string.replace(/((["']_\|)|(\|_["']))/g, '')
     }
     const querySingleQuotation = (string) => {
-      return string.replace(/((["']-\|)|(\|-["']))/g, '\'')
+      return string.replace(/((["']-\|)|(\|-["']))/g, "'")
     }
     let string = JSON.stringify(json, null, space)
     string = string.replace(/ {2}"(.*?)": /g, '  $1: ') // 去掉“键”的双引号
-    string = string.replace(/: "(.*?)"(,?)/g, ': \'$1\'$2') // 把值的双引号改成单引号
+    string = string.replace(/: "(.*?)"(,?)/g, ": '$1'$2") // 把值的双引号改成单引号
     string = string.replace(/: ['"](function)/g, ': $1') // 去掉function的前面的双引号
     string = string.replace(/}['"](,?)/g, '}$1') // 去掉function的后面的双引号
-    string = string.replace(/: ['"](\(.*\)\s?\=>\s?\(?\{?\w[\w\d\._\(\)]*?\}?\)?)['"]/g, ': $1') // 去掉 () => dasd 的双引号
+    string = string.replace(
+      /: ['"](\(.*\)\s?\=>\s?\(?\{?\w[\w\d\._\(\)]*?\}?\)?)['"]/g,
+      ': $1'
+    ) // 去掉 () => dasd 的双引号
     string = string.replace(/\\n/g, '\n') // 把 \\n 改成 \n
     string = queryNoQuotation(string)
     string = querySingleQuotation(string)
     // 向每行的左侧添加空格
     if (leftMargin) {
-      string = string.split('\n').map(i => leftMargin + i).join('\n')
+      string = string
+        .split('\n')
+        .map((i) => leftMargin + i)
+        .join('\n')
     }
     return string
   },
-  createDecorator (formItem) {
-    return [formItem.key, { initialValue: formItem.default, rules: [{ required: formItem.required, message: `请确认${formItem.label}` }] }]
+  createDecorator(formItem) {
+    return [
+      formItem.key,
+      {
+        initialValue: formItem.default,
+        rules: [
+          { required: formItem.required, message: `请确认${formItem.label}` }
+        ]
+      }
+    ]
   },
-  forEachTree (tree, callback) {
+  forEachTree(tree, callback) {
     const nodes = this.flatten(tree)
     for (let i = 0; i < nodes.length; i++) {
       callback(nodes[i], i)
     }
   },
-  flatten (src) {
+  flatten(src) {
     const res = []
     if (this.isArray(src)) {
       loop(src)
@@ -1389,8 +1550,8 @@ const utils = {
       loop([src])
     }
 
-    function loop (nodes) {
-      nodes.forEach(node => {
+    function loop(nodes) {
+      nodes.forEach((node) => {
         res.push(node)
         if (node.children && node.children.length) {
           loop(node.children)
@@ -1401,7 +1562,7 @@ const utils = {
     return res
   },
   // 动态插入第三方资源
-  async insertSource (url) {
+  async insertSource(url) {
     if (!url) return Promise.resolve()
     const sourceId = 'cdn_' + base64.encode(url)
     if (document.getElementById(sourceId)) return Promise.resolve()
@@ -1413,19 +1574,24 @@ const utils = {
     slot.appendChild(script)
     return Promise.resolve()
   },
-  async waitBy (condition, delay) {
-    const entity = async (resolve) => {
+  async waitBy(condition, delay, times = 10) {
+    const loopEntity = async (resolve, itimes) => {
       const expection = await condition()
-      if (expection) {
+      if (expection || itimes < 0) {
         return resolve(expection)
       } else {
-        return setTimeout(() => {
-          return entity(resolve)
-        })
+        return setTimeout(
+          () => {
+            itimes--
+            return loopEntity(resolve, itimes)
+          },
+          delay || 500,
+          'utils.waitBy 等待目标结果'
+        )
       }
     }
     return new Promise((resolve) => {
-      return entity(resolve)
+      return loopEntity(resolve, times)
     })
   },
   /**
@@ -1440,14 +1606,14 @@ const utils = {
    * @template numberFormat('.') => ''
    * @template numberFormat('...') => ''
    */
-  numberFormat (val, decimal = 0) {
+  numberFormat(val, decimal = 0) {
     if (utils.isNone(val)) return val
     val = utils.trim(val)
     // 判断是否只是 负号
     if (/^\-$/.test(val)) return val
     // 如果不是有效数字，就过滤掉非数字字符
     if (isNaN(val)) {
-      val = val.replace(/./g, x => isNaN(x) ? '' : x)
+      val = val.replace(/./g, (x) => (isNaN(x) ? '' : x))
     }
     // 判断是否最后一位为 .
     if (/\d\.$/.test(val)) return val
@@ -1455,6 +1621,288 @@ const utils = {
     const k = Math.pow(10, decimal)
     // 避免 3.03 这种类型的数字无法正常输入
     return /0$/.test(val) ? val : Math.round(val * k) / k
+  },
+  isElement(src) {
+    return Object.prototype.toString.call(src) === '[object HTMLDivElement]'
+  },
+  /**
+   *
+   * @param {String|HTMLDocumentElement} start
+   * @param {String|HTMLDocumentElement} target
+   * @param {Number} asyncTime
+   * @param {String|HTMLDocumentElement} end
+   * @param {String} dir
+   * @returns {HTMLDocumentElement}
+   * @template findDomUntilEnd('.box', '.box-item') => HTMLDocumentElement
+   */
+  findDomUtilEnd(
+    start,
+    target,
+    asyncTime,
+    end = 'body',
+    dir = 'parentElement'
+  ) {
+    if (!start) return new Error('utils.findDomUtilEnd 需要一个有效参数！')
+    if (utils.isString(start)) start = document.querySelector(start)
+    const isIdTarget = /^#/.test(target)
+    const isClassTarget = /^\./.test(target)
+    const isTagTarget = /^([\w\-]+)$/.test(target)
+    const isElementTarget = utils.isElement(target)
+    const isIdEnd = /^#/.test(end)
+    const isClassEnd = /^\./.test(end)
+    const isTagEnd = /^([\w\-]+)$/.test(target)
+    const isElementEnd = utils.isElement(end)
+    if (asyncTime) {
+      return new Promise((resolve, reject) => {
+        return loop(start[dir], target, end, resolve)
+      })
+    } else {
+      return loop(start[dir], target, end, (i) => i)
+    }
+    function loop(node, _target, _end, _resolve) {
+      if (hasTarget(node, _target)) return _resolve(node)
+      if (hasToEnd(node, _end)) return _resolve(null)
+      const parent = node[dir]
+      if (!parent) return _resolve(null)
+      if (asyncTime) {
+        return setTimeout(
+          () => loop(parent, _target, _end, _resolve),
+          asyncTime,
+          'utils.findDomUntilEnd 向上查询指定 dom 元素'
+        )
+      } else {
+        return loop(parent, _target, _end, _resolve)
+      }
+    }
+    function hasTarget(element, target) {
+      return (
+        (isIdTarget && element.id === target.replace(/^#/, '')) ||
+        (isClassTarget &&
+          element.classList.contains(target.replace(/^\./, ''))) ||
+        (isTagTarget &&
+          element.tagName.toLowerCase() === target.toLowerCase()) ||
+        (isElementTarget && element === target)
+      )
+    }
+
+    function hasToEnd(element, end) {
+      return (
+        (isIdEnd && element.id === end.replace(/^#/, '')) ||
+        (isClassEnd && element.classList.contains(end.replace(/^\./, ''))) ||
+        (isTagEnd && element.tagName.toLowerCase() === end.toLowerCase()) ||
+        (isElementEnd && element === end)
+      )
+    }
+  },
+  /**
+   *
+   * @param {VueComponent} startNode
+   * @param {String} targetName
+   * @param {String} dir
+   * @returns {Promise|Null}
+   * @template findVm(VueComponent, 'MyComponent') => Promise(VueComponent | Null)
+   */
+  findVm(startNode, targetName, dir = '$children') {
+    if (!startNode || !targetName) return Promise.resolve(null)
+    function loop(nextCollect, targetName, resolve) {
+      let correct = null
+      let next = []
+      for (const nextItem of nextCollect) {
+        const options = nextItem.$options || {}
+        const compName = options.name || options._componentTag
+        if (compName === targetName) {
+          correct = nextItem
+          break
+        } else {
+          next = next.concat(nextItem[dir] || [])
+        }
+      }
+      if (correct) {
+        return resolve(correct)
+      } else if (next.length) {
+        return loop(next, targetName, resolve)
+      } else {
+        return resolve(null)
+      }
+    }
+    return new Promise((resolve) => {
+      let nextCollect = startNode[dir] || []
+      if (this.isObject(nextCollect)) {
+        nextCollect = [nextCollect]
+      }
+      return loop(nextCollect, targetName, resolve)
+    })
+  },
+  /**
+   * 获取第一个有效文本节点
+   * @param {HTMLElement|String} dom
+   * @returns {String}
+   * @template findFirstDomText('#dom') => 'xxx'
+   */
+  findFirstDomText(dom) {
+    if (!dom) return new Error('utils.findFirstDomText 需要一个有效参数！')
+    if (utils.isString(dom)) dom = document.querySelector(dom)
+    let res = ''
+    loop(dom.childNodes || [])
+    function loop(nodes) {
+      for (const node of nodes) {
+        if (res) break
+        if (node.nodeType === 3) {
+          res = node.textContent
+          break
+        } else {
+          loop(node.childNodes || [])
+        }
+      }
+    }
+    return res
+  },
+  findFirstDomHasScrollBar(dom) {
+    if (!dom) return new Error('utils.findFirstDomHasScrollBar 需要一个有效参数！')
+    if (utils.isString(dom)) dom = document.querySelector(dom)
+    let res = document.body
+    loop(dom.children || [])
+    function loop(nodes) {
+      for (const node of nodes) {
+        if (res) break
+        if (hasScrollbar(node)) {
+          res = node
+          break
+        } else {
+          loop(node.children || [])
+        }
+      }
+    }
+    function hasScrollbar(element) {
+      const style = window.getComputedStyle(element)
+      const verticalScroll = style.overflowY
+      const horizontalScroll = style.overflowX
+      const scroll = style.overflow
+      return (
+        ['scroll', 'auto'].includes(verticalScroll) ||
+        ['scroll', 'auto'].includes(horizontalScroll) ||
+        ['scroll', 'auto'].includes(scroll)
+      )
+    }
+    return res
+  },
+  /**
+   *
+   * @param {Array|Object|String} src
+   * @returns {Moment}
+   * @template string2moment('2019-01-01') => Moment
+   */
+  string2moment(src) {
+    const regx = /^(\d{4}[\-/]\d{1,2}([\-/](\d{1,2}))?)$/
+    const objTransfer = (row) => {
+      Object.entries(row).forEach(([key, value]) => {
+        if (regx.test(value)) {
+          row[key] = utils.moment(value)
+        }
+      })
+      return row
+    }
+    if (utils.isArray(src)) {
+      return src.map((item) => {
+        if (utils.isString(item)) return utils.moment(item)
+        else return objTransfer(item)
+      })
+    }
+    if (utils.isObject(src)) {
+      return objTransfer(src)
+    }
+    if (utils.isString(src)) {
+      return utils.moment(src)
+    }
+  },
+  readTreeByPath(tree, path) {
+    const paths = /\./.test(path) ? path.split('.') : [path]
+    const loop = (data, remainPaths) => {
+      const curPath = remainPaths.shift()
+      const curData = data[curPath]
+      if (remainPaths.length) {
+        return loop(curData, remainPaths)
+      } else {
+        return curData
+      }
+    }
+    return loop(tree, paths)
+  },
+  px2rem(pxVal) {
+    const baseFontSize = parseFloat(
+      getComputedStyle(document.documentElement).fontSize
+    )
+    return pxVal / baseFontSize
+  },
+  rem2px(remVal) {
+    const baseFontSize = parseFloat(
+      getComputedStyle(document.documentElement).fontSize
+    )
+    return remVal * baseFontSize
+  },
+  hasDomVisibility(selector) {
+    if (this.isNone(selector)) return false
+    const element = this.isElement(selector)
+      ? selector
+      : document.querySelector(selector)
+    if (!element) return false
+    if (element.offsetHeight === 0 || element.offsetWidth === 0) {
+      return false
+    }
+    return true
+  },
+  copyToClipboard(text) {
+    if (this.isNone(text)) return false
+    let fakeElement = document.getElementById('__CopyToClipboard__')
+    if (!fakeElement) {
+      const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
+      fakeElement = document.createElement('textarea')
+      fakeElement.id = '__CopyToClipboard__'
+      fakeElement.style.fontSize = '12pt'
+      fakeElement.style.border = '0'
+      fakeElement.style.padding = '0'
+      fakeElement.style.margin = '0'
+      fakeElement.style.position = 'absolute'
+      fakeElement.style[isRTL ? 'right' : 'left'] = '-9999px'
+      let yPosition = window.pageYOffset || document.documentElement.scrollTop
+      fakeElement.style.top = `${yPosition}px`
+      fakeElement.setAttribute('readonly', '')
+      document.body.appendChild(fakeElement)
+    }
+    fakeElement.value = text
+    fakeElement.select()
+    try {
+      document.execCommand('copy')
+      return true
+    } catch (err) {
+      return false
+    }
+  },
+  /**
+   * 计算数组中的某个字段的连续重复数量
+   * @param {*} list
+   * @param {*} key
+   * @param {*} startIndex
+   * @returns Number
+   */
+  mergeRows(list, key, startIndex) {
+    if (utils.isNone(key)) return 0
+    if (utils.isNone(list)) return 0
+    if (utils.isNone(startIndex)) return 0
+    const prevRow = startIndex === 0 ? {} : list[startIndex - 1] || {}
+    const currRow = list[startIndex] || {}
+    if (prevRow[key] === currRow[key]) return 0
+    let rowSpan = 1
+    for (let i = startIndex; i < list.length; i++) {
+      const iRow = list[i] || {}
+      const iiRow = list[i + 1] || {}
+      if (iRow[key] === iiRow[key]) {
+        rowSpan += 1
+      } else {
+        break
+      }
+    }
+    return rowSpan
   }
 }
 

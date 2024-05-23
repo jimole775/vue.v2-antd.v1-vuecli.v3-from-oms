@@ -26,7 +26,8 @@ module.exports = {
     plugins: [
       // 忽略moment的语言包
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
-    ] },
+    ]
+  },
   chainWebpack: config => {
     config.module
       .rule('md')
@@ -43,6 +44,35 @@ module.exports = {
       // })
       .loader('markdown-loader')
       .end()
+
+    // config.module
+    //   .rule('ts')
+    //   .test(/\.tsx?$/)
+    //   .exclude
+    //     .add(/node_modules/)
+    //     .end()
+    //   .use('ts-loader')
+    //     .loader('ts-loader')
+    //     .options({
+    //       appendTsSuffixTo: [/\.vue$/], // 确保 .vue 文件中的 <script lang="ts"> 能被识别
+    //       // 其他 ts-loader 选项...
+    //     })
+    //     .end()
+    // ...
+    // {
+    //   test: /\.vue$/,
+    //   loader: 'vue-loader',
+    //   // options: require('./vue-loader.conf')
+    //   options: {
+    //     loaders: {
+    //       ts: 'ts-loader', // 使用 ts-loader 处理 TypeScript
+    //       tsx: 'ts-loader', // 也可以指定 tsx 的 loader，但通常 ts 就足够了
+    //       // ...
+    //     },
+    //     // 其他 vue-loader 选项
+    //   },
+    // },
+    // 可以使用 htmlWebpackPlugin 插件代替
     config.plugins.delete('prefetch')
   },
   css: {

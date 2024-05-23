@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    // 省略后缀
+    "allowArbitraryExtensions": true,
+    "allowJs": true,
+    "target": "es5",                       // 指定编译目标的ECMAScript版本
+    "module": "commonjs",                  // 指定生成的模块系统
+    "strict": false,                        // 启用所有严格类型检查选项
+    "esModuleInterop": true,               // 启用ES模块互操作
+    "skipLibCheck": true,                  // 跳过对库文件的类型检查
+    "outDir": "./dist",                    // 指定输出目录
+    "rootDir": "./",                    // 指定根目录，用于确定TypeScript输入文件的相对位置
+    "removeComments": true,                // 删除注释
+    "noImplicitAny": false,                // 禁用隐式any类型
+    "sourceMap": true,                     // 生成相应的.map文件
+    "experimentalDecorators": true,        // 允许使用实验性的装饰器特性
+    "emitDecoratorMetadata": true,           // 为装饰器生成元数据
+    "baseUrl": "./", // 这里设置基础路径为项目根目录
+    "paths": {
+      "@/*": ["src/*"] // 这里配置了一个别名@*指向src目录下的所有文件
+    }
+  },
+  "include": [
+    "src/**/*"                             // 包含src目录下的所有文件
+  ],
+  "exclude": [
+    "node_modules",                        // 排除node_modules目录
+    "**/*.spec.ts"                         // 排除所有的测试文件
+  ]
+}

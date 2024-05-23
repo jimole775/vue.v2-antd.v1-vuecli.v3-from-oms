@@ -8,6 +8,7 @@ module.exports = {
     '@vue/standard'
   ],
   rules: {
+    'vue/no-mutating-props': 'off',
     'no-console': 'off',
     'no-new-func': 'off',
     'no-debugger': 'off',

@@ -5,8 +5,13 @@ export class Flow {
       isRunning: false
     }
     this.debunceBus = {
-      tasks: []
+      tasks: [],
+      isRunning: false
     }
+    // 是否需要立即响应第一次调用
+    // 如果选是，则立即执行第一条流程
+    // 如果选否，就只执行 delay 之后的最后一次调用
+    this.immediate = false
     this.delay = delay
   }
 
@@ -19,17 +24,26 @@ export class Flow {
 
   async debounce (func, ...params) {
     const task = { run: func, params }
-    this.debounceBus.tasks.push(task)
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
+      if (this.immediate && this.debunceBus.isRunning === false) {
+        this.debunceBus.isRunning = true
+        setTimeout(() => {
+          this.debunceBus.isRunning = false
+        }, this.delay)
+        return resolve(func(...params))
+      } else {
+        this.debunceBus.tasks.push(task)
         this._uniqueDebounceQueue()
-        const task = this._sliceTasks(this.debounceBus.tasks, func)
-        if (task) {
-          return resolve(task.run(...task.params))
-        } else {
-          return resolve(null)
-        }
-      }, this.delay)
+        setTimeout(() => {
+          this._uniqueDebounceQueue()
+          const task = this._sliceTasks(this.debunceBus.tasks, func)
+          if (task) {
+            return resolve(task.run(...task.params))
+          } else {
+            return resolve(null)
+          }
+        }, this.delay)
+      }
     })
   }
   // 在无限调用过程中，一次只执行一条
@@ -58,6 +72,19 @@ export class Flow {
     }
   }
 
+  _isNativeFunction (src) {
+    return /{ \[native code\] }/.test(src.toString())
+  }
+
+  _compare (fun1, fun2) {
+    // 如果是 js 元函数，就使用内存地址比对
+    if (this._isNativeFunction(fun1) && this._isNativeFunction(fun2)) {
+      return fun1 === fun2
+    } else {
+      return fun1.toString() === fun2.toString()
+    }
+  }
+
   _uniqueDebounceQueue () {
     const tasks = this.debounceBus.tasks
     const newTasks = []
@@ -66,7 +93,7 @@ export class Flow {
       let already = false
       for (let j = 0; j < newTasks.length; j++) {
         const ntask = newTasks[i]
-        if (ntask.run === task.run) {
+        if (this._compare(ntask.run, task.run)) {
           already = true
           break
         }

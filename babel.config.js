@@ -1,12 +1,14 @@
 module.exports = {
   presets: [
-    ['@vue/app', {
-      polyfills: [
-        'es6.promise',
-        'es6.symbol',
-        'es7.object.entries'
-      ]
-    }, '@babel/preset-env']
+    '@vue/babel-preset-app',
+    // [
+    //   "@babel/preset-env",
+    //   {
+    //     "useBuiltIns": "entry",
+    //     "corejs": "3.22"
+    //   }
+    // ],
+    '@babel/preset-typescript'
   ],
   plugins: [
     [
@@ -15,6 +17,18 @@ module.exports = {
         'libraryName': 'ant-design-vue',
         'libraryDirectory': 'es',
         'style': 'true'
+      }
+    ],
+    [
+      '@babel/plugin-proposal-optional-chaining',
+      {
+        'version': '2023-07'
+      }
+    ],
+    [
+      '@babel/plugin-proposal-optional-chaining-assign',
+      {
+        'version': '2023-07'
       }
     ]
   ]

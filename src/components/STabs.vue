@@ -10,20 +10,36 @@ const panelmodel = {
   show: true,
   visible: true,
   lastListId: '',
-  recordData: {}
+  routeQuery: {}
 }
 export default {
   title: '页签',
   name: 'STabs',
   props: {
-    tabProxy: {
+    value: {
       type: Object,
-      default: () => ({})
+      default: undefined
     }
   },
   mixins: [baseMixins],
+  model: {
+    prop: 'value',
+    event: 'change'
+  },
   data () {
     return {
+      tabHandler: {
+        tabs: [],
+        $showList: false,
+        $showApply: false,
+        $showDetail: false,
+        $activeId: '0',
+        $lastListId: '',
+        $routeQuery: {},
+        $switchTab: () => {},
+        $reduceTab: () => {},
+        $increaseTab: () => {}
+      },
       // 用来存储点击过的【list类型】的tabid
       // 用push的方式来存储，取的时候，永远取最后一个
       // 主要的作用就是在用户关闭可编辑的tab时，可回溯到最后一个被浏览的list
@@ -38,18 +54,29 @@ export default {
     }
   },
   watch: {
-    'tabProxy.tabs': {
-      handler (tabs) {
-        // tabProxy.tabs 有时候是后端返回的，属于异步获取
-        // this.initialize() 中也会对panes进行更改，所以需要用 currentPanesLen 进行预存
-        // 防止死循环
-        if (tabs && tabs.length && tabs.length !== this.cachePanesLen) {
-          // this.initialize()
-          this.activePane(this.tabProxy.activeId)
-          this.cachePanesLen = tabs.length
-        }
+    'value': {
+      handler (val) {
+        this.tabHandler.tabs = utils.clone(val.tabs || []).map((tab, index) => {
+          tab.show = utils.isValuable(tab.show) ? tab.show : tabItemModel.show
+          tab.type = utils.isValuable(tab.type) ? tab.type : 'list'
+          tab.tabName = utils.isValuable(tab.tabName) ? tab.tabName : tabItemModel.tabName
+          tab.proxyName = utils.isValuable(tab.proxyName) ? tab.proxyName : tabItemModel.proxyName
+          tab.tabId = utils.isValuable(tab.tabId) ? tab.tabId : index + ''
+          tab.closable = utils.isValuable(tab.closable) ? tab.closable : false
+          tab.lastListId = utils.isValuable(tab.lastListId) ? tab.lastListId : ''
+          tab.routeQuery = utils.isValuable(tab.routeQuery) ? tab.routeQuery : {}
+          return tab
+        })
+        this.tabHandler?.$showList = val.showList || true
+        this.tabHandler?.$showApply = val.showApply || false
+        this.tabHandler?.$showDetail = val.showDetail || false
+        this.tabHandler?.$activeId = val.activeId || '0'
+        this.tabHandler?.$lastListId = val.lastListId || ''
+        this.tabHandler?.$routeQuery = val.routeQuery || undefined
+        this.tabHandler?.$switchTab = this.$switchTab
+        this.tabHandler?.$reduceTab = this.$reduceTab
+        this.tabHandler?.$increaseTab = this.$increaseTab
       },
-      deep: true,
       immediate: true
     },
     'tabProxy.activeId': {
@@ -64,8 +91,9 @@ export default {
           if (curPanel.type === 'detail') {
             curPanel.__detail_listTabId__ = this.tabProxy.lastListId
           }
-          this.activePane(tabId)
-          this.showPage(tabId)
+          this.$switchTab(tabId)
+          this.showPanel(tabId)
+          this.$emit('change', this.tabHandler)
         }
       },
       immediate: true
@@ -74,7 +102,7 @@ export default {
       handler (tabId) {
         if (tabId) {
           this.setLastListTabId(tabId)
-          this.$emit('update')
+          this.$emit('update', this.tabHandler)
         }
       }
     }
@@ -86,16 +114,16 @@ export default {
     async initialize () {
       // 直接show activeId
       // 根据权限列表裁剪有效的panes
-      this.queryPermissionPanes()
+      this.queryPermissionTabs()
       return Promise.resolve()
     },
-    queryPermissionPanes () {
+    queryPermissionTabs () {
       const tabs = this.tabProxy.tabs || []
       const menuButtons = this.$store.state.global.menuButtons || []
       this.tabProxy.tabs = tabs.filter(tab => {
         const permission = tab.permission || {}
         // 如果设置了 permission.config，就匹配这个的值
-        return permission.config ? menuButtons.includes(permission.config) : tab.show
+        return permission.config ? menuButtons.includes(permission.config) : [true, undefined].includes(tab.show)
       })
 
       // 没有权限操作
@@ -112,62 +140,6 @@ export default {
       // 默认展示第一个 show 为 true 的 tab
       if (this.tabProxy.showList) {
         this.tabProxy.lastListId = this.tabProxy.activeId = this.tabProxy.tabs[0].tabId
-      }
-    },
-    activePane (tabId) {
-      // 根据提供的id去获取指定的Panel面板
-      const curPanel = this.getPanelFromTabId(tabId)
-      // 需要把面板show设置为true
-      curPanel.show = true
-    },
-    negativePane (tabId) {
-      const curPanel = this.getPanelFromTabId(tabId)
-      curPanel.show = false
-    },
-    addDetailTab (detailType, recordData) {
-      // 根据recordData的id来判断当前是否有重复的panel
-      if (this.isUniqueTanpe(recordData)) {
-        const newPanel = utils.clone(panelmodel)
-        const listPanel = this.getPanelFromTabId(this.getLastListTabId())
-        newPanel.type = Number.parseInt(detailType) === 1 ? 'apply' : 'detail'
-        newPanel.tabId = this.upRiseTabId(this.getLastEditTabId(listPanel.tabId, detailType))
-        newPanel.tabName = getTabName(detailType, listPanel)
-        newPanel.lastListId = listPanel.tabId
-        newPanel.recordData = recordData
-        this.tabProxy.activeId = newPanel.tabId
-        this.tabProxy.tabs.push(newPanel)
-      } else {
-        // 如果已经渲染的，就直接切换tab就行，不用新增tab
-        return this.changeTabByRecordData(recordData)
-      }
-
-      function getTabName (_detailType, _listPanel) {
-        const defaultsuffix = Number.parseInt(_detailType) === 1 ? '申请' : '审批'
-        if (_listPanel.proxyName) {
-          return Number.parseInt(_detailType) === 1 ? _listPanel.proxyName.apply : _listPanel.proxyName.detail
-        } else {
-          return _listPanel.tabName + defaultsuffix
-        }
-      }
-    },
-    isUniqueTanpe (recordData = {}) {
-      let isUnique = true
-      for (let index = 0; index < this.tabProxy.tabs.length; index++) {
-        const tab = this.tabProxy.tabs[index]
-        if (tab.recordData && tab.recordData.id === recordData.id) {
-          isUnique = false
-          break
-        }
-      }
-      return isUnique
-    },
-    changeTabByRecordData (recordData = {}) {
-      for (let index = 0; index < this.tabProxy.tabs.length; index++) {
-        const tab = this.tabProxy.tabs[index]
-        if (tab.recordData && tab.recordData.id === recordData.id) {
-          this.tabProxy.activeId = tab.tabId
-          break
-        }
       }
     },
     // tab切换事件
@@ -209,12 +181,12 @@ export default {
       return this.usedListIds[this.usedListIds.length - 1] || '0'
     },
     // 获取"详情页"，"申请页",这种可点击删除的Panel的id
-    getLastEditTabId (listId, detailType) {
+    getLastEditTabId (listId, panelType) {
       // 如果是第一次新增panel，给与默认tabId
-      let res = this.spillTabId(listId, detailType, 0)
+      let res = this.spillTabId(listId, panelType, 0)
       for (let i = this.tabProxy.tabs.length - 1; i > 0; i--) {
         const tab = this.tabProxy.tabs[i]
-        if (tab.tabId.length > 1 && this.getDetailTypeFormTabId(tab.tabId) === detailType) {
+        if (tab.tabId.length > 1 && this.getpanelTypeFormTabId(tab.tabId) === panelType) {
           res = tab.tabId
           break
         }
@@ -225,6 +197,93 @@ export default {
     tabEditEvent (tabId, action) {
       if (action === 'remove') {
         this.removePane(tabId)
+      }
+    },
+    $switchTab (tabId) {
+      // 根据提供的id去获取指定的Panel面板
+      const curPanel = this.getPanelFromTabId(tabId)
+      // 需要把面板show设置为true
+      curPanel.show = true
+      this.tabHandler.$routeQuery = curTab.routeQuery
+    },
+    $increaseTab (panelType, routeQuery) {
+      const getTabName = (listPanel) => {
+        const defaultsuffix = panelType === 'apply' ? '申请' : '审批'
+        const test = {}
+        if (listPanel.proxyName) {
+          test?.sss = listPanel?.proxyName?.apply
+          let applyTabName = listPanel.proxyName.apply
+          if (utils.isFunction(applyTabName)) {
+            applyTabName = applyTabName(this)
+          }
+          let detailTabName = listPanel.proxyName.detail
+          if (utils.isFunction(detailTabName)) {
+            detailTabName = detailTabName(this)
+          }
+          return panelType === 'apply' ? applyTabName : detailTabName
+        } else {
+          return listPanel.tabName + defaultsuffix
+        }
+      }
+      const newTab = utils.clone(tabItemModel)
+      const listPanel = this.getPanelFromTabId(this.getLastListTabId())
+      newTab.type = panelType
+      newTab.tabId = this.upRiseTabId(this.getLastEditTabId(listPanel.tabId, panelType))
+      newTab.lastListId = listPanel.tabId
+      newTab.routeQuery = routeQuery
+      this.tabProxy.activeId = newTab.tabId
+      this.tabProxy.tabs.push(newTab)
+      setTimeout(() => {
+        newTab.tabName = getTabName(listPanel)
+      })
+    },
+    $reduceTab (tabId) {
+      for (let i = 0; i < this.tabHandler.tabs.length; i++) {
+        const tab = this.tabHandler.tabs[i]
+        if (tab.tabId === (tabId || this.tabHandler.$activeId)) {
+          this.tabHandler.tabs.splice(i, 1)
+          break
+        }
+      }
+      this.tabHandler.$activeId = this.getLastEditTabId()
+      this.$switchTab(this.tabHandler.$activeId)
+    },
+    getCurTabFromTabId (tabId) {
+      return this.tabProxy.tabs.find(tab => tab.tabId === tabId) || {}
+    },
+    showPanel (tabId) {
+      this.tabHandler.$showList = false
+      this.tabHandler.$showApply = false
+      this.tabHandler.$showDetail = false
+      if (/_/.test(tabId)) {
+        if (this.getpanelTypeFormTabId(tabId) === 'apply') {
+          this.tabHandler.$showApply = true
+        }
+        if (this.getpanelTypeFormTabId(tabId) === 'detail') {
+          this.tabHandler.$showDetail = true
+        }
+      } else {
+        this.tabHandler.$showList = true
+      }
+    },
+    isUniqueTanpe (routeQuery = {}) {
+      let isUnique = true
+      for (let index = 0; index < this.tabProxy.tabs.length; index++) {
+        const tab = this.tabProxy.tabs[index]
+        if (tab.routeQuery && tab.routeQuery.id === routeQuery.id) {
+          isUnique = false
+          break
+        }
+      }
+      return isUnique
+    },
+    changeTabByrouteQuery (routeQuery = {}) {
+      for (let index = 0; index < this.tabProxy.tabs.length; index++) {
+        const tab = this.tabProxy.tabs[index]
+        if (tab.routeQuery && tab.routeQuery.id === routeQuery.id) {
+          this.tabProxy.activeId = tab.tabId
+          break
+        }
       }
     },
     // 关闭标签页
@@ -241,8 +300,8 @@ export default {
       }
       // activeId 切换到最后一个 list
       this.tabProxy.activeId = this.getLastListTabId()
-      // 这里手动activePane，是为了防止activeId没改变，导致没触发watch方法的情况
-      this.activePane(this.tabProxy.activeId)
+      // 这里手动$switchTab，是为了防止activeId没改变，导致没触发watch方法的情况
+      this.$switchTab(this.tabProxy.activeId)
     },
     getPanelFromTabId (tabId) {
       let correctPanel = this.tabProxy.tabs.filter((pan) => pan.tabId === tabId)
@@ -261,15 +320,15 @@ export default {
      * @html #   <Approval />
      * @html # </div>
      */
-    showPage (tabId) {
+    showPanel (tabId) {
       this.tabProxy.showList = false
       this.tabProxy.showApply = false
       this.tabProxy.showDetail = false
       if (/_/.test(tabId)) {
-        if (this.getDetailTypeFormTabId(tabId) === '1') {
+        if (this.getpanelTypeFormTabId(tabId) === '1') {
           this.tabProxy.showApply = true
         }
-        if (this.getDetailTypeFormTabId(tabId) === '2') {
+        if (this.getpanelTypeFormTabId(tabId) === '2') {
           this.tabProxy.showDetail = true
         }
       } else {
@@ -281,7 +340,7 @@ export default {
     // 'detail': 0_2_0 [列表下标_类型_自增下标]
     upRiseTabId (tabId) {
       const listId = this.getListIdFormTabId(tabId)
-      const type = this.getDetailTypeFormTabId(tabId)
+      const type = this.getpanelTypeFormTabId(tabId)
       const detailId = this.getDetailIdFormTabId(tabId)
       return this.spillTabId(listId, type, detailId + 1)
     },
@@ -291,7 +350,7 @@ export default {
     getListIdFormTabId (tabId) {
       return tabId.split('_')[0]
     },
-    getDetailTypeFormTabId (tabId) {
+    getpanelTypeFormTabId (tabId) {
       return tabId.split('_')[1]
     },
     getDetailIdFormTabId (tabId) {

@@ -11,6 +11,9 @@ if (devEnvs.includes(process.env.VUE_APP_SERVER_ENV)) {
 
   // 加载 代码高亮 工具
   require('@/directives/highlight')
+
+  // 加载 组件样例 的路由
+  require('@/helper/examples/router/index.js')
 }
 
 // 主入口

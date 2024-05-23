@@ -1,5 +1,5 @@
 <template>
-  <div class="uploader-base">
+  <div :class="['uploader-base', flow === 'v' ? 'vertical-bar' : 'horizontal-bar']">
     <a-upload
       name="file"
       :multiple="multiple"
@@ -8,28 +8,37 @@
       :file-list="fileList"
       :show-upload-list="false"
     >
-      <a-button
-        ghost
-        type="primary"
-        :disabled="disabled"
-      >
+      <slot v-if="$slots.default" :disabled="disabled" />
+      <a-button v-else type="primary" :disabled="disabled">
         <a-icon type="upload" /> {{ buttonText }}
       </a-button>
     </a-upload>
-    <template v-for="(fileItem, index) in fileDataStore">
-      <div class="download-bar" :key="index">
-        <a-icon class="file-icon" type="paper-clip" />
-        <SDownload class="file-content" :len="16" :value="fileItem" />
-        <a v-if="!disabled" class="file-close" @click="() => remove(fileItem)">x</a>
-      </div>
-    </template>
+    <div
+      v-if="isCanDownload"
+      class="download-bar"
+      :style="{ margunLeft: flow === 'h' ? '0.5rem' : '' }"
+    >
+      <template v-for="(fileItem, index) in fileDataStore">
+        <div class="download-item" :key="index">
+          <a-icon class="file-icon" type="paper-clip" />
+          <SDownload class="file-content" :len="len" :value="fileItem" />
+          <a v-if="!disabled" class="file-close" @click="() => remove(fileItem)">x</a>
+        </div>
+      </template>
+    </div>
+    <div v-if="$slots.tips || $props.tips || $props.accept" class="upload-tips">
+      <div v-if="$props.accept">格式支持：{{ $props.accept }}</div>
+      <div v-else-if="$props.tips">{{ $props.tips }}</div>
+      <slot v-else name="tips" />
+    </div>
+    <div v-if="uploadWarning" class="upload-warning">{{ uploadWarning }}</div>
   </div>
 </template>
 
 <script>
 import api from '@/api'
 import utils from '@/utils'
-import loading from '@/utils/loading'
+// import loading from '@/utils/loading'
 import { getToken } from '@/utils/auth'
 
 export default {
@@ -63,12 +72,29 @@ export default {
     },
     buttonText: {
       type: String,
-      default: '上传文件'
+      default: ''
+    },
+    len: {
+      type: Number,
+      default: 16
+    },
+    flow: {
+      type: String,
+      default: 'v'
+    },
+    tips: {
+      type: String,
+      default: ''
+    },
+    validator: {
+      type: Function,
+      default: () => {}
     }
   },
   data () {
     return {
       fileList: [],
+      uploadWarning: '',
       fileDataStore: []
     }
   },
@@ -79,6 +105,17 @@ export default {
   computed: {
     supportSeries () {
       return this.accept ? this.accept : this.$store.getters.getFileTypePermisson()
+    },
+    isCanDownload () {
+      return !!this.fileDataStore.find(item => item.fileId)
+    },
+    showButtonText () {
+      if (this.buttonText) return this.buttonText
+      if (this.fileDataStore.length) {
+        return this.multiple ? '追加文件' : '上传文件'
+      } else {
+        return '上传文件'
+      }
     }
   },
   watch: {
@@ -143,19 +180,42 @@ export default {
       } else {
         this.$emit('change', this.fileDataStore[0], this.fileList[0])
       }
+      this.uploadWarning = ''
+    },
+    async execCustomValidator (file, files, vm) {
+      let isPass = true
+      if (this.$props.validator) {
+        const validatedRes = await this.$props.validator(file, files, vm)
+        if (utils.isString(validatedRes) && validatedRes.length) {
+          this.uploadWarning = validatedRes
+          isPass = false
+        }
+        if (utils.isBoolean(validatedRes)) {
+          isPass = validatedRes
+          this.uploadWarning = ''
+        }
+      } else {
+        isPass = true
+        this.uploadWarning = ''
+      }
+      return isPass
     },
     // 上传文件，并存储返回的url
     async beforeUploadEvent (file, files) {
       const pass = utils.verifyUploadType(file.name, this.supportSeries)
-      if (pass) {
-        loading.mounted() // 显示正在上传
+      const customPass = await this.execCustomValidator(file, files, this)
+      if (pass && customPass) {
+        this.$loading.mounted() // 显示正在上传
         const form = this.extendsForm(file)
-        api[this.action](form).then((res) => this.successHandler(res, file), this.failerHandler)
+        api[this.action](form, this.injectParams).then(
+          (res) => this.successHandler(res, file),
+          this.failerHandler
+        )
       }
-      return false
+      return Promise.reject(new Error())
     },
     successHandler (res, file) {
-      loading.unmount()
+      this.$loading.unmount()
       if (res.data === null || res.data === undefined) {
         res.message && this.$modal.warning({
           title: '提示',
@@ -170,14 +230,14 @@ export default {
           }`
         )
       }
-      if (utils.isObject(res.data)) {
+      if (utils.isObject(res.data) || utils.isArray(res.data)) {
         this.$message.success('文件上传成功')
         this.uprise(res.data, file)
         this.update()
       }
     },
     failerHandler (res) {
-      loading.unmount()
+      this.$loading.unmount()
       this.$modal.error({ title: '上传失败', content: res.message })
     },
     extendsForm (file) {
@@ -197,50 +257,80 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-
-.download-bar {
-  height: 24px;
-  line-height: 24px;
+.uploader-base {
   transition: height 0.3s;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  &:hover {
-    background-color: #efefef;
-    .file-close {
-      visibility: visible;
-    }
-  }
-  /deep/ .default-style {
-    margin: 0;
-    padding: 0;
+}
+.download-bar {
+  .download-item {
+    height: 24px;
     line-height: 24px;
+    transition: height 0.3s;
+    padding: 0;
+    margin: 0;
+    display: flex;
     &:hover {
       background-color: #efefef;
+      .file-close {
+        visibility: visible;
+      }
     }
-  }
-  .file-icon {
-    font-size: 14px;
-    line-height: 2;
-    color: rgba(0, 0, 0, 0.45);
-  }
-  .file-content {
-    font-size: 14px;
-  }
-  .file-close {
-    color: #ff4545;
-    margin: 0 1rem;
-    padding: 0 1rem;
-    font-size: 14px;
-    line-height: 1.5;
-    visibility: hidden;
-    &:hover {
-      color: #ff9191;
+    /deep/ .default-style {
+      margin: 0;
+      padding: 0;
+      line-height: 24px;
+      &:hover {
+        background-color: #efefef;
+      }
+    }
+    .file-icon {
+      font-size: 14px;
+      line-height: 2;
+      color: rgba(0, 0, 0, 0.45);
+    }
+    .file-content {
+      font-size: 14px;
+    }
+    .file-close {
+      color: #ff4545;
+      margin: 0 1rem;
+      padding: 0 1rem;
+      font-size: 14px;
+      line-height: 1.5;
+      visibility: hidden;
+      &:hover {
+        color: #ff9191;
+      }
     }
   }
 }
-
-.uploader-base {
-  transition: height 0.3s;
+.vertical-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: center;
+}
+.horizontal-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  flex-direction: row;
+  justify-content: flex-start;
+  .upload-warning {
+    padding-left: 1rem;
+  }
+  .upload-tips {
+    padding-left: 1rem;
+  }
+}
+.upload-warning {
+  color: #f5222d;
+  padding-top: 2px;
+  line-height: 1.25;
+}
+.upload-tips {
+  font-size: 0.8rem;
+  line-height: 1.25;
+  color: #999;
 }
 </style>
