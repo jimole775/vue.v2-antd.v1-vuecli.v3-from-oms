@@ -82,6 +82,10 @@
     "vue-template-compiler": "^2.5.21",
     "webpack-bundle-analyzer": "^4.4.2"
   },
+  "gitHooks": {
+    "pre-commit": "lint-staged",
+    "commit-msg": "commitlint --edit ./.git/COMMIT_EDITMSG"
+  },
   "lint-staged": {
     "*.{js,vue}": [
       "vue-cli-service lint",
