@@ -3,7 +3,15 @@ module.exports = {
   env: {
     node: true
   },
-  'extends': [
+  // 'parser': '@babel/eslint-parser',
+  parser: 'babel-eslint',
+  parserOptions: {
+    'requireConfigFile': false,
+    'babelOptions': { // 支持 可选链 语法
+      'plugins': ['@babel/plugin-syntax-optional-chaining']
+    }
+  },
+  extends: [
     'plugin:vue/strongly-recommended',
     '@vue/standard'
   ],
@@ -32,8 +40,5 @@ module.exports = {
       }
     ],
     'vue/singleline-html-element-content-newline': 0
-  },
-  parserOptions: {
-    parser: 'babel-eslint'
   }
 }

@@ -44,7 +44,7 @@ export default {
       default: undefined
     },
     disabled: {
-      type: String,
+      type: Boolean,
       default: false
     },
     placeholder: {
@@ -61,7 +61,7 @@ export default {
     props: 'value',
     event: 'change'
   },
-  data () {
+  data() {
     return {
       loading: false,
       wholeList: [],
@@ -71,24 +71,26 @@ export default {
   },
   watch: {
     options: {
-      handler (data = []) {
+      handler(data = []) {
         this.dataCache = utils.clone(data)
-        this.wholeList = utils.clone(data).map(i => this.field ? i[this.field] : i)
+        this.wholeList = utils
+          .clone(data)
+          .map((i) => (this.field ? i[this.field] : i))
         this.optionList = utils.clone(this.wholeList)
       },
       immediate: true
     }
   },
-  mounted () {
+  mounted() {
     // 如果允许空值搜索，那么提供一版默认数据供用户选择
     if (this.nullable && this.api) {
-      this.request('').then(res => {
+      this.request('').then((res) => {
         this.handleResponse(res)
       })
     }
   },
   methods: {
-    searchEvent (val = '') {
+    searchEvent(val = '') {
       val = utils.trim(val)
       if (this.$props.api) {
         if (utils.isValuable(val) || (utils.isNone(val) && this.nullable)) {
@@ -101,15 +103,17 @@ export default {
         if (val === '') {
           this.optionList = utils.clone(this.wholeList)
         } else {
-          this.optionList = this.wholeList.filter(i => i.includes(val))
+          this.optionList = this.wholeList.filter((i) => i.includes(val))
         }
       }
     },
-    changeEvent (val = '') {
-      const checkedItem = this.dataCache.find(item => (this.field ? item[this.field] : item) === val)
+    changeEvent(val = '') {
+      const checkedItem = this.dataCache.find(
+        (item) => (this.field ? item[this.field] : item) === val
+      )
       this.$emit('change', val, checkedItem)
     },
-    request (sval) {
+    request(sval) {
       if (!this.$props.api) {
         const msg = 'TextSearchSelect 未绑定查询接口！'
         return this.$message.warning(msg)
@@ -120,18 +124,19 @@ export default {
       this.loading = true
       return func(sval)
     },
-    handleResponse (res) {
+    handleResponse(res) {
       this.loading = false
       if (res.code === 200) {
         const correctData = this.getCorrectServerData(res.data)
         this.dataCache = correctData
-        this.optionList = correctData.map(item => this.field ? item[this.field] : item)
+        this.optionList = correctData.map((item) =>
+          this.field ? item[this.field] : item
+        )
       }
     },
-    getCorrectServerData (data) {
+    getCorrectServerData(data) {
       return this.dataDir ? data[this.dataDir] : data
     }
   }
 }
-
 </script>

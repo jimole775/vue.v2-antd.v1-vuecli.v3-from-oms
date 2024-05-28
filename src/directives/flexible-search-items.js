@@ -38,7 +38,7 @@ function createFlexSwitchButton (searchNodes) {
         style="color: #999; font-size: 0.8rem; margin-left: 0.5rem;"
         onClick={ this.doSwitch }
       >
-        { this.$t(this.iswitch ? '收起' : '展开') }
+        { this.iswitch ? '收起' : '展开' }
         <a-icon style={{ transform: this.iswitch ? 'rotate(270deg)' : 'rotate(90deg)' }} tyle="double-right" />
       </a>
     }

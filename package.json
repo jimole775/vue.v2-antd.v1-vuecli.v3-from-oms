@@ -57,6 +57,7 @@
     "@vue/cli-plugin-eslint": "^3.7.0",
     "@vue/cli-service": "^3.7.0",
     "@vue/eslint-config-standard": "^4.0.0",
+    "@vue/runtime-dom": "^3.4.27",
     "axios-mock-adapter": "^1.16.0",
     "babel-eslint": "^10.0.1",
     "babel-plugin-import": "^1.11.2",
@@ -80,6 +81,7 @@
     "ts-loader": "^7.0.5",
     "typescript": "^5.4.5",
     "vue-template-compiler": "^2.5.21",
+    "vue-tsc": "^2.0.19",
     "webpack-bundle-analyzer": "^4.4.2"
   },
   "gitHooks": {

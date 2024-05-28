@@ -12,7 +12,7 @@ import {
   InputNumber, Steps, Tooltip,
   LocaleProvider, AutoComplete,
   Checkbox, Empty, Carousel,
-  Progress, Calendar, Message, Modal,
+  Progress, Calendar, Modal,
   Dropdown, Timeline, Popover
 } from 'ant-design-vue'
 
@@ -80,7 +80,6 @@ Vue.use(SLines)
 Vue.use(ExportInterface)
 Vue.use(ImportExcel)
 Vue.use(Modal)
-Vue.use(Message)
 Vue.use(SUpload)
 Vue.use(SDownload)
 Vue.use(FormItemRender)

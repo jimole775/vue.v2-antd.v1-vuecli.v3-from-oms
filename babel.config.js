@@ -11,14 +11,14 @@ module.exports = {
     '@babel/preset-typescript'
   ],
   plugins: [
-    [
-      'import',
-      {
-        'libraryName': 'ant-design-vue',
-        'libraryDirectory': 'es',
-        'style': 'true'
-      }
-    ],
+    // [
+    //   'import',
+    //   {
+    //     'libraryName': 'ant-design-vue',
+    //     'libraryDirectory': 'es',
+    //     'style': 'true'
+    //   }
+    // ],
     [
       '@babel/plugin-proposal-optional-chaining',
       {

@@ -14,7 +14,13 @@
     @change="handleChange"
   >
     <a-spin v-if="fetching" slot="notFoundContent" size="small" />
-    <a-select-option v-for="(option, index) in optionList" :key="index" :value="option[field.key]" :title="option[field.label]">{{ option[field.label] }}</a-select-option>
+    <a-select-option
+      v-for="(option, index) in optionList"
+      :key="index"
+      :value="option[field.key]"
+      :title="option[field.label]"
+      >{{ option[field.label] }}</a-select-option
+    >
   </a-select>
 </template>
 <script>
@@ -25,7 +31,7 @@ export default {
   props: {
     field: {
       type: Object,
-      default: ({ key: 'key', label: 'label' })
+      default: () => ({ key: 'key', label: 'label' })
     },
     value: {
       type: [String, Number, Array],
@@ -86,13 +92,9 @@ export default {
     immediate: {
       type: Boolean,
       default: true
-    },
-    allowClear: {
-      type: Boolean,
-      default: true
     }
   },
-  data () {
+  data() {
     return {
       optionList: [],
       fetching: false
@@ -104,32 +106,32 @@ export default {
   },
   watch: {
     params: {
-      handler (params) {
+      handler(params) {
         params && this.searchEvent()
       },
       deep: true
     },
     options: {
-      handler (options) {
+      handler(options) {
         options && (this.optionList = utils.clone(options))
       },
       immediate: true
     }
   },
-  mounted () {
+  mounted() {
     if (this.immediate) {
       this.fetchor()
     }
   },
   methods: {
-    async searchEvent (value) {
+    async searchEvent(value) {
       if (!value && !this.nullable) return false
       this.optionList = []
       this.fetching = true
       this.optionList = await this.fetchor(value)
       this.fetching = false
     },
-    async execApiEvent (value) {
+    async execApiEvent(value) {
       const params = {
         ...this.params,
         value,
@@ -139,7 +141,7 @@ export default {
       const finalData = this.evalResponseData(res)
       return Promise.resolve(finalData)
     },
-    evalResponseData (res) {
+    evalResponseData(res) {
       if (res.code === 200) {
         if (this.$props.dataDir && utils.isString(this.$props.dataDir)) {
           return utils.readTreeByPath(res.data, this.$props.dataDir)
@@ -148,7 +150,7 @@ export default {
         }
       }
     },
-    async execSearchor (value) {
+    async execSearchor(value) {
       let evalRes = await this.searchor(value)
       if (utils.isBackendResponse(evalRes)) {
         if (this.$props.dataDir && utils.isString(this.$props.dataDir)) {
@@ -159,7 +161,7 @@ export default {
       }
       return Promise.resolve(evalRes)
     },
-    fetchor (value) {
+    fetchor(value) {
       if (this.api) {
         return this.execApiEvent(value)
       }
@@ -170,15 +172,15 @@ export default {
         return Promise.resolve(this.nativeFilter(value))
       }
     },
-    nativeFilter (value) {
+    nativeFilter(value) {
       if (utils.isNone(value)) return this.options
-      return this.options.filter(option => {
+      return this.options.filter((option) => {
         if (!option) return false
         return option[this.field.label].includes(value)
       })
     },
-    handleChange (value) {
-      const selectedItems = this.optionList.filter(option => {
+    handleChange(value) {
+      const selectedItems = this.optionList.filter((option) => {
         if (utils.isArray(value)) {
           return value.includes(option[this.field.key])
         } else {

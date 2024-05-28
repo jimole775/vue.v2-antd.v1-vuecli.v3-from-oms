@@ -2,7 +2,7 @@
  * @ Author: Your name
  * @ Create Time: 2024-04-28 00:52:27
  * @ Modified by: Your name
- * @ Modified time: 2024-04-28 01:08:58
+ * @ Modified time: 2024-05-29 00:09:03
  * @ Description:
  */
 
@@ -35,12 +35,12 @@ export default {
     async searchorTransform () {
       const { __todoType__, __tabType__, __query__, handler } = utils.clone(this.$RouterQuery || {})
       const vm = await utils.findVm(this, 'STable') || {}
-      vm.searchor && vm.searchor.forEach(() => {
+      vm.searchor && vm.searchor.forEach((searchItem) => {
         // 自动填充 申请人 审批人
-        if ([this.$t('申请人'), '申请人'].includes(searchItem.title) && __todoType__ === 'apply') {
+        if (['申请人'].includes(searchItem.title) && __todoType__ === 'apply') {
           searchItem.default = searchItem.value = handler
         }
-        if ([this.$t('当前处理人'), '当前处理人'].includes(searchItem.title) && (__todoType__ === 'approve' || __tabType__ === 'list')) {
+        if (['当前处理人'].includes(searchItem.title) && (__todoType__ === 'approve' || __tabType__ === 'list')) {
           searchItem.default = searchItem.value = handler
         }
         if (__query__) {

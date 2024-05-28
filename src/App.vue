@@ -16,53 +16,55 @@ export default {
   components: {
     SLayout
   },
-  data () {
+  data() {
     return {
       locale: zhCN,
       menusList: []
     }
   },
   computed: {
-    user () {
+    user() {
       return this.$store.state.global.user
     },
-    userRole () {
+    userRole() {
       return this.$store.state.global.userRole
     },
-    menus () {
+    menus() {
       return this.$store.state.global.menus
     },
-    isMockEnv () {
+    isMockEnv() {
       return this.$store.state.global.mockEnv
     }
   },
   watch: {
-    user (val) {
+    user(val) {
       if (val) {
         this.createWatermark(val)
       }
     },
-    menus (val) {
+    menus(val) {
       if (val) {
         this.getMenusList(val)
       }
     }
   },
-  created () {
+  created() {
     this.currentPath = this.$router.history.current.path
     // 处理外部链接跳转
     this.extractJump()
   },
   methods: {
-    extractJump () {
+    extractJump() {
       const jumpdata = getJumpInfo()
       if (jumpdata && jumpdata.length > 2) {
         removeJumpInfo()
-        const params = utils.isJSONString(jumpdata) ? JSON.parse(jumpdata) : jumpdata
+        const params = utils.isJSONString(jumpdata)
+          ? JSON.parse(jumpdata)
+          : jumpdata
         jumper.go(params)
       }
     },
-    getMenusList (tempData) {
+    getMenusList(tempData) {
       var menuArr = []
       for (var i = 0; i < tempData.length; i++) {
         if (!tempData[i].children) {
@@ -80,17 +82,23 @@ export default {
       // 所以，这里没有必要进行路由黑名单的控制
       if (!this.isMockEnv) {
         // 过滤没在服务器注册的路由，如果匹配不到，就直接跳转主页
-        if (this.menusList.indexOf(this.$router.history.current.path) === -1 &&
-              this.$router.history.current.path !== '/demands_and_interviews/approval-process' &&
-              this.$router.history.current.path !== '/demands_and_interviews/interview-approve') {
+        if (
+          this.menusList.indexOf(this.$router.history.current.path) === -1 &&
+          this.$router.history.current.path !==
+            '/demands_and_interviews/approval-process' &&
+          this.$router.history.current.path !==
+            '/demands_and_interviews/interview-approve'
+        ) {
           this.$router.push('/')
         }
       }
     },
-    createWatermark ({ employeeNumber }) {
+    createWatermark({ employeeNumber }) {
       this.$nextTick(() => {
         watermark.init({
-          watermark_txt: `${employeeNumber || '未登录'} ${utils.date2YMDHM(new Date())}`,
+          watermark_txt: `${employeeNumber || '未登录'} ${utils.date2YMDHM(
+            new Date()
+          )}`,
           watermark_x: -80, // 水印起始位置x轴坐标
           watermark_y: -50, // 水印起始位置Y轴坐标
           watermark_color: '#A0A4AC', // 水印字体颜色
@@ -110,7 +118,7 @@ export default {
 </script>
 <style lang="less">
 #app {
-  font-family: "Microsoft YaHei", Helvetica, Arial, sans-serif;
+  font-family: 'Microsoft YaHei', Helvetica, Arial, sans-serif;
   font-size: 12px;
   color: #333333;
   background-color: #f2f4f8;
@@ -121,7 +129,7 @@ body {
 }
 </style>
 <style>
-.over_lot{
+.over_lot {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

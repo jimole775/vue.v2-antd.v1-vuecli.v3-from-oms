@@ -21,7 +21,8 @@ module.exports = {
     resolve: {
       alias: {
         '@builder': resolve('./src/helper/builder')
-      }
+      },
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue', '.json']
     },
     plugins: [
       // 忽略moment的语言包

@@ -1,7 +1,6 @@
 import api from '@/api'
 import utils from '@/utils'
 import { getFingerprint, setFingerprint } from '@/utils/auth'
-import { Message } from 'ant-design-vue'
 import mockMenu from '@/mock/menus'
 
 const exportingListStoreKey = '$$EXPORTINGLIST'
@@ -214,13 +213,13 @@ export default {
             commit('markFingerprint', res.data)
           }
         } else {
-          Message.error('用户信息错误，请联系管理员')
+          console.error('用户信息错误，请联系管理员')
           setTimeout(() => {
             // api.logout()
           }, 1500)
         }
       } catch (e) {
-        Message.error('用户信息错误，请联系管理员')
+        console.error('用户信息错误，请联系管理员')
         setTimeout(() => {
           // api.logout()
         }, 1500)

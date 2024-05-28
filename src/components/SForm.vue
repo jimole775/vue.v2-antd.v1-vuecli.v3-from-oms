@@ -2,7 +2,7 @@
  * @ Author: Your name
  * @ Create Time: 2024-04-18 01:31:40
  * @ Modified by: Your name
- * @ Modified time: 2024-04-27 20:18:52
+ * @ Modified time: 2024-05-29 00:10:23
  * @ Description:
  -->
 
@@ -295,12 +295,12 @@ export default {
                 if (formItem.required && formItem.show && formItem.edit) {
                     if (formItem.keys) {
                         if (isEmptyFromKeys(formItem.keys) && isEmptyFromParams(formItem.params)) {
-                            tips.push(this.$t('请确认 {0}', formItem.label))
+                            tips.push(`请确认 ${formItem.label}`)
                             break
                         }
                     } else {
                         if (isEmptyFromKey(formItem.key) && isEmptyFromParams(formItem.params)) {
-                            tips.push(this.$t('请确认 {0}', formItem.label))
+                            tips.push(`请确认 ${formItem.label}`)
                             break
                         }
                     }
@@ -329,7 +329,7 @@ export default {
                 initialValue: utils.isValuable(initval) ? initval : this.$getValue(i),
                 rules: [{
                     required: i.required,
-                    message: this.$t('请确认 {0}', i.label)
+                    message: `请确认 ${i.label}`
                 }]
             }]
             const _valid = validator || i.validator
@@ -415,7 +415,7 @@ export default {
         },
         // 执行一次函数
         $execOnce (fn, ...params) {
-            if (utils.isNone(fn)) return 
+            if (utils.isNone(fn)) return
             if (!this.onceMap[fn]) {
                 this.onceMap[fn] = true
                 return fn.apply(fn, params)
@@ -440,7 +440,7 @@ export default {
             if (this.formItemNodeMap[symbol]?.label) return this.formItemNodeMap[symbol].label
             if (!this.formItemNodeMap[symbol]) this.formItemNodeMap[symbol] = createMap()
             if (formItem.hasOwnProperty('label')) {
-                const children = [this.$t(formItem.label)]
+                const children = [formItem.label]
                 if (formItem.description) {
                     children.push(<ATooltip style="margin-left: 0.5rem;" title={formItem.description}>
                         <a-icon type="question-circle-o" />
@@ -478,7 +478,7 @@ export default {
             } else if (formItem.component && formItem.mode === 'edit') {
                 const vDecorator = [formItem.key, {
                     initialValue: this.$getValue(formItem),
-                    rules: [{ required: formItem.required, message: this.$t('请确认') }]
+                    rules: [{ required: formItem.required, message: '请确认' }]
                 }]
                 const _valid = formItem.validator
                 if (utils.isObject(_valid)) vDecorator[1].rules.push(_valid)
@@ -554,7 +554,7 @@ export default {
                         if (v.includes(values[k])) iHide = true
                         // todo 需要判断 values[k] 的类型，比如数组，对象，字符串
                     })
-                show = !iHide 
+                show = !iHide
             }
             if (formItem.showOnForm) {
                 let iShow = false
@@ -651,7 +651,7 @@ export default {
         },
         render (h) {
             return <a-item form={this.form}>
-                <a-row type={'flex'}>{ this.colsRender(h) }</a-row>   
+                <a-row type={'flex'}>{ this.colsRender(h) }</a-row>
             </a-item>
         }
     }
@@ -659,21 +659,21 @@ export default {
 </script>
 <style lang="less" scoped>
 .form-label-readonly {
-    margin-left: 1rem;
-    color: #999;
-    white-space: nowrap;
+  margin-left: 1rem;
+  color: #999;
+  white-space: nowrap;
 }
 span.form-wrapper-readonly {
+  min-height: 21px;
+  .line-standard {
     min-height: 21px;
-    .line-standard {
-        min-height: 21px;
-    }
+  }
 }
 .form-label-colon {
-    margin-left: 0.25rem;
-    margin-right: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.5rem;
 }
 .form-row-readonly {
-    margin: 0.5rem 0;
+  margin: 0.5rem 0;
 }
 </style>
