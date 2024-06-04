@@ -20,6 +20,7 @@ module.exports = {
     devtool: proEnvs.includes(env) ? '' : 'source-map',
     resolve: {
       alias: {
+        '@': resolve('./src'),
         '@builder': resolve('./src/helper/builder')
       },
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue', '.json']
@@ -46,6 +47,24 @@ module.exports = {
       .loader('markdown-loader')
       .end()
 
+    config.module
+      .rule('vue')
+      .test(/\.vue$/)
+      .use('vue-loader')
+      .loader('vue-loader')
+      .options({
+        loaders: {
+          ts: 'ts-loader', // 使用 ts-loader 处理 TypeScript
+          tsx: 'ts-loader' // 也可以指定 tsx 的 loader，但通常 ts 就足够了
+          // ...
+        }
+        // 其他 vue-loader 选项
+      })
+      .end()
+      .use('code-panel-loader')
+      .loader(resolve('./loaders/code-panel-loader'))
+      .end()
+
     // config.module
     //   .rule('ts')
     //   .test(/\.tsx?$/)
@@ -53,13 +72,12 @@ module.exports = {
     //     .add(/node_modules/)
     //     .end()
     //   .use('ts-loader')
-    //     .loader('ts-loader')
-    //     .options({
-    //       appendTsSuffixTo: [/\.vue$/], // 确保 .vue 文件中的 <script lang="ts"> 能被识别
-    //       // 其他 ts-loader 选项...
-    //     })
-    //     .end()
-    // ...
+    //   .loader('ts-loader')
+    //   .options({
+    //     appendTsSuffixTo: [/\.vue$/], // 确保 .vue 文件中的 <script lang="ts"> 能被识别
+    //     // 其他 ts-loader 选项...
+    //   })
+    //   .end()
     // {
     //   test: /\.vue$/,
     //   loader: 'vue-loader',

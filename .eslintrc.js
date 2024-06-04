@@ -3,15 +3,16 @@ module.exports = {
   env: {
     node: true
   },
-  // 'parser': '@babel/eslint-parser',
-  parser: 'babel-eslint',
+  plugins: [ 'vue' ], // 在编译过程中，支持 vue 语法
+  parser: '@babel/eslint-parser',
   parserOptions: {
     'requireConfigFile': false,
-    'babelOptions': { // 支持 可选链 语法
-      'plugins': ['@babel/plugin-syntax-optional-chaining']
+    'babelOptions': {
+      'plugins': ['@babel/plugin-syntax-optional-chaining'] // 支持 可选链 语法
     }
   },
   extends: [
+    'plugin:vue/essential',
     'plugin:vue/strongly-recommended',
     '@vue/standard'
   ],

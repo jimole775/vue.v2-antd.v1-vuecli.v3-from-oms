@@ -1,6 +1,6 @@
 module.exports = {
   presets: [
-    '@vue/babel-preset-app',
+    '@vue/babel-preset-app'
     // [
     //   "@babel/preset-env",
     //   {
@@ -8,7 +8,7 @@ module.exports = {
     //     "corejs": "3.22"
     //   }
     // ],
-    '@babel/preset-typescript'
+    // '@babel/preset-typescript'
   ],
   plugins: [
     // [

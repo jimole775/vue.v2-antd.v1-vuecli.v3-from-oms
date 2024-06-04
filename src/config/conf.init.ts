@@ -1,3 +1,11 @@
+/**
+ * @ Author: @rongxis
+ * @ Create Time: 2023-08-16 00:02:57
+ * @ Modified by: @rongxis
+ * @ Modified time: 2024-06-04 23:44:28
+ * @ Description:
+ */
+
 import Vue from 'vue'
 import App from '@/App.vue'
 import router from '@/router'
